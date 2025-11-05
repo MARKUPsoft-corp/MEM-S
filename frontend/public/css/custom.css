@@ -1,0 +1,97 @@
+/* MEM'S - Charte Graphique */
+
+:root {
+  /* Couleurs principales */
+  --color-noir-profond: #0B0B0B;
+  --color-or-brosse: #C9A46C;
+  --color-ivoire: #F5F2EC;
+  --color-vert-ebene: #0E3A34;
+  --color-terracotta: #A14E36;
+  --color-gris-anthracite: #2A2A2A;
+
+  /* Police */
+  --font-primary: 'Montserrat', sans-serif;
+}
+
+* {
+  font-family: var(--font-primary);
+}
+
+body {
+  font-family: var(--font-primary);
+  color: var(--color-noir-profond);
+  background-color: var(--color-ivoire);
+}
+
+/* Typographie */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  color: var(--color-noir-profond);
+}
+
+/* Boutons */
+.btn-primary {
+  background-color: var(--color-noir-profond);
+  border-color: var(--color-noir-profond);
+  color: white;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-gris-anthracite);
+  border-color: var(--color-gris-anthracite);
+}
+
+.btn-secondary {
+  background-color: var(--color-or-brosse);
+  border-color: var(--color-or-brosse);
+  color: white;
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background-color: #b8935d;
+  border-color: #b8935d;
+}
+
+/* Liens */
+a {
+  color: var(--color-noir-profond);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--color-or-brosse);
+}
+
+/* Accents */
+.text-accent {
+  color: var(--color-or-brosse);
+}
+
+.text-primary-dark {
+  color: var(--color-noir-profond);
+}
+
+.bg-accent {
+  background-color: var(--color-or-brosse);
+}
+
+.bg-primary-dark {
+  background-color: var(--color-noir-profond);
+}
+
+.bg-vert-ebene {
+  background-color: var(--color-vert-ebene);
+}
+
+.bg-terracotta {
+  background-color: var(--color-terracotta);
+}
