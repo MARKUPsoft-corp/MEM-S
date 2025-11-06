@@ -315,18 +315,9 @@ onUnmounted(() => {
         font-size: 0.8125rem;
     }
 
+    /* Cacher les flèches sur mobile (écran tactile) */
     .hero-arrow {
-        width: 40px;
-        height: 40px;
-        font-size: 1.25rem;
-    }
-
-    .hero-arrow--prev {
-        left: 1rem;
-    }
-
-    .hero-arrow--next {
-        right: 1rem;
+        display: none;
     }
 
     .hero-pagination {

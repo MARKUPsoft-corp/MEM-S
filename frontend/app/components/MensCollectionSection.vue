@@ -4,6 +4,7 @@
             <!-- Section Title -->
             <div class="section-header">
                 <h2 class="section-title">Collection Hommes</h2>
+                <div class="title-underline"></div>
                 <p class="section-subtitle">Élégance et tradition africaine</p>
             </div>
 
@@ -92,6 +93,26 @@ const products = ref([
         subcategory: 'boubou',
         badge: { type: 'new', text: 'NOUVEAU' }
     },
+    {
+        id: 21,
+        name: 'Boubou Élégant Marron',
+        price: 40000,
+        images: [
+            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'boubou'
+    },
+    {
+        id: 22,
+        name: 'Boubou Moderne Gris',
+        price: 37000,
+        images: [
+            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'boubou'
+    },
     // Gandoura
     {
         id: 4,
@@ -134,6 +155,26 @@ const products = ref([
         ],
         subcategory: 'gandoura',
         badge: { type: 'featured', text: 'VEDETTE' }
+    },
+    {
+        id: 23,
+        name: 'Gandoura Premium Noire',
+        price: 33000,
+        images: [
+            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'gandoura'
+    },
+    {
+        id: 24,
+        name: 'Gandoura Chic Bleue',
+        price: 31000,
+        images: [
+            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'gandoura'
     },
     // Costumes
     {
@@ -178,6 +219,26 @@ const products = ref([
         subcategory: 'costumes',
         badge: { type: 'new', text: 'NOUVEAU' }
     },
+    {
+        id: 25,
+        name: 'Costume Classique Beige',
+        price: 56000,
+        images: [
+            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'costumes'
+    },
+    {
+        id: 26,
+        name: 'Costume Premium Bleu',
+        price: 62000,
+        images: [
+            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'costumes'
+    },
     // Chemise
     {
         id: 10,
@@ -221,6 +282,26 @@ const products = ref([
         subcategory: 'chemise',
         badge: { type: 'featured', text: 'VEDETTE' }
     },
+    {
+        id: 27,
+        name: 'Chemise Lin Grise',
+        price: 17000,
+        images: [
+            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'chemise'
+    },
+    {
+        id: 28,
+        name: 'Chemise Moderne Verte',
+        price: 16500,
+        images: [
+            'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'chemise'
+    },
     // Pantalon
     {
         id: 13,
@@ -263,6 +344,26 @@ const products = ref([
         ],
         subcategory: 'pantalon',
         badge: { type: 'new', text: 'NOUVEAU' }
+    },
+    {
+        id: 29,
+        name: 'Pantalon Élégant Gris',
+        price: 23000,
+        images: [
+            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'pantalon'
+    },
+    {
+        id: 30,
+        name: 'Pantalon Moderne Blanc',
+        price: 21000,
+        images: [
+            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'
+        ],
+        subcategory: 'pantalon'
     }
 ])
 
@@ -327,6 +428,14 @@ const selectSubcategory = (subcategoryId) => {
     letter-spacing: 1px;
 }
 
+.title-underline {
+    width: 80px;
+    height: 3px;
+    background: #C9A46C;
+    border-radius: 2px;
+    margin: 0 auto 1rem;
+}
+
 .section-subtitle {
     font-family: 'Montserrat', sans-serif;
     font-size: 1rem;
@@ -382,8 +491,8 @@ const selectSubcategory = (subcategoryId) => {
 /* Products Grid */
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
     margin-bottom: 3rem;
 }
 
@@ -422,18 +531,14 @@ const selectSubcategory = (subcategoryId) => {
 @media (max-width: 1200px) {
     .products-grid {
         grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
+        gap: 1rem;
     }
 }
 
 @media (max-width: 992px) {
     .products-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-    }
-
-    .mens-collection-section {
-        padding: 4rem 0;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
     }
 }
 
@@ -477,7 +582,6 @@ const selectSubcategory = (subcategoryId) => {
 
     .subcategory-tabs {
         margin-bottom: 2rem;
-        justify-content: flex-start;
     }
 
     .subcategory-tab {
