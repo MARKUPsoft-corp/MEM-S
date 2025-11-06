@@ -32,6 +32,7 @@ const products = ref([
     {
         id: 1,
         name: 'Babouches Cuir Marron',
+        slug: 'babouches-cuir-marron',
         price: 15000,
         images: [
             'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
@@ -42,6 +43,7 @@ const products = ref([
     {
         id: 2,
         name: 'Babouches Traditionnelles Beige',
+        slug: 'babouches-traditionnelles-beige',
         price: 12000,
         images: [
             'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80',
@@ -52,6 +54,7 @@ const products = ref([
     {
         id: 3,
         name: 'Babouches Brodées Noir',
+        slug: 'babouches-brodees-noir',
         price: 18000,
         images: [
             'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
@@ -61,6 +64,7 @@ const products = ref([
     {
         id: 4,
         name: 'Babouches Premium Rouge',
+        slug: 'babouches-premium-rouge',
         price: 20000,
         images: [
             'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80',
@@ -71,6 +75,7 @@ const products = ref([
     {
         id: 5,
         name: 'Babouches Élégantes Bleues',
+        slug: 'babouches-elegantes-bleues',
         price: 16000,
         images: [
             'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
@@ -80,6 +85,7 @@ const products = ref([
     {
         id: 6,
         name: 'Babouches Artisanales Vertes',
+        slug: 'babouches-artisanales-vertes',
         price: 14000,
         images: [
             'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80',

@@ -50,6 +50,7 @@ const products = ref([
     {
         id: 1,
         name: 'Robe Africaine Élégante',
+        slug: 'robe-africaine-elegante',
         price: 35000,
         images: [
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
@@ -61,6 +62,7 @@ const products = ref([
     {
         id: 2,
         name: 'Ensemble Traditionnel Bleu',
+        slug: 'ensemble-traditionnel-bleu',
         price: 42000,
         images: [
             'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80',
@@ -72,6 +74,7 @@ const products = ref([
     {
         id: 3,
         name: 'Robe Wax Moderne',
+        slug: 'robe-wax-moderne',
         price: 38000,
         images: [
             'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80',
@@ -82,6 +85,7 @@ const products = ref([
     {
         id: 4,
         name: 'Ensemble Brodé Premium',
+        slug: 'ensemble-brode-premium',
         price: 45000,
         images: [
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
@@ -93,6 +97,7 @@ const products = ref([
     {
         id: 9,
         name: 'Robe Longue Wax',
+        slug: 'robe-longue-wax',
         price: 40000,
         images: [
             'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80',
@@ -103,6 +108,7 @@ const products = ref([
     {
         id: 10,
         name: 'Ensemble Moderne Rose',
+        slug: 'ensemble-moderne-rose',
         price: 36000,
         images: [
             'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80',
@@ -114,6 +120,7 @@ const products = ref([
     {
         id: 5,
         name: 'Sac à Main Cuir Marron',
+        slug: 'sac-a-main-cuir-marron',
         price: 25000,
         images: [
             'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80',
@@ -125,6 +132,7 @@ const products = ref([
     {
         id: 6,
         name: 'Sac Traditionnel Wax',
+        slug: 'sac-traditionnel-wax',
         price: 22000,
         images: [
             'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80',
@@ -135,6 +143,7 @@ const products = ref([
     {
         id: 7,
         name: 'Sac Bandoulière Élégant',
+        slug: 'sac-bandouliere-elegant',
         price: 28000,
         images: [
             'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80',
@@ -146,6 +155,7 @@ const products = ref([
     {
         id: 8,
         name: 'Sac à Dos Moderne',
+        slug: 'sac-a-dos-moderne',
         price: 30000,
         images: [
             'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80',
@@ -157,6 +167,7 @@ const products = ref([
     {
         id: 11,
         name: 'Sac Pochette Élégante',
+        slug: 'sac-pochette-elegante',
         price: 18000,
         images: [
             'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80',
@@ -167,6 +178,7 @@ const products = ref([
     {
         id: 12,
         name: 'Sac Cabas Wax',
+        slug: 'sac-cabas-wax',
         price: 26000,
         images: [
             'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80',

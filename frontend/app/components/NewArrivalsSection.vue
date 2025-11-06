@@ -52,6 +52,7 @@ const products = ref([
     {
         id: 1,
         name: 'Boubou Traditionnel',
+        slug: 'boubou-traditionnel',
         price: 252.00,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -64,6 +65,7 @@ const products = ref([
     {
         id: 2,
         name: 'Gandoura Élégante',
+        slug: 'gandoura-elegante',
         price: 504.00,
         images: [
             'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80',
@@ -75,6 +77,7 @@ const products = ref([
     {
         id: 3,
         name: 'Robe Africaine',
+        slug: 'robe-africaine',
         price: 350.00,
         images: [
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
@@ -87,6 +90,7 @@ const products = ref([
     {
         id: 4,
         name: 'Babouches Cuir',
+        slug: 'babouches-cuir',
         price: 120.00,
         images: [
             'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
@@ -98,6 +102,7 @@ const products = ref([
     {
         id: 5,
         name: 'Chemise Lin Homme',
+        slug: 'chemise-lin-homme',
         price: 180.00,
         images: [
             'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
@@ -110,6 +115,7 @@ const products = ref([
     {
         id: 6,
         name: 'Pantalon Lin',
+        slug: 'pantalon-lin',
         price: 150.00,
         images: [
             'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',

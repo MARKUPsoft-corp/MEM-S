@@ -45,6 +45,7 @@ const products = ref([
     {
         id: 1,
         name: 'Boubou Premium Blanc',
+        slug: 'boubou-premium-blanc',
         price: 45000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -56,6 +57,7 @@ const products = ref([
     {
         id: 2,
         name: 'Costume Africain Moderne',
+        slug: 'costume-africain-moderne',
         price: 60000,
         images: [
             'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
@@ -68,6 +70,7 @@ const products = ref([
     {
         id: 3,
         name: 'Robe Africaine Élégante',
+        slug: 'robe-africaine-elegante',
         price: 38000,
         images: [
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
@@ -79,6 +82,7 @@ const products = ref([
     {
         id: 4,
         name: 'Sac à Main Élégant',
+        slug: 'sac-a-main-elegant',
         price: 28000,
         images: [
             'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80',
@@ -91,6 +95,7 @@ const products = ref([
     {
         id: 5,
         name: 'Babouches Cuir Premium',
+        slug: 'babouches-cuir-premium',
         price: 20000,
         images: [
             'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
@@ -103,6 +108,7 @@ const products = ref([
     {
         id: 6,
         name: 'Ensemble Lin Naturel',
+        slug: 'ensemble-lin-naturel',
         price: 35000,
         images: [
             'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',

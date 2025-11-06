@@ -32,6 +32,7 @@ const products = ref([
     {
         id: 1,
         name: 'Chemise Lin Homme Beige',
+        slug: 'chemise-lin-homme-beige',
         price: 18000,
         images: [
             'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
@@ -42,6 +43,7 @@ const products = ref([
     {
         id: 2,
         name: 'Pantalon Lin Naturel',
+        slug: 'pantalon-lin-naturel',
         price: 22000,
         images: [
             'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
@@ -52,6 +54,7 @@ const products = ref([
     {
         id: 3,
         name: 'Ensemble Lin Blanc',
+        slug: 'ensemble-lin-blanc',
         price: 35000,
         images: [
             'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80',
@@ -61,6 +64,7 @@ const products = ref([
     {
         id: 4,
         name: 'Robe Lin Femme Ivoire',
+        slug: 'robe-lin-femme-ivoire',
         price: 28000,
         images: [
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
@@ -71,6 +75,7 @@ const products = ref([
     {
         id: 5,
         name: 'Chemise Lin Blanche Homme',
+        slug: 'chemise-lin-blanche-homme',
         price: 19000,
         images: [
             'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80',
@@ -80,6 +85,7 @@ const products = ref([
     {
         id: 6,
         name: 'Pantalon Lin Gris',
+        slug: 'pantalon-lin-gris',
         price: 24000,
         images: [
             'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',

@@ -1,10 +1,10 @@
 <template>
-  <div class="min-vh-100 d-flex flex-column">
+  <div class="layout-wrapper">
     <!-- Navbar -->
     <Navbar />
 
     <!-- Main Content -->
-    <main class="flex-grow-1">
+    <main class="main-content">
       <slot />
     </main>
 
@@ -53,6 +53,18 @@
 </script>
 
 <style scoped>
+.layout-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #F5F2EC;
+}
+
+.main-content {
+  flex: 1;
+  background: #F5F2EC;
+}
+
 .footer {
   background-color: #0E3A34;
   color: #F5F2EC;

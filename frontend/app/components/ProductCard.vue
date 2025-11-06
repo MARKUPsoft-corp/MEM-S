@@ -1,51 +1,41 @@
 <template>
-  <div class="product-card">
-    <!-- Image Container -->
-    <div class="product-image-container">
-      <img 
-        :src="currentImage" 
-        :alt="product.name" 
-        class="product-image"
-      />
-      
-      <!-- Badge (Nouveau, Promo, etc.) -->
-      <div v-if="product.badge" class="product-badge" :class="`badge-${product.badge.type}`">
-        {{ product.badge.text }}
-      </div>
+  <NuxtLink :to="`/products/${product.slug}`" class="product-card-link">
+    <div class="product-card">
+      <!-- Image Container -->
+      <div class="product-image-container">
+        <img :src="currentImage" :alt="product.name" class="product-image" />
 
-      <!-- Navigation Arrows -->
-      <div class="image-navigation">
-        <button 
-          @click.stop="previousImage" 
-          class="nav-arrow nav-arrow-left"
-          aria-label="Image précédente"
-        >
-          ‹
-        </button>
-        <button 
-          @click.stop="nextImage" 
-          class="nav-arrow nav-arrow-right"
-          aria-label="Image suivante"
-        >
-          ›
-        </button>
-      </div>
-    </div>
-
-    <!-- Product Info -->
-    <div class="product-info">
-      <h3 class="product-name">{{ product.name }}</h3>
-      <div class="product-price-container">
-        <div class="product-price">
-          <span v-if="product.originalPrice" class="original-price">{{ product.originalPrice }} FCFA</span>
-          <span class="current-price">{{ product.price }} FCFA</span>
+        <!-- Badge (Nouveau, Promo, etc.) -->
+        <div v-if="product.badge" class="product-badge" :class="`badge-${product.badge.type}`">
+          {{ product.badge.text }}
         </div>
-        <div class="product-action">
-          <span class="view-product">Voir le produit</span>
+
+        <!-- Navigation Arrows -->
+        <div class="image-navigation">
+          <button @click.prevent.stop="previousImage" class="nav-arrow nav-arrow-left" aria-label="Image précédente">
+            ‹
+          </button>
+          <button @click.prevent.stop="nextImage" class="nav-arrow nav-arrow-right" aria-label="Image suivante">
+            ›
+          </button>
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="product-info">
+        <h3 class="product-name">{{ product.name }}</h3>
+        <div class="product-price-container">
+          <div class="product-price">
+            <span v-if="product.originalPrice" class="original-price">{{ product.originalPrice }} FCFA</span>
+            <span class="current-price">{{ product.price }} FCFA</span>
+          </div>
+          <div class="product-action">
+            <span class="view-product">Voir le produit</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </NuxtLink>
 </template>
 
 <script setup>
@@ -59,6 +49,7 @@ const props = defineProps({
     // {
     //   id: String/Number,
     //   name: String,
+    //   slug: String (requis pour la navigation),
     //   price: Number,
     //   originalPrice: Number (optionnel),
     //   images: Array<String>,
@@ -85,8 +76,8 @@ const nextImage = () => {
 
 const previousImage = () => {
   const images = currentVariant.value?.images || props.product.images
-  currentImageIndex.value = currentImageIndex.value === 0 
-    ? images.length - 1 
+  currentImageIndex.value = currentImageIndex.value === 0
+    ? images.length - 1
     : currentImageIndex.value - 1
 }
 
@@ -97,19 +88,32 @@ const selectVariant = (variant) => {
 </script>
 
 <style scoped>
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .product-card {
   position: relative;
   background: #F5F2EC;
   border-radius: 4px;
   overflow: hidden;
   cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card-link:hover .product-card {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(11, 11, 11, 0.15);
 }
 
 /* Image Container */
 .product-image-container {
   position: relative;
   width: 100%;
-  padding-top: 125%; /* Ratio 4:5 */
+  padding-top: 125%;
+  /* Ratio 4:5 */
   overflow: hidden;
   background: var(--ivoire);
 }

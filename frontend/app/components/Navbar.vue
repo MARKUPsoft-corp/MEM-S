@@ -65,7 +65,7 @@
                     <i class="bi bi-person"></i>
                 </NuxtLink>
                 <NuxtLink to="/cart" class="nav-icon cart-icon" aria-label="Panier">
-                    <i class="bi bi-bag"></i>
+                    <i class="bi bi-cart"></i>
                     <span v-if="totalItems > 0" class="cart-badge">{{ totalItems }}</span>
                 </NuxtLink>
             </div>
@@ -84,16 +84,21 @@
 
 <script setup lang="ts">
 import { useCartStore } from '../../stores/cart'
+import { useRoute } from 'vue-router'
 import Sidebar from './sidebar/Sidebar.vue'
 import SidebarOverlay from './sidebar/SidebarOverlay.vue'
 import SearchOverlay from './SearchOverlay.vue'
 
 const cartStore = useCartStore()
+const route = useRoute()
 const sidebarOpen = ref(false)
 const searchOpen = ref(false)
 const isScrolled = ref(false)
 const activeDropdown = ref<string | null>(null)
 const totalItems = computed(() => cartStore.totalItems)
+
+// Vérifier si on est sur la page d'accueil
+const isHomePage = computed(() => route.path === '/')
 
 function toggleSidebar() {
     sidebarOpen.value = !sidebarOpen.value
@@ -120,7 +125,13 @@ function closeSearch() {
 // Handle scroll for transparent navbar
 function handleScroll() {
     if (import.meta.client) {
-        isScrolled.value = window.scrollY > 50
+        // Sur la page d'accueil, la navbar devient opaque au scroll
+        // Sur les autres pages, elle est toujours opaque
+        if (isHomePage.value) {
+            isScrolled.value = window.scrollY > 50
+        } else {
+            isScrolled.value = true
+        }
     }
 }
 
@@ -141,6 +152,11 @@ function handleEscapeKey(event: KeyboardEvent) {
         closeSidebar()
     }
 }
+
+// Watcher pour détecter les changements de route
+watch(() => route.path, () => {
+    handleScroll()
+})
 
 onMounted(() => {
     if (import.meta.client) {
@@ -213,6 +229,10 @@ onUnmounted(() => {
     cursor: pointer;
 }
 
+.navbar--scrolled .nav-link {
+    color: #0B0B0B;
+}
+
 .nav-link-dropdown {
     display: flex;
     align-items: center;
@@ -226,10 +246,6 @@ onUnmounted(() => {
 
 .nav-item:hover .dropdown-icon {
     transform: rotate(180deg);
-}
-
-.navbar--scrolled .nav-link {
-    color: #0B0B0B;
 }
 
 .nav-link:hover {

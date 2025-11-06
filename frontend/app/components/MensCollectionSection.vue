@@ -53,6 +53,7 @@ const products = ref([
     {
         id: 1,
         name: 'Boubou Traditionnel Blanc',
+        slug: 'boubou-traditionnel-blanc',
         price: 35000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -65,6 +66,7 @@ const products = ref([
     {
         id: 2,
         name: 'Boubou Brodé Ivoire',
+        slug: 'boubou-brode-ivoire',
         price: 42000,
         images: [
             'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80',
@@ -75,6 +77,7 @@ const products = ref([
     {
         id: 3,
         name: 'Boubou Royal Noir',
+        slug: 'boubou-royal-noir',
         price: 38000,
         images: [
             'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
@@ -85,6 +88,7 @@ const products = ref([
     {
         id: 16,
         name: 'Boubou Premium Bleu',
+        slug: 'boubou-premium-bleu',
         price: 45000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -96,6 +100,7 @@ const products = ref([
     {
         id: 21,
         name: 'Boubou Élégant Marron',
+        slug: 'boubou-elegant-marron',
         price: 40000,
         images: [
             'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
@@ -106,6 +111,7 @@ const products = ref([
     {
         id: 22,
         name: 'Boubou Moderne Gris',
+        slug: 'boubou-moderne-gris',
         price: 37000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -117,6 +123,7 @@ const products = ref([
     {
         id: 4,
         name: 'Gandoura Élégante Beige',
+        slug: 'gandoura-elegante-beige',
         price: 32000,
         images: [
             'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80',
@@ -128,6 +135,7 @@ const products = ref([
     {
         id: 5,
         name: 'Gandoura Moderne Grise',
+        slug: 'gandoura-moderne-grise',
         price: 30000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -138,6 +146,7 @@ const products = ref([
     {
         id: 6,
         name: 'Gandoura Classique Blanche',
+        slug: 'gandoura-classique-blanche',
         price: 28000,
         images: [
             'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
@@ -148,6 +157,7 @@ const products = ref([
     {
         id: 17,
         name: 'Gandoura Luxe Marron',
+        slug: 'gandoura-luxe-marron',
         price: 35000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -159,6 +169,7 @@ const products = ref([
     {
         id: 23,
         name: 'Gandoura Premium Noire',
+        slug: 'gandoura-premium-noire',
         price: 33000,
         images: [
             'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
@@ -169,6 +180,7 @@ const products = ref([
     {
         id: 24,
         name: 'Gandoura Chic Bleue',
+        slug: 'gandoura-chic-bleue',
         price: 31000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -180,6 +192,7 @@ const products = ref([
     {
         id: 7,
         name: 'Costume 3 Pièces Marine',
+        slug: 'costume-3-pieces-marine',
         price: 55000,
         images: [
             'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
@@ -191,6 +204,7 @@ const products = ref([
     {
         id: 8,
         name: 'Costume Slim Noir',
+        slug: 'costume-slim-noir',
         price: 52000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -201,6 +215,7 @@ const products = ref([
     {
         id: 9,
         name: 'Costume Africain Moderne',
+        slug: 'costume-africain-moderne',
         price: 58000,
         images: [
             'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
@@ -211,6 +226,7 @@ const products = ref([
     {
         id: 18,
         name: 'Costume Élégant Gris',
+        slug: 'costume-elegant-gris',
         price: 60000,
         images: [
             'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
@@ -222,6 +238,7 @@ const products = ref([
     {
         id: 25,
         name: 'Costume Classique Beige',
+        slug: 'costume-classique-beige',
         price: 56000,
         images: [
             'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
@@ -232,6 +249,7 @@ const products = ref([
     {
         id: 26,
         name: 'Costume Premium Bleu',
+        slug: 'costume-premium-bleu',
         price: 62000,
         images: [
             'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
@@ -243,6 +261,7 @@ const products = ref([
     {
         id: 10,
         name: 'Chemise Brodée Blanche',
+        slug: 'chemise-brodee-blanche',
         price: 18000,
         images: [
             'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
@@ -254,6 +273,7 @@ const products = ref([
     {
         id: 11,
         name: 'Chemise Africaine Bleue',
+        slug: 'chemise-africaine-bleue',
         price: 16000,
         images: [
             'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80',
@@ -264,6 +284,7 @@ const products = ref([
     {
         id: 12,
         name: 'Chemise Casual Beige',
+        slug: 'chemise-casual-beige',
         price: 15000,
         images: [
             'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80',
@@ -274,6 +295,7 @@ const products = ref([
     {
         id: 19,
         name: 'Chemise Élégante Noire',
+        slug: 'chemise-elegante-noire',
         price: 19000,
         images: [
             'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
@@ -285,6 +307,7 @@ const products = ref([
     {
         id: 27,
         name: 'Chemise Lin Grise',
+        slug: 'chemise-lin-grise',
         price: 17000,
         images: [
             'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80',
@@ -295,6 +318,7 @@ const products = ref([
     {
         id: 28,
         name: 'Chemise Moderne Verte',
+        slug: 'chemise-moderne-verte',
         price: 16500,
         images: [
             'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80',
@@ -306,6 +330,7 @@ const products = ref([
     {
         id: 13,
         name: 'Pantalon Chino Beige',
+        slug: 'pantalon-chino-beige',
         price: 22000,
         images: [
             'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
@@ -316,6 +341,7 @@ const products = ref([
     {
         id: 14,
         name: 'Pantalon Africain Noir',
+        slug: 'pantalon-africain-noir',
         price: 25000,
         images: [
             'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',
@@ -327,6 +353,7 @@ const products = ref([
     {
         id: 15,
         name: 'Pantalon Slim Marine',
+        slug: 'pantalon-slim-marine',
         price: 20000,
         images: [
             'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
@@ -337,6 +364,7 @@ const products = ref([
     {
         id: 20,
         name: 'Pantalon Cargo Kaki',
+        slug: 'pantalon-cargo-kaki',
         price: 24000,
         images: [
             'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',
@@ -348,6 +376,7 @@ const products = ref([
     {
         id: 29,
         name: 'Pantalon Élégant Gris',
+        slug: 'pantalon-elegant-gris',
         price: 23000,
         images: [
             'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
@@ -358,6 +387,7 @@ const products = ref([
     {
         id: 30,
         name: 'Pantalon Moderne Blanc',
+        slug: 'pantalon-moderne-blanc',
         price: 21000,
         images: [
             'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',

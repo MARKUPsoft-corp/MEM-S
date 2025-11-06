@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar-footer">
     <NuxtLink to="/cart" class="sidebar-footer__link" @click="$emit('navigate')">
-      <i class="bi bi-bag sidebar-footer__icon"></i>
+      <i class="bi bi-cart sidebar-footer__icon"></i>
       <span>PANIER</span>
       <span v-if="totalItems > 0" class="sidebar-footer__badge">{{ totalItems }}</span>
     </NuxtLink>
