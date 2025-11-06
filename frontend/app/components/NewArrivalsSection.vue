@@ -139,7 +139,7 @@ const loadMore = () => {
 
 <style scoped>
 .new-arrivals-section {
-    padding: 0 0 5rem 0;
+    padding: 0;
     background: #F5F2EC;
 }
 
@@ -221,7 +221,7 @@ const loadMore = () => {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 1rem;
-    margin-bottom: 3rem;
+    margin-bottom: 0;
 }
 
 /* Load More Button */
@@ -291,7 +291,7 @@ const loadMore = () => {
 /* Mobile */
 @media (max-width: 767px) {
     .new-arrivals-section {
-        padding: 2rem 0 3rem 0;
+        padding: 2rem 0 0 0;
     }
 
     .container {

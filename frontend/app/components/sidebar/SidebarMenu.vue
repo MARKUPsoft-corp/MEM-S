@@ -70,12 +70,6 @@ const menuItems: MenuItem[] = [
     label: 'LINS',
     link: '/lins',
     hasDropdown: false
-  },
-  {
-    id: 'contact',
-    label: 'CONTACT',
-    link: '/contact',
-    hasDropdown: false
   }
 ]
 

@@ -47,21 +47,12 @@
                 <NuxtLink to="/lins" class="nav-link">
                     LINS
                 </NuxtLink>
-                <NuxtLink to="/contact" class="nav-link">
-                    CONTACT
-                </NuxtLink>
             </div>
 
             <!-- Center Logo -->
             <div class="navbar-center">
                 <NuxtLink to="/" class="navbar-logo">
-                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="15" cy="12" r="3" stroke="currentColor" stroke-width="1.5" fill="none" />
-                        <circle cx="28" cy="28" r="8" stroke="currentColor" stroke-width="1.5" fill="none" />
-                        <circle cx="12" cy="28" r="8" stroke="currentColor" stroke-width="1.5" fill="none" />
-                        <path d="M15 15L12 20M15 15L28 20" stroke="currentColor" stroke-width="1.5" />
-                        <path d="M20 12H25V20" stroke="currentColor" stroke-width="1.5" />
-                    </svg>
+                    <img src="/images/LOGO.png" alt="MEM'S Logo" class="logo-image" />
                 </NuxtLink>
             </div>
 
@@ -187,7 +178,7 @@ onUnmounted(() => {
 .navbar-container {
     width: 100%;
     margin: 0;
-    padding: 1.25rem 2rem;
+    padding: 0.25rem 2rem;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
@@ -318,16 +309,20 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: #F5F2EC;
-    transition: color 0.3s ease;
-}
-
-.navbar--scrolled .navbar-logo {
-    color: #0B0B0B;
+    transition: opacity 0.3s ease;
+    position: relative;
+    z-index: 10;
 }
 
 .navbar-logo:hover {
-    color: #C9A46C;
+    opacity: 0.8;
+}
+
+.logo-image {
+    height: 120px;
+    width: auto;
+    object-fit: contain;
+    margin: -30px 0;
 }
 
 .navbar-right {
@@ -398,8 +393,8 @@ onUnmounted(() => {
 
 
 
-/* Desktop (768px et plus) */
-@media (min-width: 768px) {
+/* Large desktop (1200px et plus) - Afficher les menus desktop */
+@media (min-width: 1200px) {
 
     .navbar-left .nav-link,
     .navbar-left .nav-item {
@@ -411,28 +406,28 @@ onUnmounted(() => {
     }
 
     .navbar-container {
-        padding: 1.25rem 3rem;
-    }
-}
-
-/* Large desktop */
-@media (min-width: 1200px) {
-    .navbar-container {
-        padding: 1.25rem 4rem;
+        padding: 0.25rem 3rem;
     }
 }
 
 /* Extra large desktop */
 @media (min-width: 1400px) {
     .navbar-container {
-        padding: 1.25rem 5rem;
+        padding: 0.25rem 4rem;
     }
 }
 
-/* Mobile adjustments */
-@media (max-width: 767px) {
+/* Ultra large desktop */
+@media (min-width: 1600px) {
     .navbar-container {
-        padding: 1.25rem 1.5rem;
+        padding: 0.25rem 5rem;
+    }
+}
+
+/* Mobile et Tablette (jusqu'à 1199px) */
+@media (max-width: 1199px) {
+    .navbar-container {
+        padding: 0.5rem 2rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -463,9 +458,20 @@ onUnmounted(() => {
 
     .navbar-right {
         display: flex;
-        gap: 0;
+        gap: 1.5rem;
         order: 3;
         flex-shrink: 0;
+    }
+}
+
+/* Mobile uniquement (petits écrans) */
+@media (max-width: 767px) {
+    .navbar-container {
+        padding: 0.75rem 1.5rem;
+    }
+
+    .navbar-right {
+        gap: 0;
     }
 
     /* Afficher SEULEMENT l'icône recherche sur mobile */
