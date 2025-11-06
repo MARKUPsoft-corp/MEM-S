@@ -180,13 +180,13 @@ const selectVariant = (variant) => {
 }
 
 .badge-new {
-  background: #C9A46C;
-  color: #0B0B0B;
+  background: #A14E36;
+  color: #FFFFFF;
 }
 
 .badge-sale {
-  background: var(--terracotta);
-  color: white;
+  background: #A14E36;
+  color: #FFFFFF;
 }
 
 .badge-featured {

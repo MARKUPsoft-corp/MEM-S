@@ -139,8 +139,26 @@ const loadMore = () => {
 
 <style scoped>
 .new-arrivals-section {
-    padding: 0;
+    padding: 3rem 0;
     background: #F5F2EC;
+    position: relative;
+}
+
+.new-arrivals-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 1400px;
+    height: 1px;
+    background: linear-gradient(to right, 
+        transparent 0%, 
+        #C9A46C 20%, 
+        #C9A46C 80%, 
+        transparent 100%);
+    opacity: 0.3;
 }
 
 .container {

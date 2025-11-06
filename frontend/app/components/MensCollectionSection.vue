@@ -1,10 +1,5 @@
 <template>
     <section class="mens-collection-section">
-        <!-- Section Divider -->
-        <div class="section-divider">
-            <div class="divider-line"></div>
-        </div>
-        
         <div class="container">
             <!-- Section Title -->
             <div class="section-header">
@@ -289,18 +284,19 @@ const selectSubcategory = (subcategoryId) => {
 
 <style scoped>
 .mens-collection-section {
-    padding: 3rem 0 5rem 0;
+    padding: 3rem 0;
     background: #F5F2EC;
+    position: relative;
 }
 
-/* Section Divider */
-.section-divider {
+.mens-collection-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
     max-width: 1400px;
-    margin: 0 auto 3rem auto;
-    padding: 0 1rem;
-}
-
-.divider-line {
     height: 1px;
     background: linear-gradient(to right, 
         transparent 0%, 
