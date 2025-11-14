@@ -38,15 +38,15 @@ import ProductCard from './ProductCard.vue'
 
 // Sous-catégories femmes
 const subcategories = [
-    { id: 'vetements', name: 'Vêtements', link: '/women/vetements' },
-    { id: 'sacs', name: 'Sacs', link: '/women/sacs' }
+    { id: 'robes', name: 'Vêtements', link: '/women?category=robes' },
+    { id: 'sacs', name: 'Sacs', link: '/women?category=sacs' }
 ]
 
-const activeSubcategory = ref('vetements')
+const activeSubcategory = ref('robes')
 
 // Données de produits (à remplacer par des données réelles depuis une API)
 const products = ref([
-    // Vêtements
+    // Robes
     {
         id: 1,
         name: 'Robe Africaine Élégante',
@@ -56,7 +56,7 @@ const products = ref([
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
             'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
         ],
-        subcategory: 'vetements',
+        subcategory: 'robes',
         badge: { type: 'featured', text: 'VEDETTE' }
     },
     {
@@ -68,7 +68,7 @@ const products = ref([
             'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80',
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
         ],
-        subcategory: 'vetements',
+        subcategory: 'robes',
         badge: { type: 'new', text: 'NOUVEAU' }
     },
     {
@@ -80,7 +80,7 @@ const products = ref([
             'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80',
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
         ],
-        subcategory: 'vetements'
+        subcategory: 'robes'
     },
     {
         id: 4,
@@ -91,7 +91,7 @@ const products = ref([
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
             'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
         ],
-        subcategory: 'vetements',
+        subcategory: 'robes',
         badge: { type: 'featured', text: 'VEDETTE' }
     },
     {
@@ -103,7 +103,7 @@ const products = ref([
             'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80',
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
         ],
-        subcategory: 'vetements'
+        subcategory: 'robes'
     },
     {
         id: 10,
@@ -114,7 +114,7 @@ const products = ref([
             'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80',
             'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
         ],
-        subcategory: 'vetements'
+        subcategory: 'robes'
     },
     // Sacs
     {

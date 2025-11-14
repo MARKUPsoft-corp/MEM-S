@@ -38,11 +38,11 @@ import ProductCard from './ProductCard.vue'
 
 // Sous-catégories hommes
 const subcategories = [
-    { id: 'boubou', name: 'Boubou', link: '/men/boubou' },
-    { id: 'gandoura', name: 'Gandoura', link: '/men/gandoura' },
-    { id: 'costumes', name: 'Costumes', link: '/men/costumes' },
-    { id: 'chemise', name: 'Chemise', link: '/men/chemise' },
-    { id: 'pantalon', name: 'Pantalon', link: '/men/pantalon' }
+    { id: 'boubou', name: 'Boubou', link: '/men?category=boubou' },
+    { id: 'gandoura', name: 'Gandoura', link: '/men?category=gandoura' },
+    { id: 'costumes', name: 'Costumes', link: '/men?category=costumes' },
+    { id: 'chemise', name: 'Chemise', link: '/men?category=chemise' },
+    { id: 'pantalon', name: 'Pantalon', link: '/men?category=pantalon' }
 ]
 
 const activeSubcategory = ref('boubou')
