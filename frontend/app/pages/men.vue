@@ -9,17 +9,6 @@
             </div>
         </section>
 
-        <!-- Breadcrumb -->
-        <div class="breadcrumb-container">
-            <div class="container">
-                <nav class="breadcrumb">
-                    <NuxtLink to="/" class="breadcrumb-link">Accueil</NuxtLink>
-                    <span class="breadcrumb-separator">/</span>
-                    <span class="breadcrumb-current">Hommes</span>
-                </nav>
-            </div>
-        </div>
-
         <!-- Main Content -->
         <div class="page-content">
             <div class="container">
@@ -27,7 +16,17 @@
                 <div class="content-wrapper">
                     <!-- Sidebar Filters (Desktop) -->
                     <aside class="filters-sidebar">
-                        <h3 class="sidebar-title">Catégories</h3>
+                        <!-- Breadcrumb -->
+                        <nav class="breadcrumb">
+                            <NuxtLink to="/" class="breadcrumb-link">Accueil</NuxtLink>
+                            <span class="breadcrumb-separator">/</span>
+                            <span class="breadcrumb-current">Hommes</span>
+                        </nav>
+
+                        <div class="sidebar-header">
+                            <h3 class="sidebar-title">Catégories</h3>
+                            <div class="title-underline"></div>
+                        </div>
                         <nav class="categories-nav">
                             <a href="#boubous" class="category-link">
                                 <i class="bi bi-chevron-right"></i>
@@ -323,19 +322,16 @@ useHead({
     letter-spacing: 1px;
 }
 
-/* Breadcrumb */
-.breadcrumb-container {
-    background: #F5F2EC;
-    padding: 1.5rem 0;
-    border-bottom: 1px solid rgba(201, 164, 108, 0.2);
-}
-
+/* Breadcrumb inside sidebar */
 .breadcrumb {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     font-family: 'Montserrat', sans-serif;
     font-size: 0.875rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(201, 164, 108, 0.3);
 }
 
 .breadcrumb-link {
@@ -388,13 +384,26 @@ useHead({
     top: 120px;
 }
 
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
 .sidebar-title {
     font-family: 'Montserrat', sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
     color: #0E3A34;
-    margin: 0 0 1.5rem 0;
+    margin: 0 0 0.75rem 0;
     letter-spacing: 0.5px;
+}
+
+.title-underline {
+    width: 60px;
+    height: 2px;
+    background: #C9A46C;
+    border-radius: 2px;
+    margin: 0 auto;
 }
 
 .categories-nav {
@@ -464,10 +473,6 @@ useHead({
 
     .hero-subtitle {
         font-size: 1rem;
-    }
-
-    .breadcrumb-container {
-        padding: 1rem 0;
     }
 
     .page-content {
