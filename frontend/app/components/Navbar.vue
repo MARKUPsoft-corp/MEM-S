@@ -18,11 +18,11 @@
                     <transition name="dropdown-fade">
                         <div v-if="activeDropdown === 'men'" class="dropdown-menu">
                             <NuxtLink to="/men" class="dropdown-item">Tous les produits</NuxtLink>
-                            <NuxtLink to="/men/boubou" class="dropdown-item">Boubou</NuxtLink>
-                            <NuxtLink to="/men/gandoura" class="dropdown-item">Gandoura</NuxtLink>
-                            <NuxtLink to="/men/costumes" class="dropdown-item">Costumes</NuxtLink>
-                            <NuxtLink to="/men/chemise" class="dropdown-item">Chemise</NuxtLink>
-                            <NuxtLink to="/men/pantalon" class="dropdown-item">Pantalon</NuxtLink>
+                            <NuxtLink to="/men?category=boubous" class="dropdown-item">Boubou</NuxtLink>
+                            <NuxtLink to="/men?category=gandouras" class="dropdown-item">Gandoura</NuxtLink>
+                            <NuxtLink to="/men?category=costumes" class="dropdown-item">Costumes</NuxtLink>
+                            <NuxtLink to="/men?category=chemises" class="dropdown-item">Chemise</NuxtLink>
+                            <NuxtLink to="/men?category=pantalons" class="dropdown-item">Pantalon</NuxtLink>
                         </div>
                     </transition>
                 </div>
@@ -35,8 +35,9 @@
                     <transition name="dropdown-fade">
                         <div v-if="activeDropdown === 'women'" class="dropdown-menu">
                             <NuxtLink to="/women" class="dropdown-item">Tous les produits</NuxtLink>
-                            <NuxtLink to="/women/vetements" class="dropdown-item">Vêtements</NuxtLink>
-                            <NuxtLink to="/women/sacs" class="dropdown-item">Sacs</NuxtLink>
+                            <NuxtLink to="/women?category=robes" class="dropdown-item">Robes</NuxtLink>
+                            <NuxtLink to="/women?category=ensembles" class="dropdown-item">Ensembles</NuxtLink>
+                            <NuxtLink to="/women?category=sacs" class="dropdown-item">Sacs</NuxtLink>
                         </div>
                     </transition>
                 </div>

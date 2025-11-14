@@ -27,11 +27,11 @@
               <div class="title-underline"></div>
             </div>
             <nav class="categories-nav">
-              <a href="#chemises" class="category-link">
+              <a href="#chemises" @click.prevent="scrollToCategory('chemises')" class="category-link">
                 <i class="bi bi-chevron-right"></i>
                 Chemises
               </a>
-              <a href="#pantalons" class="category-link">
+              <a href="#pantalons" @click.prevent="scrollToCategory('pantalons')" class="category-link">
                 <i class="bi bi-chevron-right"></i>
                 Pantalons
               </a>
@@ -67,6 +67,8 @@ const overlayOpen = ref(false)
 const overlayTitle = ref('')
 const overlayProducts = ref<any[]>([])
 
+const route = useRoute()
+
 const chemisesProducts = [
   { id: 1, name: 'Chemise Lin Blanc', slug: 'chemise-lin-blanc', price: 22000, images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
   { id: 2, name: 'Chemise Lin Beige', slug: 'chemise-lin-beige', price: 20000, images: ['https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'] },
@@ -100,6 +102,37 @@ function openPantalonsOverlay() {
 function closeOverlay() {
   overlayOpen.value = false
 }
+
+function scrollToCategory(categoryId: string) {
+  const element = document.getElementById(categoryId)
+  if (element) {
+    const yOffset = -20
+    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
+    window.scrollTo({ top: y, behavior: 'smooth' })
+  }
+}
+
+function openOverlayFromUrl() {
+  const category = route.query.category as string
+  if (category) {
+    switch (category) {
+      case 'chemises':
+        openChemisesOverlay()
+        break
+      case 'pantalons':
+        openPantalonsOverlay()
+        break
+    }
+  }
+}
+
+onMounted(() => {
+  openOverlayFromUrl()
+})
+
+watch(() => route.query.category, () => {
+  openOverlayFromUrl()
+})
 
 useHead({
   title: 'Collection Lins - MEM\'S',

@@ -27,11 +27,11 @@
               <div class="title-underline"></div>
             </div>
             <nav class="categories-nav">
-              <a href="#cuir" class="category-link">
+              <a href="#cuir" @click.prevent="scrollToCategory('cuir')" class="category-link">
                 <i class="bi bi-chevron-right"></i>
                 Cuir
               </a>
-              <a href="#brodes" class="category-link">
+              <a href="#brodes" @click.prevent="scrollToCategory('brodes')" class="category-link">
                 <i class="bi bi-chevron-right"></i>
                 Brodées
               </a>
@@ -67,6 +67,8 @@ const overlayOpen = ref(false)
 const overlayTitle = ref('')
 const overlayProducts = ref<any[]>([])
 
+const route = useRoute()
+
 const cuirProducts = [
   { id: 1, name: 'Babouches Cuir Premium', slug: 'babouches-cuir-premium', price: 20000, images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
   { id: 2, name: 'Babouches Cuir Marron', slug: 'babouches-cuir-marron', price: 18000, images: ['https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'] },
@@ -100,6 +102,37 @@ function openBrodesOverlay() {
 function closeOverlay() {
   overlayOpen.value = false
 }
+
+function scrollToCategory(categoryId: string) {
+  const element = document.getElementById(categoryId)
+  if (element) {
+    const yOffset = -20
+    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
+    window.scrollTo({ top: y, behavior: 'smooth' })
+  }
+}
+
+function openOverlayFromUrl() {
+  const category = route.query.category as string
+  if (category) {
+    switch (category) {
+      case 'cuir':
+        openCuirOverlay()
+        break
+      case 'brodes':
+        openBrodesOverlay()
+        break
+    }
+  }
+}
+
+onMounted(() => {
+  openOverlayFromUrl()
+})
+
+watch(() => route.query.category, () => {
+  openOverlayFromUrl()
+})
 
 useHead({
   title: 'Collection Babouches - MEM\'S',

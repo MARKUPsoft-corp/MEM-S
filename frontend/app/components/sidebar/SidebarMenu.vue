@@ -42,11 +42,11 @@ const menuItems: MenuItem[] = [
     hasDropdown: true,
     dropdownItems: [
       { label: 'Tous les produits', link: '/men' },
-      { label: 'Boubou', link: '/men/boubou' },
-      { label: 'Gandoura', link: '/men/gandoura' },
-      { label: 'Costumes', link: '/men/costumes' },
-      { label: 'Chemise', link: '/men/chemise' },
-      { label: 'Pantalon', link: '/men/pantalon' }
+      { label: 'Boubou', link: '/men?category=boubous' },
+      { label: 'Gandoura', link: '/men?category=gandouras' },
+      { label: 'Costumes', link: '/men?category=costumes' },
+      { label: 'Chemise', link: '/men?category=chemises' },
+      { label: 'Pantalon', link: '/men?category=pantalons' }
     ]
   },
   {
@@ -55,21 +55,30 @@ const menuItems: MenuItem[] = [
     hasDropdown: true,
     dropdownItems: [
       { label: 'Tous les produits', link: '/women' },
-      { label: 'Vêtements', link: '/women/vetements' },
-      { label: 'Sacs', link: '/women/sacs' }
+      { label: 'Robes', link: '/women?category=robes' },
+      { label: 'Ensembles', link: '/women?category=ensembles' },
+      { label: 'Sacs', link: '/women?category=sacs' }
     ]
   },
   {
     id: 'babouches',
     label: 'BABOUCHES',
-    link: '/babouches',
-    hasDropdown: false
+    hasDropdown: true,
+    dropdownItems: [
+      { label: 'Tous les produits', link: '/babouches' },
+      { label: 'Cuir', link: '/babouches?category=cuir' },
+      { label: 'Brodées', link: '/babouches?category=brodes' }
+    ]
   },
   {
     id: 'lins',
     label: 'LINS',
-    link: '/lins',
-    hasDropdown: false
+    hasDropdown: true,
+    dropdownItems: [
+      { label: 'Tous les produits', link: '/lins' },
+      { label: 'Chemises', link: '/lins?category=chemises' },
+      { label: 'Pantalons', link: '/lins?category=pantalons' }
+    ]
   }
 ]
 

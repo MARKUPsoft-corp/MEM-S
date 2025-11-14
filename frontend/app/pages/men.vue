@@ -28,23 +28,23 @@
                             <div class="title-underline"></div>
                         </div>
                         <nav class="categories-nav">
-                            <a href="#boubous" class="category-link">
+                            <a href="#boubous" @click.prevent="scrollToCategory('boubous')" class="category-link">
                                 <i class="bi bi-chevron-right"></i>
                                 Boubous
                             </a>
-                            <a href="#gandouras" class="category-link">
+                            <a href="#gandouras" @click.prevent="scrollToCategory('gandouras')" class="category-link">
                                 <i class="bi bi-chevron-right"></i>
                                 Gandouras
                             </a>
-                            <a href="#costumes" class="category-link">
+                            <a href="#costumes" @click.prevent="scrollToCategory('costumes')" class="category-link">
                                 <i class="bi bi-chevron-right"></i>
                                 Costumes
                             </a>
-                            <a href="#chemises" class="category-link">
+                            <a href="#chemises" @click.prevent="scrollToCategory('chemises')" class="category-link">
                                 <i class="bi bi-chevron-right"></i>
                                 Chemises
                             </a>
-                            <a href="#pantalons" class="category-link">
+                            <a href="#pantalons" @click.prevent="scrollToCategory('pantalons')" class="category-link">
                                 <i class="bi bi-chevron-right"></i>
                                 Pantalons
                             </a>
@@ -100,6 +100,9 @@ import CategoryOverlay from '../components/men/CategoryOverlay.vue'
 const overlayOpen = ref(false)
 const overlayTitle = ref('')
 const overlayProducts = ref<any[]>([])
+
+// Get route for URL parameters
+const route = useRoute()
 
 // Boubou products (à remplacer par API)
 const boubouProducts = [
@@ -256,6 +259,50 @@ function openPantalonOverlay() {
 function closeOverlay() {
     overlayOpen.value = false
 }
+
+// Smooth scroll to category
+function scrollToCategory(categoryId: string) {
+    const element = document.getElementById(categoryId)
+    if (element) {
+        const yOffset = -20 // Offset pour positionner juste au-dessus de la box
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
+        window.scrollTo({ top: y, behavior: 'smooth' })
+    }
+}
+
+// Open overlay based on category parameter
+function openOverlayFromUrl() {
+    const category = route.query.category as string
+    if (category) {
+        switch (category) {
+            case 'boubous':
+                openBoubouOverlay()
+                break
+            case 'gandouras':
+                openGandouraOverlay()
+                break
+            case 'costumes':
+                openCostumesOverlay()
+                break
+            case 'chemises':
+                openChemiseOverlay()
+                break
+            case 'pantalons':
+                openPantalonOverlay()
+                break
+        }
+    }
+}
+
+// Check URL on mount
+onMounted(() => {
+    openOverlayFromUrl()
+})
+
+// Watch for route changes
+watch(() => route.query.category, () => {
+    openOverlayFromUrl()
+})
 
 // Page metadata
 useHead({

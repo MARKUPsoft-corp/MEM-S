@@ -27,15 +27,15 @@
               <div class="title-underline"></div>
             </div>
             <nav class="categories-nav">
-              <a href="#robes" class="category-link">
+              <a href="#robes" @click.prevent="scrollToCategory('robes')" class="category-link">
                 <i class="bi bi-chevron-right"></i>
                 Robes
               </a>
-              <a href="#ensembles" class="category-link">
+              <a href="#ensembles" @click.prevent="scrollToCategory('ensembles')" class="category-link">
                 <i class="bi bi-chevron-right"></i>
                 Ensembles
               </a>
-              <a href="#sacs" class="category-link">
+              <a href="#sacs" @click.prevent="scrollToCategory('sacs')" class="category-link">
                 <i class="bi bi-chevron-right"></i>
                 Sacs & Accessoires
               </a>
@@ -75,6 +75,8 @@ import CategoryOverlay from '../components/women/CategoryOverlay.vue'
 const overlayOpen = ref(false)
 const overlayTitle = ref('')
 const overlayProducts = ref<any[]>([])
+
+const route = useRoute()
 
 const robesProducts = [
   { id: 1, name: 'Robe Africaine Élégante', slug: 'robe-africaine-elegante', price: 38000, images: ['https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
@@ -124,6 +126,40 @@ function openSacsOverlay() {
 function closeOverlay() {
   overlayOpen.value = false
 }
+
+function scrollToCategory(categoryId: string) {
+  const element = document.getElementById(categoryId)
+  if (element) {
+    const yOffset = -20
+    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
+    window.scrollTo({ top: y, behavior: 'smooth' })
+  }
+}
+
+function openOverlayFromUrl() {
+  const category = route.query.category as string
+  if (category) {
+    switch (category) {
+      case 'robes':
+        openRobesOverlay()
+        break
+      case 'ensembles':
+        openEnsemblesOverlay()
+        break
+      case 'sacs':
+        openSacsOverlay()
+        break
+    }
+  }
+}
+
+onMounted(() => {
+  openOverlayFromUrl()
+})
+
+watch(() => route.query.category, () => {
+  openOverlayFromUrl()
+})
 
 useHead({
   title: 'Collection Femmes - MEM\'S',
