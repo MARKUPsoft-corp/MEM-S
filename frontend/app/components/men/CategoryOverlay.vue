@@ -9,19 +9,22 @@
 
         <!-- Header -->
         <div class="overlay-header">
-          <h2 class="overlay-title">{{ title }}</h2>
-          <p class="overlay-count">{{ products.length }} produits</p>
-        </div>
-
-        <!-- Sort Options -->
-        <div class="overlay-sort">
-          <select v-model="sortBy" class="sort-select">
-            <option value="default">Trier par</option>
-            <option value="price-asc">Prix croissant</option>
-            <option value="price-desc">Prix décroissant</option>
-            <option value="name">Nom A-Z</option>
-            <option value="newest">Nouveautés</option>
-          </select>
+          <div class="header-left">
+            <h2 class="overlay-title">{{ title }}</h2>
+            <div class="title-underline"></div>
+            <p class="overlay-count">{{ products.length }} produits</p>
+          </div>
+          
+          <!-- Sort Options -->
+          <div class="overlay-sort">
+            <select v-model="sortBy" class="sort-select">
+              <option value="default">Trier par</option>
+              <option value="price-asc">Prix croissant</option>
+              <option value="price-desc">Prix décroissant</option>
+              <option value="name">Nom A-Z</option>
+              <option value="newest">Nouveautés</option>
+            </select>
+          </div>
         </div>
 
         <!-- Products Grid -->
@@ -156,10 +159,15 @@ onUnmounted(() => {
 /* Header */
 .overlay-header {
   display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 3rem;
   padding-top: 2rem;
+}
+
+.header-left {
+  flex: 1;
 }
 
 .overlay-title {
@@ -167,8 +175,16 @@ onUnmounted(() => {
   font-size: 2.5rem;
   font-weight: 600;
   color: #0E3A34;
-  margin: 0;
+  margin: 0 0 0.75rem 0;
   letter-spacing: 1px;
+}
+
+.title-underline {
+  width: 80px;
+  height: 3px;
+  background: #C9A46C;
+  border-radius: 2px;
+  margin: 0 0 1rem 0;
 }
 
 .overlay-count {
@@ -177,14 +193,13 @@ onUnmounted(() => {
   font-weight: 400;
   color: #2A2A2A;
   margin: 0;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 /* Sort */
 .overlay-sort {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 2rem;
+  align-items: flex-start;
 }
 
 .sort-select {
@@ -212,6 +227,11 @@ onUnmounted(() => {
 /* Products */
 .overlay-products {
   margin-bottom: 3rem;
+  padding: 3rem;
+  background: #F5F2EC;
+  border: 2px solid rgba(201, 164, 108, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(14, 58, 52, 0.08);
 }
 
 .products-grid {
@@ -255,7 +275,7 @@ onUnmounted(() => {
   .overlay-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 1.5rem;
     padding-top: 1rem;
   }
 
@@ -264,11 +284,15 @@ onUnmounted(() => {
   }
 
   .overlay-sort {
-    margin-bottom: 1.5rem;
+    width: 100%;
   }
 
   .sort-select {
     width: 100%;
+  }
+
+  .overlay-products {
+    padding: 2rem;
   }
 
   .products-grid {
@@ -293,6 +317,10 @@ onUnmounted(() => {
 
   .overlay-title {
     font-size: 1.75rem;
+  }
+
+  .overlay-products {
+    padding: 1.5rem;
   }
 
   .products-grid {
