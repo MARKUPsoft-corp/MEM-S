@@ -114,7 +114,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #FFFFFF;
+  background: #F5F2EC;
   z-index: 2000;
   overflow-y: auto;
 }
@@ -197,6 +197,7 @@ onUnmounted(() => {
   color: #2A2A2A;
   cursor: pointer;
   transition: border-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .sort-select:hover {

@@ -2,7 +2,8 @@
   <div class="category-preview">
     <div class="section-header">
       <h2 class="section-title">Costumes</h2>
-      <p class="section-count">{{ products.length }} produits</p>
+      <div class="title-underline"></div>
+      <p class="section-subtitle">{{ products.length }} produits disponibles</p>
     </div>
 
     <div class="products-grid">
@@ -14,7 +15,7 @@
     </div>
 
     <div class="view-more-container">
-      <button @click="$emit('view-all')" class="btn-view-more">
+      <button @click="$emit('viewAll')" class="btn-view-more">
         Voir Plus
       </button>
     </div>
@@ -96,31 +97,42 @@ const previewProducts = computed(() => products.value.slice(0, 4))
 .category-preview {
   width: 100%;
   margin-bottom: 4rem;
+  padding: 3rem;
+  background: #F5F2EC;
+  border: 2px solid rgba(201, 164, 108, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(14, 58, 52, 0.08);
 }
 
 .section-header {
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  text-align: center;
+  margin-bottom: 3rem;
 }
 
 .section-title {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.75rem;
+  font-size: 2.5rem;
   font-weight: 600;
   color: #0E3A34;
-  margin: 0;
-  letter-spacing: 0.5px;
+  margin: 0 0 1rem 0;
+  letter-spacing: 1px;
 }
 
-.section-count {
+.title-underline {
+  width: 80px;
+  height: 3px;
+  background: #C9A46C;
+  border-radius: 2px;
+  margin: 0 auto 1rem;
+}
+
+.section-subtitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 400;
   color: #2A2A2A;
   margin: 0;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .products-grid {
@@ -171,17 +183,19 @@ const previewProducts = computed(() => products.value.slice(0, 4))
 @media (max-width: 767px) {
   .category-preview {
     margin-bottom: 3rem;
+    padding: 2rem 1.5rem;
   }
 
   .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   .section-title {
-    font-size: 1.5rem;
+    font-size: 2rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.9375rem;
   }
 
   .products-grid {

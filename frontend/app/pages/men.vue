@@ -27,25 +27,57 @@
                 <div class="content-wrapper">
                     <!-- Sidebar Filters (Desktop) -->
                     <aside class="filters-sidebar">
-                        <p class="placeholder-text">Filtres à venir</p>
+                        <h3 class="sidebar-title">Catégories</h3>
+                        <nav class="categories-nav">
+                            <a href="#boubous" class="category-link">
+                                <i class="bi bi-chevron-right"></i>
+                                Boubous
+                            </a>
+                            <a href="#gandouras" class="category-link">
+                                <i class="bi bi-chevron-right"></i>
+                                Gandouras
+                            </a>
+                            <a href="#costumes" class="category-link">
+                                <i class="bi bi-chevron-right"></i>
+                                Costumes
+                            </a>
+                            <a href="#chemises" class="category-link">
+                                <i class="bi bi-chevron-right"></i>
+                                Chemises
+                            </a>
+                            <a href="#pantalons" class="category-link">
+                                <i class="bi bi-chevron-right"></i>
+                                Pantalons
+                            </a>
+                        </nav>
                     </aside>
 
                     <!-- Products Grid -->
                     <main class="products-main">
                         <!-- Boubou Preview -->
-                        <BoubouPreview @view-all="openBoubouOverlay" />
+                        <div id="boubous">
+                            <BoubouPreview @view-all="openBoubouOverlay" />
+                        </div>
 
                         <!-- Gandoura Preview -->
-                        <GandouraPreview @view-all="openGandouraOverlay" />
+                        <div id="gandouras">
+                            <GandouraPreview @view-all="openGandouraOverlay" />
+                        </div>
 
                         <!-- Costumes Preview -->
-                        <CostumesPreview @view-all="openCostumesOverlay" />
+                        <div id="costumes">
+                            <CostumesPreview @view-all="openCostumesOverlay" />
+                        </div>
 
                         <!-- Chemise Preview -->
-                        <ChemisePreview @view-all="openChemiseOverlay" />
+                        <div id="chemises">
+                            <ChemisePreview @view-all="openChemiseOverlay" />
+                        </div>
 
                         <!-- Pantalon Preview -->
-                        <PantalonPreview @view-all="openPantalonOverlay" />
+                        <div id="pantalons">
+                            <PantalonPreview @view-all="openPantalonOverlay" />
+                        </div>
                     </main>
                 </div>
             </div>
@@ -347,29 +379,69 @@ useHead({
 
 /* Filters Sidebar */
 .filters-sidebar {
-    background: #FFFFFF;
+    background: #F5F2EC;
     padding: 2rem;
     border-radius: 4px;
+    border: 1px solid rgba(201, 164, 108, 0.3);
     height: fit-content;
     position: sticky;
     top: 120px;
 }
 
-/* Products Main */
-.products-main {
-    background: #FFFFFF;
-    padding: 2rem;
-    border-radius: 4px;
-    min-height: 500px;
+.sidebar-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0E3A34;
+    margin: 0 0 1.5rem 0;
+    letter-spacing: 0.5px;
 }
 
-.placeholder-text {
+.categories-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.category-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: #0E3A34;
+    border: 1px solid rgba(201, 164, 108, 0.2);
+    border-radius: 4px;
+    color: #F5F2EC;
+    text-decoration: none;
     font-family: 'Montserrat', sans-serif;
-    font-size: 1rem;
-    color: #2A2A2A;
-    text-align: center;
-    padding: 3rem;
-    opacity: 0.6;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.category-link i {
+    font-size: 0.75rem;
+    color: #C9A46C;
+    transition: transform 0.3s ease;
+}
+
+.category-link:hover {
+    background: #0E3A34;
+    border-color: #C9A46C;
+    color: #C9A46C;
+    transform: translateX(4px);
+}
+
+.category-link:hover i {
+    transform: translateX(4px);
+    color: #C9A46C;
+}
+
+/* Products Main */
+.products-main {
+    background: transparent;
+    padding: 0;
+    min-height: 500px;
 }
 
 /* Responsive - Tablet */
@@ -413,7 +485,7 @@ useHead({
     }
 
     .products-main {
-        padding: 1.5rem;
+        padding: 0;
     }
 }
 </style>
