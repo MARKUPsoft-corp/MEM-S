@@ -97,8 +97,11 @@ const isScrolled = ref(false)
 const activeDropdown = ref<string | null>(null)
 const totalItems = computed(() => cartStore.totalItems)
 
-// Vérifier si on est sur la page d'accueil
-const isHomePage = computed(() => route.path === '/')
+// Vérifier si on est sur une page avec hero (transparent navbar)
+const hasHeroPage = computed(() => {
+    const heroPages = ['/', '/men', '/women', '/babouches', '/lins']
+    return heroPages.includes(route.path)
+})
 
 function toggleSidebar() {
     sidebarOpen.value = !sidebarOpen.value
@@ -125,9 +128,9 @@ function closeSearch() {
 // Handle scroll for transparent navbar
 function handleScroll() {
     if (import.meta.client) {
-        // Sur la page d'accueil, la navbar devient opaque au scroll
+        // Sur les pages avec hero, la navbar devient opaque au scroll
         // Sur les autres pages, elle est toujours opaque
-        if (isHomePage.value) {
+        if (hasHeroPage.value) {
             isScrolled.value = window.scrollY > 50
         } else {
             isScrolled.value = true

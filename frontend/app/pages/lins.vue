@@ -56,14 +56,14 @@ useHead({
 .page-hero {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 100vh;
   background-image: url('https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=1920&h=600&fit=crop&q=80');
   background-size: cover;
   background-position: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 90px;
+  /* Pas de margin-top - s'étend derrière la navbar */
 }
 
 .hero-overlay {
@@ -187,10 +187,6 @@ useHead({
 
 /* Responsive - Tablet */
 @media (max-width: 1024px) {
-  .page-hero {
-    height: 350px;
-  }
-
   .hero-title {
     font-size: 3rem;
   }
@@ -203,11 +199,6 @@ useHead({
 
 /* Responsive - Mobile */
 @media (max-width: 767px) {
-  .page-hero {
-    height: 300px;
-    margin-top: 70px;
-  }
-
   .hero-title {
     font-size: 2.5rem;
   }

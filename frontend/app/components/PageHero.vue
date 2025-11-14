@@ -22,13 +22,13 @@ defineProps<Props>()
 .page-hero {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 100vh;
   background-size: cover;
   background-position: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 90px;
+  /* Pas de margin-top - s'étend derrière la navbar comme HeroSection */
 }
 
 .hero-overlay {
@@ -71,10 +71,6 @@ defineProps<Props>()
 
 /* Responsive - Tablet */
 @media (max-width: 1024px) {
-  .page-hero {
-    height: 350px;
-  }
-
   .hero-title {
     font-size: 3rem;
   }
@@ -82,11 +78,6 @@ defineProps<Props>()
 
 /* Responsive - Mobile */
 @media (max-width: 767px) {
-  .page-hero {
-    height: 300px;
-    margin-top: 70px;
-  }
-
   .hero-title {
     font-size: 2.5rem;
   }
