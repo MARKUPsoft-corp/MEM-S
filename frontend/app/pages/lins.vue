@@ -9,37 +9,98 @@
       </div>
     </section>
 
-    <!-- Breadcrumb -->
-    <div class="breadcrumb-container">
-      <div class="container">
-        <nav class="breadcrumb">
-          <NuxtLink to="/" class="breadcrumb-link">Accueil</NuxtLink>
-          <span class="breadcrumb-separator">/</span>
-          <span class="breadcrumb-current">Lins</span>
-        </nav>
-      </div>
-    </div>
-
     <!-- Main Content -->
     <div class="page-content">
       <div class="container">
         <div class="content-wrapper">
           <!-- Sidebar Filters (Desktop) -->
           <aside class="filters-sidebar">
-            <p class="placeholder-text">Filtres à venir</p>
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+              <NuxtLink to="/" class="breadcrumb-link">Accueil</NuxtLink>
+              <span class="breadcrumb-separator">/</span>
+              <span class="breadcrumb-current">Lins</span>
+            </nav>
+
+            <div class="sidebar-header">
+              <h3 class="sidebar-title">Catégories</h3>
+              <div class="title-underline"></div>
+            </div>
+            <nav class="categories-nav">
+              <a href="#chemises" class="category-link">
+                <i class="bi bi-chevron-right"></i>
+                Chemises
+              </a>
+              <a href="#pantalons" class="category-link">
+                <i class="bi bi-chevron-right"></i>
+                Pantalons
+              </a>
+            </nav>
           </aside>
 
           <!-- Products Grid -->
           <main class="products-main">
-            <p class="placeholder-text">Grille de produits à venir</p>
+            <div id="chemises">
+              <ChemisesPreview @view-all="openChemisesOverlay" />
+            </div>
+
+            <div id="pantalons">
+              <PantalonsPreview @view-all="openPantalonsOverlay" />
+            </div>
           </main>
         </div>
       </div>
     </div>
+
+    <!-- Category Overlay -->
+    <CategoryOverlay :is-open="overlayOpen" :title="overlayTitle" :products="overlayProducts"
+      @close="closeOverlay" />
   </div>
 </template>
 
 <script setup lang="ts">
+import ChemisesPreview from '../components/lins/ChemisesPreview.vue'
+import PantalonsPreview from '../components/lins/PantalonsPreview.vue'
+import CategoryOverlay from '../components/lins/CategoryOverlay.vue'
+
+const overlayOpen = ref(false)
+const overlayTitle = ref('')
+const overlayProducts = ref<any[]>([])
+
+const chemisesProducts = [
+  { id: 1, name: 'Chemise Lin Blanc', slug: 'chemise-lin-blanc', price: 22000, images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
+  { id: 2, name: 'Chemise Lin Beige', slug: 'chemise-lin-beige', price: 20000, images: ['https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'] },
+  { id: 3, name: 'Chemise Lin Bleu Ciel', slug: 'chemise-lin-bleu-ciel', price: 21000, images: ['https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'], badge: { type: 'new', text: 'NOUVEAU' } },
+  { id: 4, name: 'Chemise Lin Gris', slug: 'chemise-lin-gris', price: 19000, images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'] },
+  { id: 5, name: 'Chemise Lin Vert', slug: 'chemise-lin-vert', price: 23000, images: ['https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
+  { id: 6, name: 'Chemise Lin Rose', slug: 'chemise-lin-rose', price: 20500, images: ['https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'] }
+]
+
+const pantalonsProducts = [
+  { id: 1, name: 'Pantalon Lin Beige', slug: 'pantalon-lin-beige', price: 25000, images: ['https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
+  { id: 2, name: 'Pantalon Lin Blanc', slug: 'pantalon-lin-blanc', price: 24000, images: ['https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'] },
+  { id: 3, name: 'Pantalon Lin Bleu Marine', slug: 'pantalon-lin-bleu-marine', price: 26000, images: ['https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'], badge: { type: 'new', text: 'NOUVEAU' } },
+  { id: 4, name: 'Pantalon Lin Gris', slug: 'pantalon-lin-gris', price: 23000, images: ['https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'] },
+  { id: 5, name: 'Pantalon Lin Kaki', slug: 'pantalon-lin-kaki', price: 27000, images: ['https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
+  { id: 6, name: 'Pantalon Lin Noir', slug: 'pantalon-lin-noir', price: 24500, images: ['https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'] }
+]
+
+function openChemisesOverlay() {
+  overlayTitle.value = 'Chemises en Lin'
+  overlayProducts.value = chemisesProducts
+  overlayOpen.value = true
+}
+
+function openPantalonsOverlay() {
+  overlayTitle.value = 'Pantalons en Lin'
+  overlayProducts.value = pantalonsProducts
+  overlayOpen.value = true
+}
+
+function closeOverlay() {
+  overlayOpen.value = false
+}
+
 useHead({
   title: 'Collection Lins - MEM\'S',
   meta: [
@@ -52,7 +113,6 @@ useHead({
 </script>
 
 <style scoped>
-/* Page Hero */
 .page-hero {
   position: relative;
   width: 100%;
@@ -63,7 +123,6 @@ useHead({
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Pas de margin-top - s'étend derrière la navbar */
 }
 
 .hero-overlay {
@@ -104,19 +163,15 @@ useHead({
   letter-spacing: 1px;
 }
 
-/* Breadcrumb */
-.breadcrumb-container {
-  background: #F5F2EC;
-  padding: 1.5rem 0;
-  border-bottom: 1px solid rgba(201, 164, 108, 0.2);
-}
-
 .breadcrumb {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.875rem;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(201, 164, 108, 0.3);
 }
 
 .breadcrumb-link {
@@ -139,7 +194,6 @@ useHead({
   font-weight: 500;
 }
 
-/* Page Content */
 .page-content {
   background: #F5F2EC;
   padding: 3rem 0;
@@ -158,34 +212,84 @@ useHead({
   gap: 3rem;
 }
 
-/* Filters Sidebar */
 .filters-sidebar {
-  background: #FFFFFF;
+  background: #F5F2EC;
   padding: 2rem;
   border-radius: 4px;
+  border: 1px solid rgba(201, 164, 108, 0.3);
   height: fit-content;
   position: sticky;
   top: 120px;
 }
 
-/* Products Main */
-.products-main {
-  background: #FFFFFF;
-  padding: 2rem;
+.sidebar-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0E3A34;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: 0.5px;
+}
+
+.title-underline {
+  width: 60px;
+  height: 2px;
+  background: #C9A46C;
+  border-radius: 2px;
+  margin: 0 auto;
+}
+
+.categories-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: #0E3A34;
+  border: 1px solid rgba(201, 164, 108, 0.2);
   border-radius: 4px;
+  color: #F5F2EC;
+  text-decoration: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.category-link i {
+  font-size: 0.75rem;
+  color: #C9A46C;
+  transition: transform 0.3s ease;
+}
+
+.category-link:hover {
+  background: #0E3A34;
+  border-color: #C9A46C;
+  color: #C9A46C;
+  transform: translateX(4px);
+}
+
+.category-link:hover i {
+  transform: translateX(4px);
+  color: #C9A46C;
+}
+
+.products-main {
+  background: transparent;
+  padding: 0;
   min-height: 500px;
 }
 
-.placeholder-text {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
-  color: #2A2A2A;
-  text-align: center;
-  padding: 3rem;
-  opacity: 0.6;
-}
-
-/* Responsive - Tablet */
 @media (max-width: 1024px) {
   .hero-title {
     font-size: 3rem;
@@ -197,7 +301,6 @@ useHead({
   }
 }
 
-/* Responsive - Mobile */
 @media (max-width: 767px) {
   .hero-title {
     font-size: 2.5rem;
@@ -205,10 +308,6 @@ useHead({
 
   .hero-subtitle {
     font-size: 1rem;
-  }
-
-  .breadcrumb-container {
-    padding: 1rem 0;
   }
 
   .page-content {
@@ -226,7 +325,7 @@ useHead({
   }
 
   .products-main {
-    padding: 1.5rem;
+    padding: 0;
   }
 }
 </style>
