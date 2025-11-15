@@ -11,6 +11,9 @@
 
     <!-- Main Content -->
     <section class="about-content-section">
+      <!-- African Pattern Background -->
+      <AfricanPatternBackground opacity="light" color="gold" />
+      
       <div class="container">
         <div class="content-grid">
           <!-- Left Column -->
@@ -145,6 +148,8 @@
 </template>
 
 <script setup lang="ts">
+import AfricanPatternBackground from '../components/AfricanPatternBackground.vue'
+
 definePageMeta({
   layout: 'default'
 })
@@ -204,10 +209,14 @@ definePageMeta({
 
 /* Content Section */
 .about-content-section {
+  position: relative;
+  overflow: hidden;
   padding: 5rem 0;
 }
 
 .container {
+  position: relative;
+  z-index: 2;
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 1rem;

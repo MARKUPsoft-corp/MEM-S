@@ -28,6 +28,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import ProductCard from './ProductCard.vue'
+import { useProducts } from '../../composables/useProducts'
+
+// Récupérer tous les produits depuis le composable
+const { getAllProducts } = useProducts()
+const allProducts = getAllProducts()
 
 // Categories de filtrage
 const categories = [
@@ -40,92 +45,54 @@ const categories = [
 
 const activeCategory = ref('all')
 
-// Tous les produits en vedette (uniquement ceux avec badge VEDETTE)
-const products = ref([
-    // Hommes
-    {
-        id: 1,
-        name: 'Boubou Premium Blanc',
-        slug: 'boubou-premium-blanc',
-        price: 45000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'men',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 2,
-        name: 'Costume Africain Moderne',
-        slug: 'costume-africain-moderne',
-        price: 60000,
-        images: [
-            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'men',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    // Femmes
-    {
-        id: 3,
-        name: 'Robe Africaine Élégante',
-        slug: 'robe-africaine-elegante',
-        price: 38000,
-        images: [
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'women',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 4,
-        name: 'Sac à Main Élégant',
-        slug: 'sac-a-main-elegant',
-        price: 28000,
-        images: [
-            'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'women',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    // Babouches
-    {
-        id: 5,
-        name: 'Babouches Cuir Premium',
-        slug: 'babouches-cuir-premium',
-        price: 20000,
-        images: [
-            'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'babouches',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    // Lins
-    {
-        id: 6,
-        name: 'Ensemble Lin Naturel',
-        slug: 'ensemble-lin-naturel',
-        price: 35000,
-        images: [
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'lins',
-        badge: { type: 'featured', text: 'VEDETTE' }
+// Mapper les catégories du composable aux catégories de filtrage
+const getCategoryGroup = (categorySlug) => {
+    if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(categorySlug)) {
+        return 'men'
     }
-])
+    if (['robes', 'ensembles', 'sacs'].includes(categorySlug)) {
+        return 'women'
+    }
+    if (['babouches-cuir', 'babouches-brodees'].includes(categorySlug)) {
+        return 'babouches'
+    }
+    if (['chemises-lin', 'pantalons-lin'].includes(categorySlug)) {
+        return 'lins'
+    }
+    return 'all'
+}
+
+// Sélectionner 6 produits en vedette (2 par catégorie principale)
+const featuredProducts = computed(() => {
+    const featured = []
+    
+    // 2 produits hommes (boubous)
+    featured.push(...allProducts.filter(p => p.category.slug === 'boubous').slice(0, 2))
+    
+    // 2 produits femmes (robes)
+    featured.push(...allProducts.filter(p => p.category.slug === 'robes').slice(0, 2))
+    
+    // 1 produit babouches
+    featured.push(...allProducts.filter(p => p.category.slug === 'babouches-cuir').slice(0, 1))
+    
+    // 1 produit lins
+    featured.push(...allProducts.filter(p => p.category.slug === 'chemises-lin').slice(0, 1))
+    
+    // Ajouter le badge VEDETTE et mapper les images
+    return featured.map(product => ({
+        ...product,
+        images: product.images.map(img => img.image),
+        badge: { type: 'featured', text: 'VEDETTE' },
+        categoryGroup: getCategoryGroup(product.category.slug)
+    }))
+})
 
 // Filtrage des produits par catégorie
 const filteredProducts = computed(() => {
     if (activeCategory.value === 'all') {
-        return products.value
+        return featuredProducts.value
     }
-    return products.value.filter(product => product.category === activeCategory.value)
+    return featuredProducts.value.filter(product => product.categoryGroup === activeCategory.value)
 })
 
 const selectCategory = (categoryId) => {

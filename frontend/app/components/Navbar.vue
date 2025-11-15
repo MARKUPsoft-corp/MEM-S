@@ -275,6 +275,20 @@ onUnmounted(() => {
     border-radius: 2px;
 }
 
+.nav-link--highlight {
+    color: #C9A46C !important;
+    font-weight: 600;
+    position: relative;
+}
+
+.navbar--scrolled .nav-link--highlight {
+    color: #C9A46C !important;
+}
+
+.nav-link--highlight:hover {
+    color: #D4B57C !important;
+}
+
 .dropdown-menu {
     position: absolute;
     top: calc(100% + 0.5rem);

@@ -1,6 +1,10 @@
 <template>
-  <div class="container py-5">
-    <h1 class="mb-4">Contactez-nous</h1>
+  <div class="contact-page">
+    <!-- African Pattern Background -->
+    <AfricanPatternBackground opacity="light" color="gold" />
+    
+    <div class="container py-5">
+      <h1 class="mb-4">Contactez-nous</h1>
     <div class="row">
       <div class="col-lg-6">
         <div class="card">
@@ -34,13 +38,30 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import AfricanPatternBackground from '../components/AfricanPatternBackground.vue'
+
 const config = useRuntimeConfig()
 
 definePageMeta({
   layout: 'default'
 })
 </script>
+
+<style scoped>
+.contact-page {
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+  background: #F5F2EC;
+}
+
+.container {
+  position: relative;
+  z-index: 2;
+}
+</style>

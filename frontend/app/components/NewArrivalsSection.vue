@@ -22,11 +22,11 @@
                 <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" />
             </div>
 
-            <!-- Load More Button (optionnel) -->
-            <div v-if="hasMore" class="load-more-container">
-                <button class="btn-load-more" @click="loadMore">
-                    Voir Plus
-                </button>
+            <!-- View All Button -->
+            <div class="view-all-container">
+                <NuxtLink to="/nouveautes" class="btn-view-all">
+                    Voir toutes les nouveautés
+                </NuxtLink>
             </div>
         </div>
     </section>
@@ -46,7 +46,6 @@ const categories = [
 ]
 
 const activeCategory = ref('all')
-const hasMore = ref(false) // À activer si pagination
 
 // Données de produits (à remplacer par des données réelles depuis une API)
 const products = ref([
@@ -137,11 +136,6 @@ const filteredProducts = computed(() => {
 
 const selectCategory = (categoryId) => {
     activeCategory.value = categoryId
-}
-
-const loadMore = () => {
-    // Logique pour charger plus de produits
-    console.log('Load more products...')
 }
 </script>
 
@@ -261,18 +255,19 @@ const loadMore = () => {
     margin-bottom: 0;
 }
 
-/* Load More Button */
-.load-more-container {
+/* View All Button */
+.view-all-container {
     display: flex;
     justify-content: center;
     margin-top: 4rem;
 }
 
-.btn-load-more {
+.btn-view-all {
+    display: inline-block;
     padding: 1rem 3rem;
-    background: var(--vert-ebene);
-    color: var(--ivoire);
-    border: 2px solid var(--vert-ebene);
+    background: #0E3A34;
+    color: #F5F2EC;
+    border: 2px solid #0E3A34;
     font-size: 0.875rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -281,11 +276,12 @@ const loadMore = () => {
     transition: all 0.3s ease;
     font-family: 'Montserrat', sans-serif;
     border-radius: 2px;
+    text-decoration: none;
 }
 
-.btn-load-more:hover {
+.btn-view-all:hover {
     background: transparent;
-    color: var(--vert-ebene);
+    color: #0E3A34;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(14, 58, 52, 0.2);
 }
@@ -362,11 +358,11 @@ const loadMore = () => {
         gap: 1rem;
     }
 
-    .load-more-container {
+    .view-all-container {
         margin-top: 3rem;
     }
 
-    .btn-load-more {
+    .btn-view-all {
         padding: 0.875rem 2rem;
         font-size: 0.8125rem;
         letter-spacing: 1px;

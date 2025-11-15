@@ -58,6 +58,17 @@
     <!-- Category Overlay -->
     <CategoryOverlay :is-open="overlayOpen" :title="overlayTitle" :products="overlayProducts"
       @close="closeOverlay" />
+    
+    <!-- Mobile Filter Button -->
+    <FilterButton @open="filterPopupOpen = true" />
+    
+    <!-- Mobile Filter Popup -->
+    <FilterPopup 
+      :is-open="filterPopupOpen" 
+      :categories="filterCategories"
+      v-model="activeMobileCategory"
+      @close="filterPopupOpen = false" 
+    />
   </div>
 </template>
 
@@ -65,10 +76,20 @@
 import ChemisesPreview from '../components/lins/ChemisesPreview.vue'
 import PantalonsPreview from '../components/lins/PantalonsPreview.vue'
 import CategoryOverlay from '../components/lins/CategoryOverlay.vue'
+import FilterButton from '../components/FilterButton.vue'
+import FilterPopup from '../components/FilterPopup.vue'
 
 const overlayOpen = ref(false)
 const overlayTitle = ref('')
 const overlayProducts = ref<any[]>([])
+
+const filterPopupOpen = ref(false)
+const activeMobileCategory = ref('')
+
+const filterCategories = [
+  { id: 'chemises', label: 'Chemises' },
+  { id: 'pantalons', label: 'Pantalons' }
+]
 
 const route = useRoute()
 
@@ -114,6 +135,13 @@ function scrollToCategory(categoryId: string) {
     window.scrollTo({ top: y, behavior: 'smooth' })
   }
 }
+
+watch(activeMobileCategory, (newCategory) => {
+  if (newCategory) {
+    scrollToCategory(newCategory)
+    activeMobileCategory.value = ''
+  }
+})
 
 function openOverlayFromUrl() {
   const category = route.query.category as string
@@ -369,7 +397,7 @@ useHead({
   }
 
   .filters-sidebar {
-    padding: 1.5rem;
+    display: none;
   }
 
   .products-main {

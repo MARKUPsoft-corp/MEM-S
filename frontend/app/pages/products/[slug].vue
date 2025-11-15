@@ -1,12 +1,27 @@
 <template>
     <div class="product-detail-page">
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-container">
+            <p class="loading-text">Chargement du produit...</p>
+        </div>
+
+        <!-- Product Not Found -->
+        <div v-else-if="!product" class="not-found-container">
+            <div class="not-found-content">
+                <i class="bi bi-exclamation-circle"></i>
+                <h2>Produit non trouvé</h2>
+                <p>Le produit que vous recherchez n'existe pas ou n'est plus disponible.</p>
+                <NuxtLink to="/" class="btn-back-home">Retour à l'accueil</NuxtLink>
+            </div>
+        </div>
+
         <!-- Product Content -->
-        <div class="product-content">
+        <div v-else class="product-content">
             <div class="container">
                 <div class="product-grid">
                     <!-- African Pattern Background -->
                     <AfricanPatternBackground opacity="light" color="gold" />
-                    
+
                     <!-- Left Side - Image Gallery -->
                     <div class="product-gallery">
                         <!-- Breadcrumb with Navigation Arrows -->
@@ -145,61 +160,23 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '../../../stores/cart'
+import { useProducts } from '../../../composables/useProducts'
 import type { Product } from '../../../types/product'
 import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
 
 const route = useRoute()
 const cartStore = useCartStore()
+const { getProductBySlug } = useProducts()
 
-// Product data (à remplacer par un fetch API)
-const product = ref<Product | null>({
-    id: 1,
-    name: 'The Black Altered Suit',
-    slug: 'black-altered-suit',
-    description: 'Costume élégant noir avec broderies dorées. Parfait pour les occasions spéciales. Coupe moderne et ajustée pour un look sophistiqué.',
-    category: {
-        id: 1,
-        name: 'Costumes',
-        slug: 'costumes',
-        order: 1
-    },
-    price: 60000,
-    discount_price: 55000,
-    is_new: true,
-    stock: 10,
-    images: [
-        {
-            id: 1,
-            image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&h=1000&fit=crop&q=80',
-            is_primary: true,
-            order: 1
-        },
-        {
-            id: 2,
-            image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=800&h=1000&fit=crop&q=80',
-            is_primary: false,
-            order: 2
-        },
-        {
-            id: 3,
-            image: 'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=800&h=1000&fit=crop&q=80',
-            is_primary: false,
-            order: 3
-        },
-        {
-            id: 4,
-            image: 'https://images.unsplash.com/photo-1622445275576-721325763afe?w=800&h=1000&fit=crop&q=80',
-            is_primary: false,
-            order: 4
-        }
-    ],
-    variants: [
-        { id: 1, size: 'S', color: 'Black', sku: 'BAS-S-BLK', stock: 5 },
-        { id: 2, size: 'M', color: 'Black', sku: 'BAS-M-BLK', stock: 3 },
-        { id: 3, size: 'L', color: 'Black', sku: 'BAS-L-BLK', stock: 2 },
-        { id: 4, size: 'XL', color: 'Black', sku: 'BAS-XL-BLK', stock: 0 }
-    ],
-    created_at: '2025-01-01'
+// Charger le produit dynamiquement basé sur le slug
+const product = ref<Product | null>(null)
+const loading = ref(true)
+
+// Charger le produit au montage
+onMounted(() => {
+    const slug = route.params.slug as string
+    product.value = getProductBySlug(slug)
+    loading.value = false
 })
 
 // State
@@ -665,7 +642,78 @@ const orderViaWhatsApp = () => {
     text-align: center;
 }
 
+/* Loading State */
+.loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 3rem;
+}
 
+.loading-text {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.125rem;
+    color: #2A2A2A;
+}
+
+/* Not Found State */
+.not-found-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 3rem;
+}
+
+.not-found-content {
+    text-align: center;
+    max-width: 500px;
+}
+
+.not-found-content i {
+    font-size: 4rem;
+    color: #C9A46C;
+    margin-bottom: 1.5rem;
+}
+
+.not-found-content h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #0E3A34;
+    margin: 0 0 1rem 0;
+}
+
+.not-found-content p {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.125rem;
+    color: #2A2A2A;
+    margin: 0 0 2rem 0;
+    line-height: 1.6;
+}
+
+.btn-back-home {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    background: #0E3A34;
+    color: #F5F2EC;
+    border: 2px solid #0E3A34;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Montserrat', sans-serif;
+    border-radius: 2px;
+    text-decoration: none;
+}
+
+.btn-back-home:hover {
+    background: transparent;
+    color: #0E3A34;
+}
 
 /* Responsive - Tablet */
 @media (max-width: 1024px) {

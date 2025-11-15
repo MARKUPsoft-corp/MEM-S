@@ -88,6 +88,17 @@
         <!-- Category Overlay -->
         <CategoryOverlay :is-open="overlayOpen" :title="overlayTitle" :products="overlayProducts"
             @close="closeOverlay" />
+        
+        <!-- Mobile Filter Button -->
+        <FilterButton @open="filterPopupOpen = true" />
+        
+        <!-- Mobile Filter Popup -->
+        <FilterPopup 
+            :is-open="filterPopupOpen" 
+            :categories="filterCategories"
+            v-model="activeMobileCategory"
+            @close="filterPopupOpen = false" 
+        />
     </div>
 </template>
 
@@ -98,11 +109,28 @@ import CostumesPreview from '../components/men/CostumesPreview.vue'
 import ChemisePreview from '../components/men/ChemisePreview.vue'
 import PantalonPreview from '../components/men/PantalonPreview.vue'
 import CategoryOverlay from '../components/men/CategoryOverlay.vue'
+import FilterButton from '../components/FilterButton.vue'
+import FilterPopup from '../components/FilterPopup.vue'
 
 // Overlay state
 const overlayOpen = ref(false)
 const overlayTitle = ref('')
 const overlayProducts = ref<any[]>([])
+
+// Filter popup state
+const filterPopupOpen = ref(false)
+
+// Categories for filter popup
+const filterCategories = [
+    { id: 'boubous', label: 'Boubous' },
+    { id: 'gandouras', label: 'Gandouras' },
+    { id: 'costumes', label: 'Costumes' },
+    { id: 'chemises', label: 'Chemises' },
+    { id: 'pantalons', label: 'Pantalons' }
+]
+
+// Active category for mobile filter
+const activeMobileCategory = ref('')
 
 // Get route for URL parameters
 const route = useRoute()
@@ -272,6 +300,14 @@ function scrollToCategory(categoryId: string) {
         window.scrollTo({ top: y, behavior: 'smooth' })
     }
 }
+
+// Handle mobile filter selection
+watch(activeMobileCategory, (newCategory) => {
+    if (newCategory) {
+        scrollToCategory(newCategory)
+        activeMobileCategory.value = '' // Reset after scroll
+    }
+})
 
 // Open overlay based on category parameter
 function openOverlayFromUrl() {
@@ -548,7 +584,7 @@ useHead({
     }
 
     .filters-sidebar {
-        padding: 1.5rem;
+        display: none;
     }
 
     .products-main {
