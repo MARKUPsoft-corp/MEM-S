@@ -6,9 +6,12 @@
     aria-label="Menu de navigation mobile"
     :aria-hidden="!isOpen"
   >
-    <SidebarSearch @search="handleSearch" />
-    <SidebarMenu @navigate="handleNavigate" />
-    <SidebarFooter @navigate="handleNavigate" />
+    <AfricanPatternBackground opacity="light" color="gold" />
+    <div class="sidebar-content">
+      <SidebarSearch @search="handleSearch" />
+      <SidebarMenu @navigate="handleNavigate" />
+      <SidebarFooter @navigate="handleNavigate" />
+    </div>
   </aside>
 </template>
 
@@ -50,6 +53,7 @@ function handleNavigate() {
   transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1100;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -57,6 +61,14 @@ function handleNavigate() {
 .sidebar--open {
   transform: translateX(0);
   box-shadow: 2px 0 12px rgba(11, 11, 11, 0.2);
+}
+
+.sidebar-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 </style>
 

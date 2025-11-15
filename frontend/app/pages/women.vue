@@ -15,6 +15,9 @@
         <div class="content-wrapper">
           <!-- Sidebar Filters (Desktop) -->
           <aside class="filters-sidebar">
+            <!-- African Pattern Background -->
+            <AfricanPatternBackground opacity="light" color="terracotta" />
+            
             <!-- Breadcrumb -->
             <nav class="breadcrumb">
               <NuxtLink to="/" class="breadcrumb-link">Accueil</NuxtLink>
@@ -312,12 +315,15 @@ useHead({
 }
 
 .categories-nav {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 .category-link {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 0.75rem;

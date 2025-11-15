@@ -1,5 +1,6 @@
 <template>
     <section class="lins-collection-section">
+        <AfricanPatternBackground opacity="light" color="gold" />
         <div class="container">
             <!-- Section Title -->
             <div class="section-header">
@@ -101,6 +102,7 @@ const products = ref([
     padding: 3rem 0;
     background: #F5F2EC;
     position: relative;
+    overflow: hidden;
 }
 
 .lins-collection-section::before {
@@ -124,6 +126,8 @@ const products = ref([
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 1rem;
+    position: relative;
+    z-index: 2;
 }
 
 /* Section Header */

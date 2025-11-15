@@ -1,5 +1,6 @@
 <template>
     <section class="womens-collection-section">
+        <AfricanPatternBackground opacity="light" color="gold" />
         <div class="container">
             <!-- Section Title -->
             <div class="section-header">
@@ -210,6 +211,7 @@ const selectSubcategory = (subcategoryId) => {
     padding: 3rem 0;
     background: #F5F2EC;
     position: relative;
+    overflow: hidden;
 }
 
 .womens-collection-section::before {
@@ -233,6 +235,8 @@ const selectSubcategory = (subcategoryId) => {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 1rem;
+    position: relative;
+    z-index: 2;
 }
 
 /* Section Header */

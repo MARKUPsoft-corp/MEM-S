@@ -187,12 +187,14 @@ onUnmounted(() => {
     left: 0;
     right: 0;
     z-index: 1000;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: none;
 }
 
 .navbar--scrolled {
     background: #F5F2EC;
     border-bottom: 1px solid rgba(201, 164, 108, 0.2);
+    box-shadow: 0 4px 20px rgba(11, 11, 11, 0.08), 0 2px 8px rgba(11, 11, 11, 0.04);
 }
 
 .navbar-container {

@@ -1,5 +1,6 @@
 <template>
     <section class="about-section">
+        <AfricanPatternBackground opacity="light" color="gold" />
         <div class="container">
             <div class="about-content">
                 <!-- Left Side - Image -->
@@ -82,6 +83,7 @@
     padding: 5rem 0;
     background: #F5F2EC;
     position: relative;
+    overflow: hidden;
 }
 
 .about-section::before {
@@ -105,6 +107,8 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 1rem;
+    position: relative;
+    z-index: 2;
 }
 
 /* Content Layout */

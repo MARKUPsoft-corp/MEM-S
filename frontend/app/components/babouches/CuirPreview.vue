@@ -1,5 +1,8 @@
 <template>
   <div class="category-preview">
+    <!-- African Pattern Background -->
+    <AfricanPatternBackground opacity="light" color="gold" />
+    
     <div class="section-header">
       <h2 class="section-title">Babouches en Cuir</h2>
       <div class="title-underline"></div>
@@ -25,6 +28,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
+import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
 defineEmits<{
   viewAll: []
@@ -95,6 +99,8 @@ const previewProducts = computed(() => products.value.slice(0, 4))
 
 <style scoped>
 .category-preview {
+  position: relative;
+  overflow: hidden;
   width: 100%;
   margin-bottom: 4rem;
   padding: 3rem;
@@ -105,6 +111,8 @@ const previewProducts = computed(() => products.value.slice(0, 4))
 }
 
 .section-header {
+  position: relative;
+  z-index: 2;
   text-align: center;
   margin-bottom: 3rem;
 }
@@ -136,6 +144,8 @@ const previewProducts = computed(() => products.value.slice(0, 4))
 }
 
 .products-grid {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
@@ -143,6 +153,8 @@ const previewProducts = computed(() => products.value.slice(0, 4))
 }
 
 .view-more-container {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: center;
 }

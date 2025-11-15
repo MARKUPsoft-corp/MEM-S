@@ -1,8 +1,10 @@
 <template>
     <section class="categories-section">
+        <AfricanPatternBackground opacity="light" color="gold" />
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Nos Collections</h2>
+                <div class="title-underline"></div>
                 <p class="section-subtitle">Découvrez nos collections d'inspiration africaine</p>
             </div>
             <div class="categories-grid">
@@ -59,6 +61,7 @@ const categories: Category[] = [
     padding: 3rem 0;
     background: #F5F2EC;
     position: relative;
+    overflow: hidden;
 }
 
 .categories-section::before {
@@ -70,18 +73,21 @@ const categories: Category[] = [
     width: calc(100% - 2rem);
     max-width: 1400px;
     height: 1px;
-    background: linear-gradient(to right, 
-        transparent 0%, 
-        #C9A46C 20%, 
-        #C9A46C 80%, 
-        transparent 100%);
+    background: linear-gradient(to right,
+            transparent 0%,
+            #C9A46C 20%,
+            #C9A46C 80%,
+            transparent 100%);
     opacity: 0.3;
+    z-index: 1;
 }
 
 .container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 1rem;
+    position: relative;
+    z-index: 2;
 }
 
 .section-header {
@@ -96,6 +102,14 @@ const categories: Category[] = [
     color: #0E3A34;
     margin: 0 0 1rem 0;
     letter-spacing: 1px;
+}
+
+.title-underline {
+    width: 80px;
+    height: 3px;
+    background: #C9A46C;
+    border-radius: 2px;
+    margin: 0 auto 1rem;
 }
 
 .section-subtitle {
