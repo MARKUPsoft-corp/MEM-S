@@ -146,4 +146,53 @@
   color: rgba(245, 242, 236, 0.7);
   font-size: 0.85rem;
 }
+
+/* Mobile - 2 colonnes pour Liens Rapides et Suivez-nous */
+@media (max-width: 767px) {
+  .footer .row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Description MEM'S en premier, pleine largeur */
+  .footer .row > div:nth-child(1) {
+    grid-column: 1 / -1;
+    margin-bottom: 2rem;
+  }
+
+  /* Container pour les 2 colonnes */
+  .footer .row > div:nth-child(2) {
+    grid-column: 1 / 2;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer .row > div:nth-child(3) {
+    grid-column: 1 / 2;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Forcer les colonnes 2 et 3 sur la même ligne */
+  .footer .row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .footer .row > div:nth-child(1) {
+    grid-column: 1 / 3;
+    grid-row: 1;
+  }
+
+  .footer .row > div:nth-child(2) {
+    grid-column: 1 / 2;
+    grid-row: 2;
+    padding-right: 0.5rem;
+  }
+
+  .footer .row > div:nth-child(3) {
+    grid-column: 2 / 3;
+    grid-row: 2;
+    padding-left: 0.5rem;
+  }
+}
 </style>

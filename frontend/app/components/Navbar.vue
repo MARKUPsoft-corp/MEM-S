@@ -11,7 +11,7 @@
 
                 <!-- Desktop Links -->
                 <div class="nav-item" @mouseenter="activeDropdown = 'men'" @mouseleave="activeDropdown = null">
-                    <span class="nav-link nav-link-dropdown">
+                    <span class="nav-link nav-link-dropdown" :class="{ 'nav-link--active': route.path === '/men' }">
                         HOMMES
                         <i class="bi bi-chevron-down dropdown-icon"></i>
                     </span>
@@ -28,7 +28,7 @@
                 </div>
 
                 <div class="nav-item" @mouseenter="activeDropdown = 'women'" @mouseleave="activeDropdown = null">
-                    <span class="nav-link nav-link-dropdown">
+                    <span class="nav-link nav-link-dropdown" :class="{ 'nav-link--active': route.path === '/women' }">
                         FEMMES
                         <i class="bi bi-chevron-down dropdown-icon"></i>
                     </span>
@@ -42,10 +42,10 @@
                     </transition>
                 </div>
 
-                <NuxtLink to="/babouches" class="nav-link">
+                <NuxtLink to="/babouches" class="nav-link" :class="{ 'nav-link--active': route.path === '/babouches' }">
                     BABOUCHES
                 </NuxtLink>
-                <NuxtLink to="/lins" class="nav-link">
+                <NuxtLink to="/lins" class="nav-link" :class="{ 'nav-link--active': route.path === '/lins' }">
                     LINS
                 </NuxtLink>
             </div>
@@ -256,6 +256,23 @@ onUnmounted(() => {
 
 .nav-link:hover {
     color: #C9A46C;
+}
+
+.nav-link--active {
+    color: #C9A46C !important;
+    font-weight: 600;
+    position: relative;
+}
+
+.nav-link--active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #C9A46C;
+    border-radius: 2px;
 }
 
 .dropdown-menu {

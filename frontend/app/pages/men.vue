@@ -425,13 +425,23 @@ useHead({
 
 /* Filters Sidebar */
 .filters-sidebar {
+    position: relative;
+    overflow: hidden;
     background: #F5F2EC;
     padding: 2rem;
     border-radius: 4px;
     border: 1px solid rgba(201, 164, 108, 0.3);
     height: fit-content;
-    position: sticky;
-    top: 120px;
+    box-shadow: 0 4px 12px rgba(14, 58, 52, 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+/* Sticky uniquement sur desktop */
+@media (min-width: 768px) {
+    .filters-sidebar {
+        position: sticky;
+        top: 120px;
+    }
 }
 
 .sidebar-header {
@@ -538,7 +548,6 @@ useHead({
     }
 
     .filters-sidebar {
-        position: static;
         padding: 1.5rem;
     }
 

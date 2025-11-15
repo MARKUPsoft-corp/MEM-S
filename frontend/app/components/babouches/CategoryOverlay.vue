@@ -25,6 +25,7 @@
         </div>
 
         <div class="overlay-products">
+          <AfricanPatternBackground opacity="light" color="gold" />
           <div class="products-grid">
             <ProductCard
               v-for="product in sortedProducts"
@@ -41,6 +42,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import ProductCard from '../ProductCard.vue'
+import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
 interface Props {
   isOpen: boolean
@@ -215,6 +217,8 @@ onUnmounted(() => {
 }
 
 .overlay-products {
+  position: relative;
+  overflow: hidden;
   margin-bottom: 3rem;
   padding: 3rem;
   background: #F5F2EC;
@@ -224,6 +228,8 @@ onUnmounted(() => {
 }
 
 .products-grid {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 1.5rem;
