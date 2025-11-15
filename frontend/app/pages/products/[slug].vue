@@ -4,6 +4,9 @@
         <div class="product-content">
             <div class="container">
                 <div class="product-grid">
+                    <!-- African Pattern Background -->
+                    <AfricanPatternBackground opacity="light" color="gold" />
+                    
                     <!-- Left Side - Image Gallery -->
                     <div class="product-gallery">
                         <!-- Breadcrumb with Navigation Arrows -->
@@ -66,72 +69,41 @@
                             <span class="current-price">{{ product?.discount_price || product?.price }} FCFA</span>
                         </div>
 
-                        <!-- Variants Grid 2x3 -->
+                        <!-- Variants Grid -->
                         <div class="variants-grid">
-                            <!-- Row 1 -->
+                            <!-- Taille -->
                             <div class="variant-group">
-                                <label class="variant-label">Jacket Size</label>
-                                <select v-model="selectedJacketSize" class="variant-select">
-                                    <option value="">Select</option>
+                                <label class="variant-label">Taille</label>
+                                <select v-model="selectedSize" class="variant-select">
+                                    <option value="">Sélectionner</option>
                                     <option value="S">S</option>
                                     <option value="M">M</option>
                                     <option value="L">L</option>
                                     <option value="XL">XL</option>
+                                    <option value="XXL">XXL</option>
                                 </select>
                             </div>
 
+                            <!-- Couleur -->
                             <div class="variant-group">
-                                <label class="variant-label">Jacket Length</label>
-                                <select v-model="selectedJacketLength" class="variant-select">
-                                    <option value="">Select</option>
-                                    <option value="Short">Short</option>
-                                    <option value="Regular">Regular</option>
-                                    <option value="Long">Long</option>
+                                <label class="variant-label">Couleur</label>
+                                <select v-model="selectedColor" class="variant-select">
+                                    <option value="">Sélectionner</option>
+                                    <option value="Noir">Noir</option>
+                                    <option value="Blanc">Blanc</option>
+                                    <option value="Bleu">Bleu</option>
+                                    <option value="Beige">Beige</option>
+                                    <option value="Marron">Marron</option>
                                 </select>
                             </div>
 
-                            <!-- Row 2 -->
+                            <!-- Type de manche -->
                             <div class="variant-group">
-                                <label class="variant-label">Jacket Fit</label>
-                                <select v-model="selectedJacketFit" class="variant-select">
-                                    <option value="">Select</option>
-                                    <option value="Slim">Slim</option>
-                                    <option value="Regular">Regular</option>
-                                    <option value="Relaxed">Relaxed</option>
-                                </select>
-                            </div>
-
-                            <div class="variant-group">
-                                <label class="variant-label">Pant Size</label>
-                                <select v-model="selectedPantSize" class="variant-select">
-                                    <option value="">Select</option>
-                                    <option value="28">28</option>
-                                    <option value="30">30</option>
-                                    <option value="32">32</option>
-                                    <option value="34">34</option>
-                                    <option value="36">36</option>
-                                </select>
-                            </div>
-
-                            <!-- Row 3 -->
-                            <div class="variant-group">
-                                <label class="variant-label">Pant Fit</label>
-                                <select v-model="selectedPantFit" class="variant-select">
-                                    <option value="">Select</option>
-                                    <option value="Slim">Slim</option>
-                                    <option value="Regular">Regular</option>
-                                    <option value="Relaxed">Relaxed</option>
-                                </select>
-                            </div>
-
-                            <div class="variant-group">
-                                <label class="variant-label">Pant Inseam</label>
-                                <select v-model="selectedPantInseam" class="variant-select">
-                                    <option value="">Select</option>
-                                    <option value="28">28"</option>
-                                    <option value="30">30"</option>
-                                    <option value="32">32"</option>
-                                    <option value="34">34"</option>
+                                <label class="variant-label">Type de manche</label>
+                                <select v-model="selectedSleeveType" class="variant-select">
+                                    <option value="">Sélectionner</option>
+                                    <option value="Courte">Manche courte</option>
+                                    <option value="Longue">Manche longue</option>
                                 </select>
                             </div>
                         </div>
@@ -174,6 +146,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCartStore } from '../../../stores/cart'
 import type { Product } from '../../../types/product'
+import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
 
 const route = useRoute()
 const cartStore = useCartStore()
@@ -231,12 +204,9 @@ const product = ref<Product | null>({
 
 // State
 const currentImageIndex = ref(0)
-const selectedJacketSize = ref('')
-const selectedJacketLength = ref('')
-const selectedJacketFit = ref('')
-const selectedPantSize = ref('')
-const selectedPantFit = ref('')
-const selectedPantInseam = ref('')
+const selectedSize = ref('')
+const selectedColor = ref('')
+const selectedSleeveType = ref('')
 const quantity = ref(1)
 
 // Computed
@@ -268,15 +238,11 @@ const decreaseQuantity = () => {
 const addToCart = () => {
     if (!product.value) return
 
-    // Pour l'instant, on n'utilise pas de variante spécifique
-    // On pourrait créer un objet avec toutes les sélections
+    // Créer un objet avec toutes les sélections
     const customVariant = {
-        jacketSize: selectedJacketSize.value,
-        jacketLength: selectedJacketLength.value,
-        jacketFit: selectedJacketFit.value,
-        pantSize: selectedPantSize.value,
-        pantFit: selectedPantFit.value,
-        pantInseam: selectedPantInseam.value
+        size: selectedSize.value,
+        color: selectedColor.value,
+        sleeveType: selectedSleeveType.value
     }
 
     cartStore.addItem(product.value, undefined, quantity.value)
@@ -297,12 +263,9 @@ const orderViaWhatsApp = () => {
         `Prix: ${product.value.discount_price || product.value.price} FCFA\n` +
         `Quantité: ${quantity.value}\n\n` +
         `Variantes sélectionnées:\n` +
-        (selectedJacketSize.value ? `- Taille veste: ${selectedJacketSize.value}\n` : '') +
-        (selectedJacketLength.value ? `- Longueur veste: ${selectedJacketLength.value}\n` : '') +
-        (selectedJacketFit.value ? `- Coupe veste: ${selectedJacketFit.value}\n` : '') +
-        (selectedPantSize.value ? `- Taille pantalon: ${selectedPantSize.value}\n` : '') +
-        (selectedPantFit.value ? `- Coupe pantalon: ${selectedPantFit.value}\n` : '') +
-        (selectedPantInseam.value ? `- Entrejambe: ${selectedPantInseam.value}\n` : '')
+        (selectedSize.value ? `- Taille: ${selectedSize.value}\n` : '') +
+        (selectedColor.value ? `- Couleur: ${selectedColor.value}\n` : '') +
+        (selectedSleeveType.value ? `- Type de manche: ${selectedSleeveType.value}\n` : '')
 
     const encodedMessage = encodeURIComponent(message)
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`
@@ -376,6 +339,8 @@ const orderViaWhatsApp = () => {
 }
 
 .product-grid {
+    position: relative;
+    overflow: hidden;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
@@ -387,6 +352,8 @@ const orderViaWhatsApp = () => {
 
 /* Product Gallery */
 .product-gallery {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -449,6 +416,7 @@ const orderViaWhatsApp = () => {
 /* Product Info */
 .product-info {
     position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -523,7 +491,7 @@ const orderViaWhatsApp = () => {
     font-family: 'Montserrat', sans-serif;
 }
 
-/* Variants Grid 2x3 */
+/* Variants Grid */
 .variants-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
