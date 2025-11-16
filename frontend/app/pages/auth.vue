@@ -178,11 +178,6 @@ const handleRegister = () => {
     alert('Inscription à implémenter avec le backend')
 }
 
-// Disable default layout (no navbar/footer)
-definePageMeta({
-    layout: false
-})
-
 // Page metadata
 useHead({
     title: 'Connexion / Inscription - MEM\'S',
@@ -203,7 +198,7 @@ useHead({
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1rem;
+    padding: 100px 1rem 2rem;
 }
 
 .auth-container {
