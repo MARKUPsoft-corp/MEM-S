@@ -2,12 +2,12 @@
   <div>
     <HeroSection />
     <CategoriesSection />
+    <FeaturedProductsSection />
     <NewArrivalsSection />
     <MensCollectionSection />
     <BabouchesSection />
     <WomensCollectionSection />
     <LinsCollectionSection />
-    <FeaturedProductsSection />
     <AboutSection />
   </div>
 </template>

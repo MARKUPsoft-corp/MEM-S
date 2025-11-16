@@ -21,6 +21,14 @@
             <div class="products-grid">
                 <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" />
             </div>
+
+            <!-- View All Button -->
+            <div class="view-all-container">
+                <NuxtLink to="/vedettes" class="view-all-btn">
+                    <span>Voir toutes les vedettes</span>
+                    <i class="bi bi-arrow-right"></i>
+                </NuxtLink>
+            </div>
         </div>
     </section>
 </template>
@@ -215,6 +223,47 @@ const selectCategory = (categoryId) => {
     gap: 1rem;
 }
 
+/* View All Button */
+.view-all-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 3rem;
+}
+
+.view-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    background: #0E3A34;
+    color: #F5F2EC;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    border: 2px solid #0E3A34;
+    letter-spacing: 0.5px;
+}
+
+.view-all-btn:hover {
+    background: transparent;
+    color: #0E3A34;
+    border-color: #0E3A34;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(14, 58, 52, 0.2);
+}
+
+.view-all-btn i {
+    font-size: 1.125rem;
+    transition: transform 0.3s ease;
+}
+
+.view-all-btn:hover i {
+    transform: translateX(4px);
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .products-grid {
@@ -267,6 +316,15 @@ const selectCategory = (categoryId) => {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
+    }
+
+    .view-all-container {
+        margin-top: 2rem;
+    }
+
+    .view-all-btn {
+        padding: 0.875rem 2rem;
+        font-size: 0.9375rem;
     }
 }
 </style>

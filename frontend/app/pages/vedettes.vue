@@ -1,11 +1,11 @@
 <template>
-    <div class="nouveautes-page">
+    <div class="vedettes-page">
         <!-- Hero Banner -->
         <section class="page-hero">
             <div class="hero-overlay"></div>
             <div class="hero-content">
-                <h1 class="hero-title">Nouveautés</h1>
-                <p class="hero-subtitle">Découvrez nos dernières créations</p>
+                <h1 class="hero-title">Produits en Vedette</h1>
+                <p class="hero-subtitle">Nos coups de cœur sélectionnés pour vous</p>
             </div>
         </section>
 
@@ -23,7 +23,7 @@
                         <nav class="breadcrumb">
                             <NuxtLink to="/" class="breadcrumb-link">Accueil</NuxtLink>
                             <span class="breadcrumb-separator">/</span>
-                            <span class="breadcrumb-current">Nouveautés</span>
+                            <span class="breadcrumb-current">Vedettes</span>
                         </nav>
 
                         <div class="sidebar-header">
@@ -69,7 +69,7 @@
                             <!-- Section Header -->
                             <div class="section-header">
                                 <h2 class="section-title">
-                                    {{ activeCategory === 'all' ? 'Toutes les nouveautés' : getCategoryTitle() }}
+                                    {{ activeCategory === 'all' ? 'Tous les produits en vedette' : getCategoryTitle() }}
                                 </h2>
                                 <div class="title-underline"></div>
                                 <p class="section-subtitle">{{ filteredProducts.length }} produit{{ filteredProducts.length > 1 ? 's' : '' }} disponible{{ filteredProducts.length > 1 ? 's' : '' }}</p>
@@ -82,7 +82,7 @@
                             <!-- Empty State -->
                             <div v-if="filteredProducts.length === 0" class="empty-state">
                                 <i class="bi bi-inbox"></i>
-                                <p>Aucune nouveauté dans cette catégorie pour le moment.</p>
+                                <p>Aucun produit en vedette dans cette catégorie pour le moment.</p>
                             </div>
                         </div>
                     </main>
@@ -115,8 +115,8 @@ import FilterPopup from '../components/FilterPopup.vue'
 const { getAllProducts } = useProducts()
 const allProducts = getAllProducts()
 
-// Filtrer uniquement les nouveaux produits
-const newProducts = allProducts.filter(product => product.is_new)
+// Filtrer uniquement les produits en vedette
+const featuredProducts = allProducts.filter(product => product.featured)
 
 // Catégorie active
 const activeCategory = ref('all')
@@ -153,9 +153,9 @@ const getCategoryGroup = (categorySlug: string) => {
 // Produits filtrés par catégorie
 const filteredProducts = computed(() => {
     if (activeCategory.value === 'all') {
-        return newProducts
+        return featuredProducts
     }
-    return newProducts.filter(product => getCategoryGroup(product.category.slug) === activeCategory.value)
+    return featuredProducts.filter(product => getCategoryGroup(product.category.slug) === activeCategory.value)
 })
 
 // Sélectionner une catégorie
@@ -166,12 +166,12 @@ function selectCategory(category: string) {
 // Obtenir le titre de la catégorie
 function getCategoryTitle() {
     const titles: Record<string, string> = {
-        men: 'Nouveautés Hommes',
-        women: 'Nouveautés Femmes',
-        babouches: 'Nouveautés Babouches',
-        lins: 'Nouveautés Lins'
+        men: 'Vedettes Hommes',
+        women: 'Vedettes Femmes',
+        babouches: 'Vedettes Babouches',
+        lins: 'Vedettes Lins'
     }
-    return titles[activeCategory.value] || 'Toutes les nouveautés'
+    return titles[activeCategory.value] || 'Tous les produits en vedette'
 }
 
 // Mapper le produit pour ProductCard
@@ -179,17 +179,17 @@ function mappedProduct(product: any) {
     return {
         ...product,
         images: product.images.map((img: any) => img.image),
-        badge: { type: 'new', text: 'NOUVEAU' }
+        badge: { type: 'featured', text: 'VEDETTE' }
     }
 }
 
 // Page metadata
 useHead({
-    title: 'Nouveautés - MEM\'S',
+    title: 'Produits en Vedette - MEM\'S',
     meta: [
         {
             name: 'description',
-            content: 'Découvrez nos dernières créations : boubous, robes, babouches et vêtements en lin. Nouveautés exclusives.'
+            content: 'Découvrez nos produits en vedette : boubous, robes, babouches et vêtements en lin. Nos coups de cœur sélectionnés pour vous.'
         }
     ]
 })
@@ -201,7 +201,7 @@ useHead({
     position: relative;
     width: 100%;
     height: 100vh;
-    background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&h=600&fit=crop&q=80');
+    background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&h=600&fit=crop&q=80');
     background-size: cover;
     background-position: center;
     display: flex;

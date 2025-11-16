@@ -37,6 +37,12 @@ defineEmits<{
 
 const menuItems: MenuItem[] = [
   {
+    id: 'home',
+    label: 'ACCUEIL',
+    link: '/',
+    hasDropdown: false
+  },
+  {
     id: 'men',
     label: 'HOMMES',
     hasDropdown: true,

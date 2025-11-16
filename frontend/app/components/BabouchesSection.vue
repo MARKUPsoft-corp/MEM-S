@@ -4,7 +4,7 @@
         <div class="container">
             <!-- Section Title -->
             <div class="section-header">
-                <h2 class="section-title">Babouches en Vedette</h2>
+                <h2 class="section-title">Collection Babouches</h2>
                 <div class="title-underline"></div>
                 <p class="section-subtitle">Élégance traditionnelle</p>
             </div>
@@ -114,11 +114,11 @@ const products = ref([
     width: calc(100% - 2rem);
     max-width: 1400px;
     height: 1px;
-    background: linear-gradient(to right, 
-        transparent 0%, 
-        #C9A46C 20%, 
-        #C9A46C 80%, 
-        transparent 100%);
+    background: linear-gradient(to right,
+            transparent 0%,
+            #C9A46C 20%,
+            #C9A46C 80%,
+            transparent 100%);
     opacity: 0.3;
 }
 

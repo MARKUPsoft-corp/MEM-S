@@ -12,6 +12,7 @@ export const useProducts = () => {
       price: 45000,
       discount_price: undefined,
       is_new: true,
+      featured: true,
       stock: 10,
       images: [
         { id: 10001, image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=800&h=1000&fit=crop&q=80', is_primary: true, order: 1 },
@@ -29,6 +30,7 @@ export const useProducts = () => {
       price: 60000,
       discount_price: undefined,
       is_new: true,
+      featured: true,
       stock: 5,
       images: [
         { id: 10003, image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=800&h=1000&fit=crop&q=80', is_primary: true, order: 1 }
@@ -45,6 +47,7 @@ export const useProducts = () => {
       price: 38000,
       discount_price: undefined,
       is_new: true,
+      featured: true,
       stock: 8,
       images: [
         { id: 10004, image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&h=1000&fit=crop&q=80', is_primary: true, order: 1 }
@@ -61,6 +64,7 @@ export const useProducts = () => {
       price: 28000,
       discount_price: undefined,
       is_new: true,
+      featured: true,
       stock: 15,
       images: [
         { id: 10005, image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=800&h=1000&fit=crop&q=80', is_primary: true, order: 1 }
@@ -77,6 +81,7 @@ export const useProducts = () => {
       price: 20000,
       discount_price: undefined,
       is_new: true,
+      featured: true,
       stock: 12,
       images: [
         { id: 10006, image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=800&h=1000&fit=crop&q=80', is_primary: true, order: 1 }
@@ -93,6 +98,7 @@ export const useProducts = () => {
       price: 35000,
       discount_price: undefined,
       is_new: true,
+      featured: true,
       stock: 10,
       images: [
         { id: 10007, image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800&h=1000&fit=crop&q=80', is_primary: true, order: 1 }
@@ -111,6 +117,7 @@ export const useProducts = () => {
       price: 45000 + (i * 5000),
       discount_price: i % 3 === 0 ? 40000 + (i * 4000) : undefined,
       is_new: i < 6,
+      featured: i < 2,
       stock: 10,
       images: [
         { id: i * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 },
@@ -134,6 +141,7 @@ export const useProducts = () => {
       price: 35000 + (i * 3000),
       discount_price: i % 2 === 0 ? 30000 + (i * 2500) : undefined,
       is_new: i < 4,
+      featured: i === 0 || i === 3,
       stock: 8,
       images: [
         { id: (i + 12) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 12}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -155,6 +163,7 @@ export const useProducts = () => {
       price: 95000 + (i * 8000),
       discount_price: i % 2 === 0 ? 85000 + (i * 7000) : undefined,
       is_new: i < 3,
+      featured: i === 1,
       stock: 5,
       images: [
         { id: (i + 20) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 20}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -176,6 +185,7 @@ export const useProducts = () => {
       price: 25000 + (i * 2000),
       discount_price: i % 3 === 0 ? 22000 + (i * 1500) : undefined,
       is_new: i < 4,
+      featured: i === 2,
       stock: 12,
       images: [
         { id: (i + 26) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 26}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -197,6 +207,7 @@ export const useProducts = () => {
       price: 30000 + (i * 3000),
       discount_price: i % 2 === 0 ? 27000 + (i * 2500) : undefined,
       is_new: i < 3,
+      featured: false,
       stock: 10,
       images: [
         { id: (i + 34) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 34}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -218,6 +229,7 @@ export const useProducts = () => {
       price: 55000 + (i * 4000),
       discount_price: i % 3 === 0 ? 50000 + (i * 3500) : undefined,
       is_new: i < 5,
+      featured: i === 0 || i === 4,
       stock: 8,
       images: [
         { id: (i + 40) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 40}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -239,6 +251,7 @@ export const useProducts = () => {
       price: 75000 + (i * 5000),
       discount_price: i % 2 === 0 ? 68000 + (i * 4500) : undefined,
       is_new: i < 4,
+      featured: i === 1,
       stock: 6,
       images: [
         { id: (i + 50) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 50}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -260,6 +273,7 @@ export const useProducts = () => {
       price: 15000 + (i * 2000),
       discount_price: i % 3 === 0 ? 12000 + (i * 1500) : undefined,
       is_new: i < 3,
+      featured: i === 2,
       stock: 15,
       images: [
         { id: (i + 58) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 58}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -278,6 +292,7 @@ export const useProducts = () => {
       price: 35000 + (i * 3000),
       discount_price: i % 2 === 0 ? 32000 + (i * 2500) : undefined,
       is_new: i < 4,
+      featured: i === 0 || i === 3,
       stock: 10,
       images: [
         { id: (i + 64) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 64}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -299,6 +314,7 @@ export const useProducts = () => {
       price: 40000 + (i * 4000),
       discount_price: i % 3 === 0 ? 36000 + (i * 3500) : undefined,
       is_new: i < 3,
+      featured: i === 1,
       stock: 8,
       images: [
         { id: (i + 72) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 72}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -320,6 +336,7 @@ export const useProducts = () => {
       price: 25000 + (i * 2000),
       discount_price: i % 2 === 0 ? 22000 + (i * 1500) : undefined,
       is_new: i < 4,
+      featured: i === 0 || i === 2,
       stock: 12,
       images: [
         { id: (i + 78) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 78}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }
@@ -341,6 +358,7 @@ export const useProducts = () => {
       price: 30000 + (i * 3000),
       discount_price: i % 3 === 0 ? 27000 + (i * 2500) : undefined,
       is_new: i < 3,
+      featured: i === 1,
       stock: 10,
       images: [
         { id: (i + 86) * 10 + 1, image: `https://images.unsplash.com/photo-${1617127365659 + i + 86}?w=800&h=1000&fit=crop&q=80`, is_primary: true, order: 1 }

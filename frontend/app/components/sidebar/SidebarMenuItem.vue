@@ -1,12 +1,17 @@
 <template>
   <div class="sidebar-menu-item">
-    <component :is="hasDropdown ? 'button' : 'NuxtLink'" :to="link" class="sidebar-menu-item__button"
-      :class="{ 'sidebar-menu-item__button--active': isActive }" :aria-expanded="hasDropdown ? isOpen : undefined"
-      :aria-controls="hasDropdown ? `dropdown-${label}` : undefined" @click="handleClick">
+    <NuxtLink v-if="!hasDropdown" :to="link!" class="sidebar-menu-item__button"
+      :class="{ 'sidebar-menu-item__button--active': isActive }" @click="$emit('navigate')">
       <span>{{ label }}</span>
-      <i v-if="hasDropdown" class="bi bi-chevron-down sidebar-menu-item__icon"
+    </NuxtLink>
+    
+    <button v-else class="sidebar-menu-item__button"
+      :class="{ 'sidebar-menu-item__button--active': isActive }" :aria-expanded="isOpen"
+      :aria-controls="`dropdown-${label}`" @click="handleClick">
+      <span>{{ label }}</span>
+      <i class="bi bi-chevron-down sidebar-menu-item__icon"
         :class="{ 'sidebar-menu-item__icon--rotated': isOpen }"></i>
-    </component>
+    </button>
 
     <transition name="dropdown">
       <div v-if="hasDropdown && isOpen" class="sidebar-menu-item__dropdown" :id="`dropdown-${label}`">

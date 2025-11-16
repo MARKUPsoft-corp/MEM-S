@@ -10,6 +10,10 @@
                 </button>
 
                 <!-- Desktop Links -->
+                <NuxtLink to="/" class="nav-icon nav-icon-home" :class="{ 'nav-icon--active': route.path === '/' }" aria-label="Accueil">
+                    <i class="bi bi-house-door"></i>
+                </NuxtLink>
+                
                 <div class="nav-item" @mouseenter="activeDropdown = 'men'" @mouseleave="activeDropdown = null">
                     <span class="nav-link nav-link-dropdown" :class="{ 'nav-link--active': route.path === '/men' }">
                         HOMMES
@@ -100,7 +104,7 @@ const totalItems = computed(() => cartStore.totalItems)
 
 // Vérifier si on est sur une page avec hero (transparent navbar)
 const hasHeroPage = computed(() => {
-    const heroPages = ['/', '/men', '/women', '/babouches', '/lins']
+    const heroPages = ['/', '/men', '/women', '/babouches', '/lins', '/nouveautes', '/vedettes']
     return heroPages.includes(route.path)
 })
 
@@ -216,6 +220,10 @@ onUnmounted(() => {
 
 .navbar-left .nav-link,
 .navbar-left .nav-item {
+    display: none;
+}
+
+.navbar-left .nav-icon-home {
     display: none;
 }
 
@@ -408,6 +416,10 @@ onUnmounted(() => {
     color: #C9A46C;
 }
 
+.nav-icon--active {
+    color: #C9A46C;
+}
+
 .cart-badge {
     position: absolute;
     top: -6px;
@@ -450,7 +462,8 @@ onUnmounted(() => {
 @media (min-width: 1200px) {
 
     .navbar-left .nav-link,
-    .navbar-left .nav-item {
+    .navbar-left .nav-item,
+    .navbar-left .nav-icon-home {
         display: block;
     }
 
