@@ -360,8 +360,8 @@ onUnmounted(() => {
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
 }
 
 /* Empty State */
@@ -458,6 +458,12 @@ onUnmounted(() => {
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+    .products-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
 @media (max-width: 1024px) {
     .products-grid {
         grid-template-columns: repeat(3, 1fr);
