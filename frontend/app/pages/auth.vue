@@ -6,14 +6,6 @@
         <div class="auth-container">
             <!-- Auth Card -->
             <div class="auth-card">
-                <!-- African Pattern Background -->
-                <!-- Logo -->
-                <div class="auth-logo">
-                    <NuxtLink to="/">
-                        <img src="/images/LOGO.png" alt="MEM'S" class="logo-image" />
-                    </NuxtLink>
-                </div>
-
                 <!-- Tabs -->
                 <div class="auth-tabs">
                     <button @click="activeTab = 'login'" :class="['auth-tab', { active: activeTab === 'login' }]">
