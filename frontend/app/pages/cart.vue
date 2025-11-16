@@ -1,15 +1,15 @@
 <template>
     <div class="cart-page">
-        <!-- Page Hero -->
-        <div class="cart-hero">
-            <div class="cart-hero-content">
-                <h1 class="cart-hero-title">Panier</h1>
-                <div class="title-underline"></div>
-            </div>
-        </div>
-
         <!-- Cart Content -->
         <div class="cart-container">
+            <!-- African Pattern Background -->
+            <AfricanPatternBackground opacity="light" color="gold" />
+            
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Panier</h1>
+                <div class="title-underline"></div>
+            </div>
             <!-- Empty Cart State -->
             <div v-if="cartStore.items.length === 0" class="empty-cart">
                 <div class="empty-cart-icon">
@@ -33,6 +33,9 @@
                     <!-- Cart Items List -->
                     <div class="cart-items-list">
                         <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
+                            <!-- African Pattern Background -->
+                            <AfricanPatternBackground opacity="light" color="gold" />
+                            
                             <!-- Product Image -->
                             <div class="cart-item-image">
                                 <img :src="getProductImage(item.product)" :alt="item.product.name" />
@@ -49,8 +52,15 @@
                                 <div v-if="item.variant" class="cart-item-variant">
                                     Taille: {{ item.variant.size }} | Couleur: {{ item.variant.color }}
                                 </div>
-                                <div class="cart-item-price-mobile">
-                                    {{ formatPrice(item.price) }} FCFA
+                                <div class="cart-item-pricing-mobile">
+                                    <div class="price-unit-mobile">
+                                        <span class="price-label">Prix unitaire:</span>
+                                        <span class="price-badge price-badge-mobile">{{ formatPrice(item.price) }} FCFA</span>
+                                    </div>
+                                    <div class="price-total-mobile">
+                                        <span class="price-label">Total:</span>
+                                        <span class="price-badge price-badge-total-mobile">{{ formatPrice(item.price * item.quantity) }} FCFA</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -70,12 +80,12 @@
 
                             <!-- Price -->
                             <div class="cart-item-price">
-                                {{ formatPrice(item.price) }} FCFA
+                                <span class="price-badge">{{ formatPrice(item.price) }} FCFA</span>
                             </div>
 
                             <!-- Total -->
                             <div class="cart-item-total">
-                                {{ formatPrice(item.price * item.quantity) }} FCFA
+                                <span class="price-badge price-badge-total">{{ formatPrice(item.price * item.quantity) }} FCFA</span>
                             </div>
 
                             <!-- Remove Button -->
@@ -142,20 +152,128 @@
                 </div>
             </div>
         </div>
+
+        <!-- Floating Summary Button (Mobile Only) -->
+        <button v-if="cartStore.items.length > 0" @click="showSummaryModal = true" 
+            :class="['floating-summary-btn', { 'floating-summary-btn-absolute': isButtonAbsolute }]">
+            <div class="floating-btn-content">
+                <span class="floating-btn-total">{{ formatPrice(cartStore.total) }} FCFA</span>
+                <span class="floating-btn-text">Voir le résumé</span>
+            </div>
+        </button>
+
+        <!-- Summary Modal (Mobile Only) -->
+        <Transition name="modal">
+            <div v-if="showSummaryModal" class="modal-overlay" @click="showSummaryModal = false">
+                <div class="modal-content" @click.stop>
+                    <!-- African Pattern Background -->
+                    <AfricanPatternBackground opacity="light" color="gold" />
+                    
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h3 class="modal-title">Résumé de la commande</h3>
+                        <button @click="showSummaryModal = false" class="modal-close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="modal-body">
+                        <!-- Cart Summary -->
+                        <div class="cart-summary-modal">
+                            <!-- Summary Details -->
+                            <div class="summary-details">
+                                <div class="summary-row">
+                                    <span class="summary-label">Sous-total</span>
+                                    <span class="summary-value">{{ formatPrice(cartStore.subtotal) }} FCFA</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span class="summary-label">Livraison</span>
+                                    <span class="summary-value summary-value-free">Gratuite</span>
+                                </div>
+                                <div class="summary-divider"></div>
+                                <div class="summary-row summary-row-total">
+                                    <span class="summary-label">Total</span>
+                                    <span class="summary-value">{{ formatPrice(cartStore.total) }} FCFA</span>
+                                </div>
+                            </div>
+
+                            <!-- Checkout Button -->
+                            <button class="btn-checkout">
+                                Procéder au paiement
+                            </button>
+
+                            <!-- Security Info -->
+                            <div class="security-info">
+                                <i class="bi bi-shield-check"></i>
+                                <span>Paiement 100% sécurisé</span>
+                            </div>
+                        </div>
+
+                        <!-- Promo Code Section -->
+                        <div class="promo-code-section-modal">
+                            <h3 class="promo-code-title">Code promo</h3>
+                            <div class="promo-code-input-group">
+                                <input type="text" class="promo-code-input" placeholder="Entrez votre code"
+                                    v-model="promoCode" />
+                                <button class="btn-apply-promo" @click="applyPromoCode">
+                                    Appliquer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Transition>
     </div>
 </template>
 
 <script setup lang="ts">
 import { useCartStore } from '../../stores/cart'
 import type { CartItem } from '../../types/cart'
+import AfricanPatternBackground from '../components/AfricanPatternBackground.vue'
 
 const cartStore = useCartStore()
 const promoCode = ref('')
+const showSummaryModal = ref(false)
+const isButtonAbsolute = ref(false)
 
 // Load cart from localStorage on mount
 onMounted(() => {
     cartStore.loadFromLocalStorage()
+    
+    // Handle scroll for floating button position
+    if (typeof window !== 'undefined') {
+        window.addEventListener('scroll', handleScroll)
+        handleScroll() // Initial check
+    }
 })
+
+onUnmounted(() => {
+    if (typeof window !== 'undefined') {
+        window.removeEventListener('scroll', handleScroll)
+    }
+})
+
+// Handle scroll to adjust button position
+const handleScroll = () => {
+    if (typeof window === 'undefined') return
+    
+    const footer = document.querySelector('footer')
+    if (!footer) return
+    
+    const footerRect = footer.getBoundingClientRect()
+    const windowHeight = window.innerHeight
+    const buttonHeight = 80 // Approximate button height
+    const offset = 20 // Bottom offset
+    
+    // If footer is visible in viewport
+    if (footerRect.top < windowHeight - buttonHeight - offset) {
+        isButtonAbsolute.value = true
+    } else {
+        isButtonAbsolute.value = false
+    }
+}
 
 // Get product image
 const getProductImage = (product: any) => {
@@ -203,31 +321,35 @@ const applyPromoCode = () => {
 
 <style scoped>
 .cart-page {
+    position: relative;
     min-height: 100vh;
     background: #F5F2EC;
+    padding-top: 80px;
 }
 
-/* Hero Section */
-.cart-hero {
-    background: linear-gradient(135deg, #0E3A34 0%, #1a5449 100%);
-    padding: 8rem 2rem 4rem;
-    text-align: center;
+/* Container */
+.cart-container {
     position: relative;
-}
-
-.cart-hero-content {
     max-width: 1400px;
     margin: 0 auto;
+    padding: 3rem 2rem;
 }
 
-.cart-hero-title {
+/* Page Header */
+.page-header {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-title {
     font-family: 'Montserrat', sans-serif;
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 600;
-    color: #F5F2EC;
+    color: #0E3A34;
     margin: 0 0 1rem 0;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .title-underline {
@@ -238,20 +360,16 @@ const applyPromoCode = () => {
     margin: 0 auto;
 }
 
-/* Container */
-.cart-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 3rem 2rem;
-}
-
 /* Empty Cart */
 .empty-cart {
+    position: relative;
+    z-index: 2;
     text-align: center;
     padding: 4rem 2rem;
-    background: #FFFFFF;
+    background: #F5F2EC;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(11, 11, 11, 0.08);
+    border: 2px solid rgba(201, 164, 108, 0.3);
+    box-shadow: 0 4px 12px rgba(14, 58, 52, 0.15);
 }
 
 .empty-cart-icon {
@@ -300,6 +418,8 @@ const applyPromoCode = () => {
 
 /* Cart Content */
 .cart-content {
+    position: relative;
+    z-index: 2;
     display: grid;
     grid-template-columns: 1fr 400px;
     gap: 2rem;
@@ -308,10 +428,11 @@ const applyPromoCode = () => {
 
 /* Cart Items Section */
 .cart-items-section {
-    background: #FFFFFF;
+    background: #F5F2EC;
     border-radius: 8px;
     padding: 2rem;
-    box-shadow: 0 2px 8px rgba(11, 11, 11, 0.08);
+    border: 2px solid rgba(201, 164, 108, 0.3);
+    box-shadow: 0 4px 12px rgba(14, 58, 52, 0.15);
 }
 
 .cart-section-header {
@@ -337,22 +458,29 @@ const applyPromoCode = () => {
 
 /* Cart Item */
 .cart-item {
+    position: relative;
+    overflow: hidden;
     display: grid;
     grid-template-columns: 120px 1fr 140px 100px 120px 40px;
     gap: 1.5rem;
     align-items: center;
     padding: 1.5rem;
-    background: #F5F2EC;
+    background: #FFFFFF;
+    border: 2px solid rgba(201, 164, 108, 0.2);
     border-radius: 8px;
-    transition: box-shadow 0.3s ease;
+    box-shadow: 0 2px 8px rgba(14, 58, 52, 0.1);
+    transition: all 0.3s ease;
 }
 
 .cart-item:hover {
-    box-shadow: 0 4px 12px rgba(11, 11, 11, 0.1);
+    border-color: rgba(201, 164, 108, 0.4);
+    box-shadow: 0 4px 16px rgba(14, 58, 52, 0.15);
+    transform: translateY(-2px);
 }
 
 .cart-item-image {
     position: relative;
+    z-index: 2;
     width: 120px;
     height: 150px;
     border-radius: 4px;
@@ -388,6 +516,8 @@ const applyPromoCode = () => {
 }
 
 .cart-item-details {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -411,15 +541,59 @@ const applyPromoCode = () => {
     color: #2A2A2A;
 }
 
-.cart-item-price-mobile {
+.cart-item-pricing-mobile {
     display: none;
-    font-size: 0.875rem;
+}
+
+.price-unit-mobile,
+.price-total-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.price-total-mobile {
+    border-top: 1px solid rgba(201, 164, 108, 0.2);
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.price-label {
+    font-size: 0.8125rem;
+    color: #2A2A2A;
+    font-weight: 400;
+}
+
+/* Mobile Price Badges */
+.price-badge-mobile {
+    display: inline-block;
+    padding: 0.375rem 0.875rem;
+    background: rgba(201, 164, 108, 0.1);
+    border: 1px solid rgba(201, 164, 108, 0.3);
+    border-radius: 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: #0B0B0B;
 }
 
+.price-badge-total-mobile {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(14, 58, 52, 0.15);
+    border: 1px solid rgba(14, 58, 52, 0.4);
+    border-radius: 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #0E3A34;
+}
+
 /* Quantity Controls */
 .cart-item-quantity {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -474,19 +648,37 @@ const applyPromoCode = () => {
 /* Price and Total */
 .cart-item-price,
 .cart-item-total {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #0B0B0B;
+    position: relative;
+    z-index: 2;
     text-align: right;
 }
 
-.cart-item-total {
+/* Price Badges */
+.price-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(201, 164, 108, 0.1);
+    border: 1px solid rgba(201, 164, 108, 0.3);
+    border-radius: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0B0B0B;
+    white-space: nowrap;
+}
+
+.price-badge-total {
+    background: rgba(14, 58, 52, 0.1);
+    border-color: rgba(14, 58, 52, 0.3);
     color: #0E3A34;
+    font-weight: 700;
+    font-size: 0.9375rem;
 }
 
 /* Remove Button */
 .cart-item-remove {
+    position: relative;
+    z-index: 2;
     width: 40px;
     height: 40px;
     background: transparent;
@@ -527,18 +719,22 @@ const applyPromoCode = () => {
 
 /* Cart Summary Section */
 .cart-summary-section {
+    position: sticky;
+    top: 100px;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    position: sticky;
-    top: 100px;
+    align-self: flex-start;
+    height: fit-content;
 }
 
 .cart-summary {
-    background: #FFFFFF;
+    background: #F5F2EC;
     border-radius: 8px;
     padding: 2rem;
-    box-shadow: 0 2px 8px rgba(11, 11, 11, 0.08);
+    border: 2px solid rgba(201, 164, 108, 0.3);
+    box-shadow: 0 4px 12px rgba(14, 58, 52, 0.15);
 }
 
 .cart-summary-title {
@@ -643,10 +839,11 @@ const applyPromoCode = () => {
 
 /* Promo Code Section */
 .promo-code-section {
-    background: #FFFFFF;
+    background: #F5F2EC;
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(11, 11, 11, 0.08);
+    border: 2px solid rgba(201, 164, 108, 0.3);
+    box-shadow: 0 4px 12px rgba(14, 58, 52, 0.15);
 }
 
 .promo-code-title {
@@ -720,18 +917,190 @@ const applyPromoCode = () => {
     }
 }
 
+/* Floating Summary Button (Mobile Only) */
+.floating-summary-btn {
+    display: none;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 11, 11, 0.7);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+}
+
+.modal-content {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-height: 85vh;
+    background: #F5F2EC;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(14, 58, 52, 0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 2px solid rgba(201, 164, 108, 0.3);
+}
+
+.modal-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0E3A34;
+    margin: 0;
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 1px solid rgba(201, 164, 108, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #0E3A34;
+}
+
+.modal-close:hover {
+    background: #0E3A34;
+    border-color: #0E3A34;
+    color: #F5F2EC;
+}
+
+.modal-body {
+    position: relative;
+    z-index: 2;
+    padding: 1.5rem;
+    max-height: calc(85vh - 80px);
+    overflow-y: auto;
+}
+
+.cart-summary-modal {
+    background: #FFFFFF;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid rgba(201, 164, 108, 0.3);
+    box-shadow: 0 2px 8px rgba(14, 58, 52, 0.1);
+}
+
+.promo-code-section-modal {
+    background: #FFFFFF;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 2px solid rgba(201, 164, 108, 0.3);
+    box-shadow: 0 2px 8px rgba(14, 58, 52, 0.1);
+}
+
+/* Modal Transitions */
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
 /* Responsive - Mobile */
 @media (max-width: 767px) {
-    .cart-hero {
-        padding: 6rem 1.5rem 3rem;
+    .cart-container {
+        padding: 2rem 1rem 6rem;
     }
 
-    .cart-hero-title {
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
         font-size: 2rem;
     }
 
-    .cart-container {
-        padding: 2rem 1rem;
+    /* Show Floating Button on Mobile */
+    .floating-summary-btn {
+        display: flex;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #0E3A34 0%, #1a5449 100%);
+        border: none;
+        border-radius: 50px;
+        box-shadow: 0 4px 20px rgba(14, 58, 52, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .cart-page {
+        position: relative;
+    }
+
+    .floating-summary-btn-absolute {
+        position: absolute;
+        bottom: 100px;
+        right: 20px;
+        top: auto;
+    }
+
+    .floating-summary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(14, 58, 52, 0.5);
+    }
+
+    .floating-btn-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .floating-btn-total {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #C9A46C;
+    }
+
+    .floating-btn-text {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: #F5F2EC;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Hide Desktop Summary on Mobile */
+    .cart-summary-section {
+        display: none;
     }
 
     .cart-items-section {
@@ -749,8 +1118,10 @@ const applyPromoCode = () => {
         height: 100px;
     }
 
-    .cart-item-price-mobile {
+    .cart-item-pricing-mobile {
         display: block;
+        width: 100%;
+        margin-top: 0.75rem;
     }
 
     .cart-item-quantity {

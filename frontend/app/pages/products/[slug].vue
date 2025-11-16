@@ -27,10 +27,12 @@
                         <!-- Breadcrumb with Navigation Arrows -->
                         <div class="breadcrumb-wrapper">
                             <nav class="breadcrumb">
-                                <NuxtLink to="/" class="breadcrumb-item">Home</NuxtLink>
+                                <NuxtLink to="/" class="breadcrumb-item">Accueil</NuxtLink>
                                 <span class="breadcrumb-separator">›</span>
-                                <NuxtLink to="/products" class="breadcrumb-item">Products</NuxtLink>
-                                <span class="breadcrumb-separator">›</span>
+                                <NuxtLink v-if="previousPage.path" :to="previousPage.path" class="breadcrumb-item">{{ previousPage.name }}</NuxtLink>
+                                <span v-if="previousPage.path" class="breadcrumb-separator">›</span>
+                                <NuxtLink v-if="categoryInfo.path" :to="categoryInfo.path" class="breadcrumb-item">{{ categoryInfo.name }}</NuxtLink>
+                                <span v-if="categoryInfo.path" class="breadcrumb-separator">›</span>
                                 <span class="breadcrumb-item active">{{ product?.name }}</span>
                             </nav>
 
@@ -158,13 +160,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../../../stores/cart'
 import { useProducts } from '../../../composables/useProducts'
 import type { Product } from '../../../types/product'
 import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
 
 const route = useRoute()
+const router = useRouter()
 const cartStore = useCartStore()
 const { getProductBySlug } = useProducts()
 
@@ -172,11 +175,82 @@ const { getProductBySlug } = useProducts()
 const product = ref<Product | null>(null)
 const loading = ref(true)
 
+// Détecter la page précédente
+const previousPage = ref<{ name: string; path: string }>({ name: '', path: '' })
+const categoryInfo = ref<{ name: string; path: string }>({ name: '', path: '' })
+
+// Mapping des routes vers des noms lisibles
+const routeNames: Record<string, string> = {
+    '/': 'Accueil',
+    '/men': 'Hommes',
+    '/women': 'Femmes',
+    '/babouches': 'Babouches',
+    '/lins': 'Lins',
+    '/nouveautes': 'Nouveautés',
+    '/vedettes': 'Vedettes'
+}
+
+// Mapping des catégories vers des noms et chemins
+const categoryMapping: Record<string, { name: string; parentPath: string }> = {
+    'boubous': { name: 'Boubous', parentPath: '/men' },
+    'gandouras': { name: 'Gandouras', parentPath: '/men' },
+    'costumes': { name: 'Costumes', parentPath: '/men' },
+    'chemises': { name: 'Chemises', parentPath: '/men' },
+    'pantalons': { name: 'Pantalons', parentPath: '/men' },
+    'robes': { name: 'Robes', parentPath: '/women' },
+    'ensembles': { name: 'Ensembles', parentPath: '/women' },
+    'sacs': { name: 'Sacs', parentPath: '/women' },
+    'chemises-lin': { name: 'Chemises Lin', parentPath: '/lins' },
+    'pantalons-lin': { name: 'Pantalons Lin', parentPath: '/lins' },
+    'babouches-cuir': { name: 'Babouches Cuir', parentPath: '/babouches' },
+    'babouches-brodees': { name: 'Babouches Brodées', parentPath: '/babouches' }
+}
+
 // Charger le produit au montage
 onMounted(() => {
     const slug = route.params.slug as string
     product.value = getProductBySlug(slug)
     loading.value = false
+
+    // Détecter la page précédente depuis le referrer
+    const referrer = document.referrer
+    if (referrer) {
+        try {
+            const referrerUrl = new URL(referrer)
+            const referrerPath = referrerUrl.pathname
+            
+            // Vérifier si le referrer est une page connue
+            if (routeNames[referrerPath]) {
+                previousPage.value = {
+                    name: routeNames[referrerPath],
+                    path: referrerPath
+                }
+            }
+        } catch (e) {
+            // Si erreur de parsing, on ne fait rien
+        }
+    }
+
+    // Définir les informations de catégorie basées sur le produit
+    if (product.value?.category?.slug) {
+        const categorySlug = product.value.category.slug
+        const categoryData = categoryMapping[categorySlug]
+        
+        if (categoryData) {
+            categoryInfo.value = {
+                name: categoryData.name,
+                path: categoryData.parentPath
+            }
+            
+            // Si aucune page précédente n'est détectée, utiliser la page parente de la catégorie
+            if (!previousPage.value.path) {
+                previousPage.value = {
+                    name: routeNames[categoryData.parentPath] || '',
+                    path: categoryData.parentPath
+                }
+            }
+        }
+    }
 })
 
 // State
