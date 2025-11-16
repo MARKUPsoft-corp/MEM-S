@@ -6,7 +6,7 @@
       <span v-if="totalItems > 0" class="sidebar-footer__badge">{{ totalItems }}</span>
     </NuxtLink>
 
-    <NuxtLink to="/account" class="sidebar-footer__link" @click="$emit('navigate')">
+    <NuxtLink to="/auth" class="sidebar-footer__link" @click="$emit('navigate')">
       <i class="bi bi-person sidebar-footer__icon"></i>
       <span>CONNEXION</span>
     </NuxtLink>

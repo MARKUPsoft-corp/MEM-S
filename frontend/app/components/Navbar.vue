@@ -66,7 +66,7 @@
                 <button class="nav-icon" aria-label="Rechercher" @click="toggleSearch">
                     <i class="bi bi-search"></i>
                 </button>
-                <NuxtLink to="/account" class="nav-icon" aria-label="Compte">
+                <NuxtLink to="/auth" class="nav-icon" aria-label="Compte">
                     <i class="bi bi-person"></i>
                 </NuxtLink>
                 <NuxtLink to="/cart" class="nav-icon cart-icon" aria-label="Panier">

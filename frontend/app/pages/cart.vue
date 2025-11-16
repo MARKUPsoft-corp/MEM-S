@@ -113,16 +113,16 @@
                         <div class="summary-details">
                             <div class="summary-row">
                                 <span class="summary-label">Sous-total</span>
-                                <span class="summary-value">{{ formatPrice(cartStore.subtotal) }} FCFA</span>
+                                <span class="summary-badge">{{ formatPrice(cartStore.subtotal) }} FCFA</span>
                             </div>
                             <div class="summary-row">
                                 <span class="summary-label">Livraison</span>
-                                <span class="summary-value summary-value-free">Gratuite</span>
+                                <span class="summary-badge summary-badge-free">Gratuite</span>
                             </div>
                             <div class="summary-divider"></div>
                             <div class="summary-row summary-row-total">
                                 <span class="summary-label">Total</span>
-                                <span class="summary-value">{{ formatPrice(cartStore.total) }} FCFA</span>
+                                <span class="summary-badge summary-badge-total">{{ formatPrice(cartStore.total) }} FCFA</span>
                             </div>
                         </div>
 
@@ -185,16 +185,16 @@
                             <div class="summary-details">
                                 <div class="summary-row">
                                     <span class="summary-label">Sous-total</span>
-                                    <span class="summary-value">{{ formatPrice(cartStore.subtotal) }} FCFA</span>
+                                    <span class="summary-badge">{{ formatPrice(cartStore.subtotal) }} FCFA</span>
                                 </div>
                                 <div class="summary-row">
                                     <span class="summary-label">Livraison</span>
-                                    <span class="summary-value summary-value-free">Gratuite</span>
+                                    <span class="summary-badge summary-badge-free">Gratuite</span>
                                 </div>
                                 <div class="summary-divider"></div>
                                 <div class="summary-row summary-row-total">
                                     <span class="summary-label">Total</span>
-                                    <span class="summary-value">{{ formatPrice(cartStore.total) }} FCFA</span>
+                                    <span class="summary-badge summary-badge-total">{{ formatPrice(cartStore.total) }} FCFA</span>
                                 </div>
                             </div>
 
@@ -763,14 +763,33 @@ const applyPromoCode = () => {
     color: #2A2A2A;
 }
 
-.summary-value {
-    font-size: 0.9375rem;
+/* Summary Badges */
+.summary-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(201, 164, 108, 0.1);
+    border: 1px solid rgba(201, 164, 108, 0.3);
+    border-radius: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #0B0B0B;
+    white-space: nowrap;
 }
 
-.summary-value-free {
+.summary-badge-free {
+    background: rgba(14, 58, 52, 0.1);
+    border-color: rgba(14, 58, 52, 0.3);
     color: #0E3A34;
+}
+
+.summary-badge-total {
+    background: rgba(14, 58, 52, 0.15);
+    border-color: rgba(14, 58, 52, 0.4);
+    color: #0E3A34;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.625rem 1.25rem;
 }
 
 .summary-divider {
@@ -786,11 +805,6 @@ const applyPromoCode = () => {
 .summary-row-total .summary-label {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #0E3A34;
-}
-
-.summary-row-total .summary-value {
-    font-size: 1.5rem;
     color: #0E3A34;
 }
 
