@@ -33,6 +33,9 @@ urlpatterns = [
     
     # Products endpoints
     path('api/', include('apps.products.urls')),
+    
+    # Cart endpoints
+    path('api/cart/', include('apps.cart.urls')),
 ]
 
 # Serve media files in development

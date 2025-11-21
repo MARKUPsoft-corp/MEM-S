@@ -9,15 +9,14 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '../stores/auth'
-import { useCartStore } from '../stores/cart'
 
-// Initialiser les stores au démarrage
+// Initialiser le store auth au démarrage
 onMounted(() => {
   const authStore = useAuthStore()
-  const cartStore = useCartStore()
-  
   authStore.initFromLocalStorage()
-  cartStore.loadFromLocalStorage()
+  
+  // Note: Le cart sera chargé par les pages qui en ont besoin
+  // pour éviter des appels API inutiles
 })
 </script>
 

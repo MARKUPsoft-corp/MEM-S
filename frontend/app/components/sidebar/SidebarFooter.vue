@@ -1,10 +1,10 @@
 <template>
   <div class="sidebar-footer">
-    <NuxtLink to="/cart" class="sidebar-footer__link" @click="$emit('navigate')">
+    <a @click="handleCartClick" class="sidebar-footer__link" style="cursor: pointer;">
       <i class="bi bi-cart sidebar-footer__icon"></i>
       <span>PANIER</span>
       <span v-if="totalItems > 0" class="sidebar-footer__badge">{{ totalItems }}</span>
-    </NuxtLink>
+    </a>
 
     <NuxtLink :to="profileLink" class="sidebar-footer__link" @click="$emit('navigate')">
       <i class="bi bi-person sidebar-footer__icon"></i>
@@ -15,19 +15,34 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCartStore } from '../../../stores/cart'
 import { useAuthStore } from '../../../stores/auth'
 
-defineEmits<{
+const emit = defineEmits<{
   navigate: []
 }>()
 
+const router = useRouter()
 const cartStore = useCartStore()
 const authStore = useAuthStore()
 const totalItems = computed(() => cartStore.totalItems || 0)
 
 const profileLink = computed(() => authStore.isAuthenticated ? '/profile' : '/auth')
 const authText = computed(() => authStore.isAuthenticated ? 'MON PROFIL' : 'CONNEXION')
+
+// Gérer le clic sur le lien panier
+const handleCartClick = () => {
+  if (!authStore.isAuthenticated) {
+    if (confirm('Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?')) {
+      router.push('/auth')
+      emit('navigate')
+    }
+  } else {
+    router.push('/cart')
+    emit('navigate')
+  }
+}
 </script>
 
 <style scoped>

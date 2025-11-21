@@ -153,6 +153,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../../../stores/cart'
+import { useAuthStore } from '../../../stores/auth'
 import { useProducts } from '../../../composables/useProducts'
 import type { Product } from '../../../types/product'
 import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
@@ -367,42 +368,53 @@ const decreaseQuantity = () => {
     }
 }
 
-const addToCart = () => {
+const addToCart = async () => {
     if (!product.value) return
 
-    // Validate selection
-    const requiredAttributes = Object.keys(allAvailableAttributes.value)
-    const missingAttributes = requiredAttributes.filter(attr => !selectedAttributes.value[attr])
-
-    if (missingAttributes.length > 0) {
-        alert(`Veuillez sélectionner : ${missingAttributes.join(', ')}`)
-        return
-    }
-
-    // Find matching variant
-    const selectedVariant = product.value.variants.find(v => {
-        // Check dynamic attributes
-        if (v.attributes) {
-            for (const attr of v.attributes) {
-                if (selectedAttributes.value[attr.name] !== attr.value) return false
-            }
+    // Vérifier si l'utilisateur est connecté
+    const authStore = useAuthStore()
+    if (!authStore.isAuthenticated) {
+        if (confirm('Vous devez être connecté pour ajouter des articles au panier. Voulez-vous vous connecter maintenant ?')) {
+            router.push('/auth')
         }
-
-        return true
-    })
-
-    if (!selectedVariant) {
-        alert('Cette combinaison n\'est pas disponible.')
         return
     }
 
-    cartStore.addItem(product.value, selectedVariant, quantity.value)
+    let selectedVariant = null
 
-    // Reset selection (optional)
-    // selectedAttributes.value = {}
+    // Si le produit a des variantes
+    if (product.value.variants && product.value.variants.length > 0) {
+        // Vérifier si des attributs ont été sélectionnés
+        const hasSelection = Object.values(selectedAttributes.value).some(val => val)
 
-    // Feedback user
-    alert('Produit ajouté au panier !')
+        if (hasSelection) {
+            // Chercher la variante correspondant aux sélections
+            selectedVariant = product.value.variants.find(v => {
+                if (v.attributes && v.attributes.length > 0) {
+                    return v.attributes.every(attr => 
+                        selectedAttributes.value[attr.name] === attr.value
+                    )
+                }
+                return false
+            })
+
+            if (!selectedVariant) {
+                alert('Cette combinaison n\'est pas disponible.')
+                return
+            }
+        } else {
+            // Aucune sélection : prendre la première variante disponible
+            selectedVariant = product.value.variants[0]
+        }
+    }
+
+    try {
+        await cartStore.addItem(product.value, selectedVariant || undefined, quantity.value)
+        alert('Produit ajouté au panier !')
+    } catch (error) {
+        console.error('Erreur lors de l\'ajout au panier:', error)
+        alert('Une erreur est survenue. Veuillez réessayer.')
+    }
 }
 
 const orderViaWhatsApp = () => {

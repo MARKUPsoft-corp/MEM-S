@@ -4,14 +4,35 @@
         <div class="cart-container">
             <!-- African Pattern Background -->
             <AfricanPatternBackground opacity="light" color="gold" />
-            
+
             <!-- Page Header -->
             <div class="page-header">
                 <h1 class="page-title">Panier</h1>
                 <div class="title-underline"></div>
+
+                <!-- Sync Indicator -->
+                <div v-if="syncing" class="sync-indicator">
+                    <i class="bi bi-arrow-repeat spin"></i>
+                    <span>Synchronisation en cours...</span>
+                </div>
+
+                <!-- Error Message -->
+                <div v-if="error" class="error-message">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>{{ error }}</span>
+                </div>
             </div>
+
+            <!-- Loading State -->
+            <div v-if="loading" class="loading-state">
+                <div class="loading-spinner">
+                    <i class="bi bi-arrow-repeat spin"></i>
+                </div>
+                <p>Chargement de votre panier...</p>
+            </div>
+
             <!-- Empty Cart State -->
-            <div v-if="cartStore.items.length === 0" class="empty-cart">
+            <div v-else-if="items.length === 0" class="empty-cart">
                 <div class="empty-cart-icon">
                     <i class="bi bi-cart-x"></i>
                 </div>
@@ -27,15 +48,19 @@
                 <!-- Cart Items Section -->
                 <div class="cart-items-section">
                     <div class="cart-section-header">
-                        <h2 class="cart-section-title">Articles ({{ cartStore.totalItems }})</h2>
+                        <h2 class="cart-section-title">Articles ({{ totalItems }})</h2>
+                        <div v-if="authStore.isAuthenticated" class="sync-status">
+                            <i class="bi bi-cloud-check"></i>
+                            <span>Synchronisé</span>
+                        </div>
                     </div>
 
                     <!-- Cart Items List -->
                     <div class="cart-items-list">
-                        <div v-for="item in cartStore.items" :key="item.id" class="cart-item">
+                        <div v-for="item in items" :key="item.id" class="cart-item">
                             <!-- African Pattern Background -->
                             <AfricanPatternBackground opacity="light" color="gold" />
-                            
+
                             <!-- Product Image -->
                             <div class="cart-item-image">
                                 <img :src="getProductImage(item.product)" :alt="item.product.name" />
@@ -49,17 +74,22 @@
                                 <NuxtLink :to="`/products/${item.product.slug}`" class="cart-item-name">
                                     {{ item.product.name }}
                                 </NuxtLink>
-                                <div v-if="item.variant" class="cart-item-variant">
-                                    Taille: {{ item.variant.size }} | Couleur: {{ item.variant.color }}
+                                <div v-if="item.variant && item.variant.attributes" class="cart-item-variant">
+                                    <span v-for="(attr, index) in item.variant.attributes" :key="attr.name">
+                                        {{ attr.name }}: {{ attr.value }}<span
+                                            v-if="index < item.variant.attributes.length - 1"> | </span>
+                                    </span>
                                 </div>
                                 <div class="cart-item-pricing-mobile">
                                     <div class="price-unit-mobile">
                                         <span class="price-label">Prix unitaire:</span>
-                                        <span class="price-badge price-badge-mobile">{{ formatPrice(item.price) }} FCFA</span>
+                                        <span class="price-badge price-badge-mobile">{{ formatPrice(item.price) }}
+                                            FCFA</span>
                                     </div>
                                     <div class="price-total-mobile">
                                         <span class="price-label">Total:</span>
-                                        <span class="price-badge price-badge-total-mobile">{{ formatPrice(item.price * item.quantity) }} FCFA</span>
+                                        <span class="price-badge price-badge-total-mobile">{{ formatPrice(item.price *
+                                            item.quantity) }} FCFA</span>
                                     </div>
                                 </div>
                             </div>
@@ -85,7 +115,8 @@
 
                             <!-- Total -->
                             <div class="cart-item-total">
-                                <span class="price-badge price-badge-total">{{ formatPrice(item.price * item.quantity) }} FCFA</span>
+                                <span class="price-badge price-badge-total">{{ formatPrice(item.price * item.quantity)
+                                }} FCFA</span>
                             </div>
 
                             <!-- Remove Button -->
@@ -113,7 +144,7 @@
                         <div class="summary-details">
                             <div class="summary-row">
                                 <span class="summary-label">Sous-total</span>
-                                <span class="summary-badge">{{ formatPrice(cartStore.subtotal) }} FCFA</span>
+                                <span class="summary-badge">{{ formatPrice(subtotal) }} FCFA</span>
                             </div>
                             <div class="summary-row">
                                 <span class="summary-label">Livraison</span>
@@ -122,7 +153,7 @@
                             <div class="summary-divider"></div>
                             <div class="summary-row summary-row-total">
                                 <span class="summary-label">Total</span>
-                                <span class="summary-badge summary-badge-total">{{ formatPrice(cartStore.total) }} FCFA</span>
+                                <span class="summary-badge summary-badge-total">{{ formatPrice(total) }} FCFA</span>
                             </div>
                         </div>
 
@@ -154,10 +185,10 @@
         </div>
 
         <!-- Floating Summary Button (Mobile Only) -->
-        <button v-if="cartStore.items.length > 0" @click="showSummaryModal = true" 
+        <button v-if="items.length > 0" @click="showSummaryModal = true"
             :class="['floating-summary-btn', { 'floating-summary-btn-absolute': isButtonAbsolute }]">
             <div class="floating-btn-content">
-                <span class="floating-btn-total">{{ formatPrice(cartStore.total) }} FCFA</span>
+                <span class="floating-btn-total">{{ formatPrice(total) }} FCFA</span>
                 <span class="floating-btn-text">Voir le résumé</span>
             </div>
         </button>
@@ -168,7 +199,7 @@
                 <div class="modal-content" @click.stop>
                     <!-- African Pattern Background -->
                     <AfricanPatternBackground opacity="light" color="gold" />
-                    
+
                     <!-- Modal Header -->
                     <div class="modal-header">
                         <h3 class="modal-title">Résumé de la commande</h3>
@@ -185,7 +216,7 @@
                             <div class="summary-details">
                                 <div class="summary-row">
                                     <span class="summary-label">Sous-total</span>
-                                    <span class="summary-badge">{{ formatPrice(cartStore.subtotal) }} FCFA</span>
+                                    <span class="summary-badge">{{ formatPrice(subtotal) }} FCFA</span>
                                 </div>
                                 <div class="summary-row">
                                     <span class="summary-label">Livraison</span>
@@ -194,7 +225,7 @@
                                 <div class="summary-divider"></div>
                                 <div class="summary-row summary-row-total">
                                     <span class="summary-label">Total</span>
-                                    <span class="summary-badge summary-badge-total">{{ formatPrice(cartStore.total) }} FCFA</span>
+                                    <span class="summary-badge summary-badge-total">{{ formatPrice(total) }} FCFA</span>
                                 </div>
                             </div>
 
@@ -229,19 +260,35 @@
 </template>
 
 <script setup lang="ts">
+import { useCart } from '../../composables/useCart'
 import { useCartStore } from '../../stores/cart'
+import { useAuthStore } from '../../stores/auth'
+import { useRouter } from 'vue-router'
 import type { CartItem } from '../../types/cart'
 import AfricanPatternBackground from '../components/AfricanPatternBackground.vue'
 
-const cartStore = useCartStore()
+const { items, totalItems, subtotal, total, loading, syncing, error, fetchCart, updateQuantity: updateQty, removeItem: removeItemFromCart } = useCart()
+const authStore = useAuthStore()
+const router = useRouter()
 const promoCode = ref('')
 const showSummaryModal = ref(false)
 const isButtonAbsolute = ref(false)
 
-// Load cart from localStorage on mount
-onMounted(() => {
-    cartStore.loadFromLocalStorage()
+// Load cart on mount
+onMounted(async () => {
+    // Vérifier si l'utilisateur est connecté
+    if (!authStore.isAuthenticated) {
+        if (confirm('Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?')) {
+            router.push('/auth')
+        } else {
+            router.push('/')
+        }
+        return
+    }
     
+    // Charger le panier depuis le backend
+    await fetchCart()
+
     // Handle scroll for floating button position
     if (typeof window !== 'undefined') {
         window.addEventListener('scroll', handleScroll)
@@ -258,15 +305,15 @@ onUnmounted(() => {
 // Handle scroll to adjust button position
 const handleScroll = () => {
     if (typeof window === 'undefined') return
-    
+
     const footer = document.querySelector('footer')
     if (!footer) return
-    
+
     const footerRect = footer.getBoundingClientRect()
     const windowHeight = window.innerHeight
     const buttonHeight = 80 // Approximate button height
     const offset = 20 // Bottom offset
-    
+
     // If footer is visible in viewport
     if (footerRect.top < windowHeight - buttonHeight - offset) {
         isButtonAbsolute.value = true
@@ -289,27 +336,27 @@ const formatPrice = (price: number) => {
 }
 
 // Quantity management
-const increaseQuantity = (item: CartItem) => {
-    cartStore.updateQuantity(item.id, item.quantity + 1)
+const increaseQuantity = async (item: CartItem) => {
+    await updateQty(item.id, item.quantity + 1)
 }
 
-const decreaseQuantity = (item: CartItem) => {
+const decreaseQuantity = async (item: CartItem) => {
     if (item.quantity > 1) {
-        cartStore.updateQuantity(item.id, item.quantity - 1)
+        await updateQty(item.id, item.quantity - 1)
     }
 }
 
-const updateQuantity = (item: CartItem, event: Event) => {
+const updateQuantity = async (item: CartItem, event: Event) => {
     const target = event.target as HTMLInputElement
     const newQuantity = parseInt(target.value)
     if (newQuantity > 0) {
-        cartStore.updateQuantity(item.id, newQuantity)
+        await updateQty(item.id, newQuantity)
     }
 }
 
-const removeItem = (item: CartItem) => {
+const removeItem = async (item: CartItem) => {
     if (confirm('Êtes-vous sûr de vouloir retirer cet article ?')) {
-        cartStore.removeItem(item.id)
+        await removeItemFromCart(item.id)
     }
 }
 
@@ -358,6 +405,88 @@ const applyPromoCode = () => {
     background: #C9A46C;
     border-radius: 2px;
     margin: 0 auto;
+}
+
+/* Sync Indicator */
+.sync-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(201, 164, 108, 0.1);
+    border: 1px solid rgba(201, 164, 108, 0.3);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: #C9A46C;
+    font-weight: 500;
+}
+
+.sync-indicator i {
+    font-size: 1rem;
+}
+
+/* Error Message */
+.error-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(161, 78, 54, 0.1);
+    border: 1px solid rgba(161, 78, 54, 0.3);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: #A14E36;
+    font-weight: 500;
+}
+
+.error-message i {
+    font-size: 1rem;
+}
+
+/* Loading State */
+.loading-state {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #F5F2EC;
+    border-radius: 8px;
+    border: 2px solid rgba(201, 164, 108, 0.3);
+    box-shadow: 0 4px 12px rgba(14, 58, 52, 0.15);
+}
+
+.loading-spinner {
+    font-size: 3rem;
+    color: #C9A46C;
+    margin-bottom: 1rem;
+}
+
+.loading-spinner i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+.loading-state p {
+    font-size: 1rem;
+    color: #2A2A2A;
+    margin: 0;
 }
 
 /* Empty Cart */
@@ -436,6 +565,9 @@ const applyPromoCode = () => {
 }
 
 .cart-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 2px solid #F5F2EC;
@@ -447,6 +579,25 @@ const applyPromoCode = () => {
     font-weight: 600;
     color: #0E3A34;
     margin: 0;
+}
+
+/* Sync Status */
+.sync-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgba(14, 58, 52, 0.1);
+    border: 1px solid rgba(14, 58, 52, 0.2);
+    border-radius: 16px;
+    font-size: 0.8125rem;
+    color: #0E3A34;
+    font-weight: 500;
+}
+
+.sync-status i {
+    color: #0E3A34;
+    font-size: 1rem;
 }
 
 /* Cart Items List */
@@ -964,6 +1115,7 @@ const applyPromoCode = () => {
     from {
         transform: translateY(100%);
     }
+
     to {
         transform: translateY(0);
     }

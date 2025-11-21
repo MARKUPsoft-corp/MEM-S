@@ -69,10 +69,10 @@
                 <NuxtLink :to="profileLink" class="nav-icon" aria-label="Compte">
                     <i class="bi bi-person"></i>
                 </NuxtLink>
-                <NuxtLink to="/cart" class="nav-icon cart-icon" aria-label="Panier">
+                <a @click="handleCartClick" class="nav-icon cart-icon" aria-label="Panier" style="cursor: pointer;">
                     <i class="bi bi-cart"></i>
                     <span v-if="totalItems > 0" class="cart-badge">{{ totalItems }}</span>
-                </NuxtLink>
+                </a>
             </div>
         </div>
 
@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { useCartStore } from '../../stores/cart'
 import { useAuthStore } from '../../stores/auth'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Sidebar from './sidebar/Sidebar.vue'
 import SidebarOverlay from './sidebar/SidebarOverlay.vue'
 import SearchOverlay from './SearchOverlay.vue'
@@ -98,6 +98,7 @@ import SearchOverlay from './SearchOverlay.vue'
 const cartStore = useCartStore()
 const authStore = useAuthStore()
 const route = useRoute()
+const router = useRouter()
 const sidebarOpen = ref(false)
 const searchOpen = ref(false)
 const isScrolled = ref(false)
@@ -106,6 +107,17 @@ const totalItems = computed(() => cartStore.totalItems)
 
 // Lien vers le profil ou la connexion selon l'état
 const profileLink = computed(() => authStore.isAuthenticated ? '/profile' : '/auth')
+
+// Gérer le clic sur l'icône du panier
+const handleCartClick = () => {
+    if (!authStore.isAuthenticated) {
+        if (confirm('Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?')) {
+            router.push('/auth')
+        }
+    } else {
+        router.push('/cart')
+    }
+}
 
 // Vérifier si on est sur une page avec hero (transparent navbar)
 const hasHeroPage = computed(() => {

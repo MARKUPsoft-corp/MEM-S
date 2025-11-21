@@ -6,6 +6,7 @@ export interface CartItem {
   variant?: ProductVariant
   quantity: number
   price: number
+  backendId?: number  // ID backend pour les updates
 }
 
 export interface CartState {
@@ -13,4 +14,7 @@ export interface CartState {
   subtotal: number
   total: number
   totalItems: number
+  loading: boolean
+  syncing: boolean
+  error: string | null
 }

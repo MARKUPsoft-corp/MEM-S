@@ -33,6 +33,16 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('user', JSON.stringify(response.user))
         }
 
+        // Synchroniser le panier après connexion
+        try {
+          const { useCartStore } = await import('./cart')
+          const cartStore = useCartStore()
+          await cartStore.syncWithBackend()
+        } catch (error) {
+          console.error('Error syncing cart after login:', error)
+          // Ne pas bloquer la connexion si la sync échoue
+        }
+
         return response
       } catch (error) {
         console.error('Login error:', error)
@@ -57,6 +67,16 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem('token', response.access)
           localStorage.setItem('refreshToken', response.refresh)
           localStorage.setItem('user', JSON.stringify(response.user))
+        }
+
+        // Synchroniser le panier après inscription
+        try {
+          const { useCartStore } = await import('./cart')
+          const cartStore = useCartStore()
+          await cartStore.syncWithBackend()
+        } catch (error) {
+          console.error('Error syncing cart after register:', error)
+          // Ne pas bloquer l'inscription si la sync échoue
         }
 
         return response
@@ -112,7 +132,17 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    logout() {
+    async logout() {
+      // Vider le panier avant de se déconnecter
+      try {
+        const { useCartStore } = await import('./cart')
+        const cartStore = useCartStore()
+        cartStore.items = []
+        cartStore.saveToLocalStorage()
+      } catch (error) {
+        console.error('Error clearing cart on logout:', error)
+      }
+
       this.user = null
       this.token = null
       this.refreshToken = null

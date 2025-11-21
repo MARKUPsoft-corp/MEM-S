@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     # Local apps
     'apps.accounts',
     'apps.products',
+    'apps.cart',
 ]
 
 MIDDLEWARE = [
@@ -159,6 +160,7 @@ SITE_ID = 1
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # Support pour Bearer token
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
