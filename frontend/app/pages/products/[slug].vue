@@ -169,7 +169,7 @@ import AfricanPatternBackground from '../../components/AfricanPatternBackground.
 const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
-const { getProductBySlug } = useProducts()
+const { fetchProductBySlug } = useProducts()
 
 // Charger le produit dynamiquement basé sur le slug
 const product = ref<Product | null>(null)
@@ -207,10 +207,16 @@ const categoryMapping: Record<string, { name: string; parentPath: string }> = {
 }
 
 // Charger le produit au montage
-onMounted(() => {
+onMounted(async () => {
     const slug = route.params.slug as string
-    product.value = getProductBySlug(slug)
-    loading.value = false
+    try {
+        loading.value = true
+        product.value = await fetchProductBySlug(slug)
+    } catch (error) {
+        console.error('Erreur lors du chargement du produit:', error)
+    } finally {
+        loading.value = false
+    }
 
     // Détecter la page précédente depuis le referrer
     const referrer = document.referrer
