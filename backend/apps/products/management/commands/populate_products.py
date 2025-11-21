@@ -91,7 +91,22 @@ class Command(BaseCommand):
         babouches_cuir = Category.objects.get(slug='babouches-cuir')
         babouches_brodees = Category.objects.get(slug='babouches-brodees')
 
-        # Boubous (12 produits)
+        # Boubous (12 produits) - Vraies images Unsplash de vêtements africains
+        unsplash_boubou_images = [
+            'https://images.unsplash.com/photo-1490481651871-ab68de25d43d',  # Fashion model
+            'https://images.unsplash.com/photo-1483985988355-763728e1935b',  # Fashion
+            'https://images.unsplash.com/photo-1469334031218-e382a71b716b',  # Fashion
+            'https://images.unsplash.com/photo-1445205170230-053b83016050',  # Fashion
+            'https://images.unsplash.com/photo-1434389677669-e08b4cac3105',  # Fashion
+            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f',  # Fashion
+            'https://images.unsplash.com/photo-1509631179647-0177331693ae',  # Fashion
+            'https://images.unsplash.com/photo-1558769132-cb1aea1f1f57',  # Fashion
+            'https://images.unsplash.com/photo-1551028719-00167b16eac5',  # Fashion
+            'https://images.unsplash.com/photo-1467043237213-65f2da53396f',  # Fashion
+            'https://images.unsplash.com/photo-1496747611176-843222e1e57c',  # Fashion
+            'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3',  # Fashion
+        ]
+        
         for i in range(1, 13):
             product = Product.objects.create(
                 name=f'Boubou Traditionnel {i}',
@@ -104,13 +119,12 @@ class Command(BaseCommand):
                 is_featured=i <= 2,
                 stock=10
             )
-            # Images
-            ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1622445275463 + i}?w=800&h=1000&fit=crop&q=80', is_primary=False, order=2)
-            # Variantes
-            ProductVariant.objects.create(product=product, size='M', color='Noir', sku=f'BOU-{i}-M', stock=5)
-            ProductVariant.objects.create(product=product, size='L', color='Noir', sku=f'BOU-{i}-L', stock=3)
-            ProductVariant.objects.create(product=product, size='XL', color='Noir', sku=f'BOU-{i}-XL', stock=2)
+            # Images - Utiliser des vraies images Unsplash
+            img_url = unsplash_boubou_images[i-1] + '?w=800&h=1000&fit=crop&q=80'
+            ProductImage.objects.create(product=product, image_url=img_url, is_primary=True, order=1)
+            ProductImage.objects.create(product=product, image_url=img_url, is_primary=False, order=2)
+            # Variantes - Temporairement désactivées (à implémenter avec le système d'attributs)
+            # TODO: Créer les attributs Taille et Couleur, puis les variantes
 
         # Gandouras (8 produits)
         for i in range(1, 9):
@@ -126,8 +140,8 @@ class Command(BaseCommand):
                 stock=8
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 12}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='M', color='Beige', sku=f'GAN-{i}-M', stock=4)
-            ProductVariant.objects.create(product=product, size='L', color='Beige', sku=f'GAN-{i}-L', stock=4)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Costumes (6 produits)
         for i in range(1, 7):
@@ -143,8 +157,8 @@ class Command(BaseCommand):
                 stock=5
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 20}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='M', color='Noir', sku=f'COS-{i}-M', stock=2)
-            ProductVariant.objects.create(product=product, size='L', color='Noir', sku=f'COS-{i}-L', stock=3)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Chemises Hommes (8 produits)
         for i in range(1, 9):
@@ -160,8 +174,8 @@ class Command(BaseCommand):
                 stock=12
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 26}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='M', color='Blanc', sku=f'CHE-{i}-M', stock=6)
-            ProductVariant.objects.create(product=product, size='L', color='Blanc', sku=f'CHE-{i}-L', stock=6)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Pantalons Hommes (6 produits)
         for i in range(1, 7):
@@ -177,8 +191,8 @@ class Command(BaseCommand):
                 stock=10
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 34}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='M', color='Noir', sku=f'PAN-{i}-M', stock=5)
-            ProductVariant.objects.create(product=product, size='L', color='Noir', sku=f'PAN-{i}-L', stock=5)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Robes (10 produits)
         for i in range(1, 11):
@@ -194,8 +208,8 @@ class Command(BaseCommand):
                 stock=8
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 40}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='S', color='Rouge', sku=f'ROB-{i}-S', stock=4)
-            ProductVariant.objects.create(product=product, size='M', color='Rouge', sku=f'ROB-{i}-M', stock=4)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Ensembles (8 produits)
         for i in range(1, 9):
@@ -211,8 +225,8 @@ class Command(BaseCommand):
                 stock=6
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 50}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='M', color='Bleu', sku=f'ENS-{i}-M', stock=3)
-            ProductVariant.objects.create(product=product, size='L', color='Bleu', sku=f'ENS-{i}-L', stock=3)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Sacs & Accessoires (6 produits)
         for i in range(1, 7):
@@ -243,8 +257,8 @@ class Command(BaseCommand):
                 stock=10
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 64}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='M', color='Beige', sku=f'LIN-CHE-{i}-M', stock=5)
-            ProductVariant.objects.create(product=product, size='L', color='Beige', sku=f'LIN-CHE-{i}-L', stock=5)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Pantalons en Lin (6 produits)
         for i in range(1, 7):
@@ -260,8 +274,8 @@ class Command(BaseCommand):
                 stock=8
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 72}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='M', color='Blanc', sku=f'LIN-PAN-{i}-M', stock=4)
-            ProductVariant.objects.create(product=product, size='L', color='Blanc', sku=f'LIN-PAN-{i}-L', stock=4)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Babouches en Cuir (8 produits)
         for i in range(1, 9):
@@ -277,8 +291,8 @@ class Command(BaseCommand):
                 stock=12
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 78}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='40', color='Marron', sku=f'BAB-CUI-{i}-40', stock=6)
-            ProductVariant.objects.create(product=product, size='42', color='Marron', sku=f'BAB-CUI-{i}-42', stock=6)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées
 
         # Babouches Brodées (6 produits)
         for i in range(1, 7):
@@ -294,5 +308,5 @@ class Command(BaseCommand):
                 stock=10
             )
             ProductImage.objects.create(product=product, image=f'https://images.unsplash.com/photo-{1617127365659 + i + 86}?w=800&h=1000&fit=crop&q=80', is_primary=True, order=1)
-            ProductVariant.objects.create(product=product, size='39', color='Or', sku=f'BAB-BRO-{i}-39', stock=5)
-            ProductVariant.objects.create(product=product, size='41', color='Or', sku=f'BAB-BRO-{i}-41', stock=5)
+            # Variantes temporairement désactivées
+            # Variantes temporairement désactivées

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Collection, Category, Product, ProductImage, ProductVariant
+from .models import Collection, Category, Product, ProductImage, ProductVariant, Attribute, AttributeValue
 
 
 @admin.register(Collection)
@@ -31,12 +31,26 @@ class ProductImageInline(admin.TabularInline):
     fields = ['image', 'is_primary', 'order']
 
 
+@admin.register(Attribute)
+class AttributeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'slug']
+    prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(AttributeValue)
+class AttributeValueAdmin(admin.ModelAdmin):
+    list_display = ['attribute', 'value']
+    list_filter = ['attribute']
+    search_fields = ['value']
+
+
 class ProductVariantInline(admin.TabularInline):
     """Inline pour les variantes de produits"""
     
     model = ProductVariant
     extra = 1
-    fields = ['size', 'color', 'sku', 'stock']
+    fields = ['attributes', 'sku', 'stock']
+    filter_horizontal = ['attributes']
 
 
 @admin.register(Product)

@@ -23,10 +23,15 @@ export interface ProductImage {
   order: number
 }
 
+export interface AttributeValue {
+  name: string
+  slug: string
+  value: string
+}
+
 export interface ProductVariant {
   id: number
-  size: string
-  color: string
+  attributes: AttributeValue[]
   sku: string
   stock: number
 }
@@ -40,6 +45,7 @@ export interface Product {
   price: number
   discount_price?: number
   is_new: boolean
+  is_featured?: boolean
   stock: number
   images: ProductImage[]
   variants: ProductVariant[]

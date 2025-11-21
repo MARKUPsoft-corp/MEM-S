@@ -29,19 +29,23 @@
                             <nav class="breadcrumb">
                                 <NuxtLink to="/" class="breadcrumb-item">Accueil</NuxtLink>
                                 <span class="breadcrumb-separator">›</span>
-                                <NuxtLink v-if="previousPage.path" :to="previousPage.path" class="breadcrumb-item">{{ previousPage.name }}</NuxtLink>
+                                <NuxtLink v-if="previousPage.path" :to="previousPage.path" class="breadcrumb-item">{{
+                                    previousPage.name }}</NuxtLink>
                                 <span v-if="previousPage.path" class="breadcrumb-separator">›</span>
-                                <NuxtLink v-if="categoryInfo.path" :to="categoryInfo.path" class="breadcrumb-item">{{ categoryInfo.name }}</NuxtLink>
+                                <NuxtLink v-if="categoryInfo.path" :to="categoryInfo.path" class="breadcrumb-item">{{
+                                    categoryInfo.name }}</NuxtLink>
                                 <span v-if="categoryInfo.path" class="breadcrumb-separator">›</span>
                                 <span class="breadcrumb-item active">{{ product?.name }}</span>
                             </nav>
 
                             <!-- Navigation Arrows (visible on mobile) -->
                             <div class="product-navigation product-navigation-breadcrumb">
-                                <button class="nav-arrow" aria-label="Produit précédent">
+                                <button class="nav-arrow" :disabled="!canGoToPrevious" @click="goToPreviousProduct"
+                                    aria-label="Produit précédent">
                                     <i class="bi bi-arrow-left"></i>
                                 </button>
-                                <button class="nav-arrow" aria-label="Produit suivant">
+                                <button class="nav-arrow" :disabled="!canGoToNext" @click="goToNextProduct"
+                                    aria-label="Produit suivant">
                                     <i class="bi bi-arrow-right"></i>
                                 </button>
                             </div>
@@ -69,10 +73,12 @@
                     <div class="product-info">
                         <!-- Navigation Arrows -->
                         <div class="product-navigation">
-                            <button class="nav-arrow" aria-label="Produit précédent">
+                            <button class="nav-arrow" :disabled="!canGoToPrevious" @click="goToPreviousProduct"
+                                aria-label="Produit précédent">
                                 <i class="bi bi-arrow-left"></i>
                             </button>
-                            <button class="nav-arrow" aria-label="Produit suivant">
+                            <button class="nav-arrow" :disabled="!canGoToNext" @click="goToNextProduct"
+                                aria-label="Produit suivant">
                                 <i class="bi bi-arrow-right"></i>
                             </button>
                         </div>
@@ -88,39 +94,11 @@
 
                         <!-- Variants Grid -->
                         <div class="variants-grid">
-                            <!-- Taille -->
-                            <div class="variant-group">
-                                <label class="variant-label">Taille</label>
-                                <select v-model="selectedSize" class="variant-select">
+                            <div v-for="(values, name) in allAvailableAttributes" :key="name" class="variant-group">
+                                <label class="variant-label">{{ name }}</label>
+                                <select v-model="selectedAttributes[name]" class="variant-select">
                                     <option value="">Sélectionner</option>
-                                    <option value="S">S</option>
-                                    <option value="M">M</option>
-                                    <option value="L">L</option>
-                                    <option value="XL">XL</option>
-                                    <option value="XXL">XXL</option>
-                                </select>
-                            </div>
-
-                            <!-- Couleur -->
-                            <div class="variant-group">
-                                <label class="variant-label">Couleur</label>
-                                <select v-model="selectedColor" class="variant-select">
-                                    <option value="">Sélectionner</option>
-                                    <option value="Noir">Noir</option>
-                                    <option value="Blanc">Blanc</option>
-                                    <option value="Bleu">Bleu</option>
-                                    <option value="Beige">Beige</option>
-                                    <option value="Marron">Marron</option>
-                                </select>
-                            </div>
-
-                            <!-- Type de manche -->
-                            <div class="variant-group">
-                                <label class="variant-label">Type de manche</label>
-                                <select v-model="selectedSleeveType" class="variant-select">
-                                    <option value="">Sélectionner</option>
-                                    <option value="Courte">Manche courte</option>
-                                    <option value="Longue">Manche longue</option>
+                                    <option v-for="value in values" :key="value" :value="value">{{ value }}</option>
                                 </select>
                             </div>
                         </div>
@@ -153,23 +131,37 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Similar Products Section -->
+                <div v-if="similarProducts.length > 0" class="similar-products-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Produits Similaires</h2>
+                        <div class="title-underline"></div>
+                    </div>
+
+                    <div class="similar-products-grid">
+                        <ProductCard v-for="similarProduct in similarProducts" :key="similarProduct.id"
+                            :product="formatProductForCard(similarProduct)" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../../../stores/cart'
 import { useProducts } from '../../../composables/useProducts'
 import type { Product } from '../../../types/product'
 import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
+import ProductCard from '../../components/ProductCard.vue'
 
 const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
-const { fetchProductBySlug } = useProducts()
+const { fetchProductBySlug, fetchProducts } = useProducts()
 
 // Charger le produit dynamiquement basé sur le slug
 const product = ref<Product | null>(null)
@@ -212,6 +204,11 @@ onMounted(async () => {
     try {
         loading.value = true
         product.value = await fetchProductBySlug(slug)
+
+        // Charger les produits de la même catégorie pour la navigation
+        if (product.value?.category?.slug) {
+            await loadCategoryProducts(product.value.category.slug)
+        }
     } catch (error) {
         console.error('Erreur lors du chargement du produit:', error)
     } finally {
@@ -224,7 +221,7 @@ onMounted(async () => {
         try {
             const referrerUrl = new URL(referrer)
             const referrerPath = referrerUrl.pathname
-            
+
             // Vérifier si le referrer est une page connue
             if (routeNames[referrerPath]) {
                 previousPage.value = {
@@ -241,13 +238,13 @@ onMounted(async () => {
     if (product.value?.category?.slug) {
         const categorySlug = product.value.category.slug
         const categoryData = categoryMapping[categorySlug]
-        
+
         if (categoryData) {
             categoryInfo.value = {
                 name: categoryData.name,
                 path: categoryData.parentPath
             }
-            
+
             // Si aucune page précédente n'est détectée, utiliser la page parente de la catégorie
             if (!previousPage.value.path) {
                 previousPage.value = {
@@ -261,24 +258,102 @@ onMounted(async () => {
 
 // State
 const currentImageIndex = ref(0)
-const selectedSize = ref('')
-const selectedColor = ref('')
-const selectedSleeveType = ref('')
+const selectedAttributes = ref<Record<string, string>>({})
 const quantity = ref(1)
+const categoryProducts = ref<Product[]>([])
+const currentProductIndex = ref(-1)
+const similarProducts = ref<Product[]>([])
+
+// Charger les produits de la même catégorie pour la navigation
+const loadCategoryProducts = async (categorySlug: string) => {
+    try {
+        const response = await fetchProducts({ category: categorySlug })
+        categoryProducts.value = response.results
+
+        // Trouver l'index du produit actuel
+        const slug = route.params.slug as string
+        currentProductIndex.value = categoryProducts.value.findIndex(p => p.slug === slug)
+
+        // Charger les produits similaires (exclure le produit actuel, max 4 produits)
+        similarProducts.value = categoryProducts.value
+            .filter(p => p.slug !== slug)
+            .slice(0, 4)
+    } catch (error) {
+        console.error('Erreur lors du chargement des produits de la catégorie:', error)
+    }
+}
+
+// Formater un produit pour le ProductCard
+const formatProductForCard = (product: Product) => {
+    return {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: product.discount_price || product.price,
+        originalPrice: product.discount_price ? product.price : undefined,
+        images: product.images.map(img => img.image),
+        badge: product.is_new ? { type: 'new', text: 'NOUVEAU' } :
+            product.is_featured ? { type: 'featured', text: 'VEDETTE' } :
+                undefined
+    }
+}
+
+// Navigation vers le produit précédent
+const goToPreviousProduct = () => {
+    if (currentProductIndex.value > 0) {
+        const previousProduct = categoryProducts.value[currentProductIndex.value - 1]
+        if (previousProduct) {
+            router.push(`/products/${previousProduct.slug}`)
+        }
+    }
+}
+
+// Navigation vers le produit suivant
+const goToNextProduct = () => {
+    if (currentProductIndex.value < categoryProducts.value.length - 1) {
+        const nextProduct = categoryProducts.value[currentProductIndex.value + 1]
+        if (nextProduct) {
+            router.push(`/products/${nextProduct.slug}`)
+        }
+    }
+}
+
+// Vérifier si on peut naviguer
+const canGoToPrevious = computed(() => currentProductIndex.value > 0)
+const canGoToNext = computed(() => currentProductIndex.value < categoryProducts.value.length - 1 && categoryProducts.value.length > 0)
 
 // Computed
 const currentImage = computed(() => {
-    return product.value?.images[currentImageIndex.value]?.image || ''
+    if (product.value?.images && product.value.images.length > 0) {
+        return product.value.images[currentImageIndex.value]?.image || ''
+    }
+    return ''
 })
 
-const availableSizes = computed(() => {
-    if (!product.value?.variants) return []
-    return [...new Set(product.value.variants.map(v => v.size))]
-})
+const allAvailableAttributes = computed(() => {
+    if (!product.value?.variants) return {}
 
-const availableColors = computed(() => {
-    if (!product.value?.variants) return []
-    return [...new Set(product.value.variants.map(v => v.color))]
+    const attributes: Record<string, Set<string>> = {}
+
+    product.value.variants.forEach(variant => {
+        // Handle dynamic attributes
+        if (variant.attributes) {
+            variant.attributes.forEach(attr => {
+                if (!attributes[attr.name]) {
+                    attributes[attr.name] = new Set()
+                }
+                attributes[attr.name]?.add(attr.value)
+            })
+        }
+    })
+
+    // Convert Sets to Arrays
+    const result: Record<string, string[]> = {}
+    for (const [key, value] of Object.entries(attributes)) {
+        result[key] = Array.from(value)
+    }
+
+    return result
 })
 
 // Methods
@@ -295,16 +370,38 @@ const decreaseQuantity = () => {
 const addToCart = () => {
     if (!product.value) return
 
-    // Créer un objet avec toutes les sélections
-    const customVariant = {
-        size: selectedSize.value,
-        color: selectedColor.value,
-        sleeveType: selectedSleeveType.value
+    // Validate selection
+    const requiredAttributes = Object.keys(allAvailableAttributes.value)
+    const missingAttributes = requiredAttributes.filter(attr => !selectedAttributes.value[attr])
+
+    if (missingAttributes.length > 0) {
+        alert(`Veuillez sélectionner : ${missingAttributes.join(', ')}`)
+        return
     }
 
-    cartStore.addItem(product.value, undefined, quantity.value)
+    // Find matching variant
+    const selectedVariant = product.value.variants.find(v => {
+        // Check dynamic attributes
+        if (v.attributes) {
+            for (const attr of v.attributes) {
+                if (selectedAttributes.value[attr.name] !== attr.value) return false
+            }
+        }
 
-    // TODO: Afficher une notification de succès
+        return true
+    })
+
+    if (!selectedVariant) {
+        alert('Cette combinaison n\'est pas disponible.')
+        return
+    }
+
+    cartStore.addItem(product.value, selectedVariant, quantity.value)
+
+    // Reset selection (optional)
+    // selectedAttributes.value = {}
+
+    // Feedback user
     alert('Produit ajouté au panier !')
 }
 
@@ -315,14 +412,19 @@ const orderViaWhatsApp = () => {
     const whatsappNumber = config.public.whatsappNumber
 
     // Construire le message WhatsApp
+    let variantsMessage = ''
+    for (const [key, value] of Object.entries(selectedAttributes.value)) {
+        if (value) {
+            variantsMessage += `- ${key}: ${value}\n`
+        }
+    }
+
     const message = `Bonjour, je suis intéressé(e) par ce produit:\n\n` +
         `*${product.value.name}*\n` +
         `Prix: ${product.value.discount_price || product.value.price} FCFA\n` +
         `Quantité: ${quantity.value}\n\n` +
         `Variantes sélectionnées:\n` +
-        (selectedSize.value ? `- Taille: ${selectedSize.value}\n` : '') +
-        (selectedColor.value ? `- Couleur: ${selectedColor.value}\n` : '') +
-        (selectedSleeveType.value ? `- Type de manche: ${selectedSleeveType.value}\n` : '')
+        variantsMessage
 
     const encodedMessage = encodeURIComponent(message)
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`
@@ -330,11 +432,35 @@ const orderViaWhatsApp = () => {
     window.open(whatsappUrl, '_blank')
 }
 
-// Fetch product data (à implémenter avec l'API)
-// onMounted(async () => {
-//   const slug = route.params.slug as string
-//   product.value = await fetchProductBySlug(slug)
-// })
+// Watcher pour recharger le produit quand le slug change (navigation entre produits)
+watch(() => route.params.slug, async (newSlug) => {
+    if (newSlug) {
+        try {
+            loading.value = true
+            product.value = await fetchProductBySlug(newSlug as string)
+
+            // Mettre à jour l'index du produit actuel et les produits similaires
+            currentProductIndex.value = categoryProducts.value.findIndex(p => p.slug === newSlug)
+            similarProducts.value = categoryProducts.value
+                .filter(p => p.slug !== newSlug)
+                .slice(0, 4)
+
+            // Réinitialiser les sélections
+            currentImageIndex.value = 0
+            selectedAttributes.value = {}
+            quantity.value = 1
+
+            // Scroll vers le haut
+            if (process.client) {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement du produit:', error)
+        } finally {
+            loading.value = false
+        }
+    }
+})
 </script>
 
 <style scoped>
@@ -456,18 +582,20 @@ const orderViaWhatsApp = () => {
 .main-image-container {
     flex: 1;
     position: relative;
-    padding-top: 125%;
     overflow: hidden;
     border-radius: 4px;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .main-image {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    object-fit: contain;
+    max-height: 80vh;
+    /* Prevent image from becoming too tall on large screens */
 }
 
 /* Product Info */
@@ -509,10 +637,15 @@ const orderViaWhatsApp = () => {
     font-size: 1.125rem;
 }
 
-.nav-arrow:hover {
+.nav-arrow:hover:not(:disabled) {
     background: #0E3A34;
     border-color: #0E3A34;
     color: #F5F2EC;
+}
+
+.nav-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
 }
 
 .product-title {
@@ -806,6 +939,16 @@ const orderViaWhatsApp = () => {
     .product-title {
         font-size: 2.25rem;
     }
+
+    /* Cacher les flèches desktop sur tablette */
+    .product-info .product-navigation {
+        display: none;
+    }
+
+    /* Afficher les flèches à droite du breadcrumb sur tablette */
+    .product-navigation-breadcrumb {
+        display: flex !important;
+    }
 }
 
 /* Responsive - Mobile */
@@ -856,7 +999,8 @@ const orderViaWhatsApp = () => {
     /* Image principale en grand */
     .main-image-container {
         width: 100%;
-        padding-top: 125%;
+        padding-top: 0;
+        height: auto;
         order: 1;
     }
 
@@ -871,7 +1015,7 @@ const orderViaWhatsApp = () => {
     }
 
     .breadcrumb-wrapper {
-        padding: 0 1rem;
+        padding: 0;
     }
 
     /* Thumbnails en dessous en horizontal */
@@ -880,7 +1024,7 @@ const orderViaWhatsApp = () => {
         gap: 0.5rem;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        padding: 0 1rem;
+        padding: 0;
         order: 2;
         justify-content: flex-start;
     }
@@ -947,6 +1091,67 @@ const orderViaWhatsApp = () => {
 
     .btn-add-to-cart {
         width: 100%;
+    }
+}
+
+/* Similar Products Section */
+.similar-products-section {
+    position: relative;
+    z-index: 2;
+    margin-top: 5rem;
+    padding: 3rem 0;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #0E3A34;
+    margin: 0 0 1rem 0;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.title-underline {
+    width: 80px;
+    height: 3px;
+    background: #C9A46C;
+    border-radius: 2px;
+    margin: 0 auto;
+}
+
+.similar-products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+}
+
+/* Responsive - Similar Products */
+@media (max-width: 1024px) {
+    .similar-products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .similar-products-section {
+        margin-top: 3rem;
+        padding: 2rem 0;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .similar-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
     }
 }
 </style>

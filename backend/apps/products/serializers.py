@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Collection, Category, Product, ProductImage, ProductVariant
+# Force reload
+from .models import Collection, Category, Product, ProductImage, ProductVariant, AttributeValue
 
 
 class CollectionSerializer(serializers.ModelSerializer):
@@ -23,17 +24,44 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductImageSerializer(serializers.ModelSerializer):
     """Serializer pour les images de produits"""
     
+    image = serializers.SerializerMethodField()
+    
     class Meta:
         model = ProductImage
         fields = ['id', 'image', 'is_primary', 'order']
+    
+    def get_image(self, obj):
+        """Retourne l'URL de l'image (externe ou locale)"""
+        image_url = obj.get_image_url
+        
+        # Si c'est une URL relative (commence par /), ajouter le domaine
+        if image_url and image_url.startswith('/'):
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(image_url)
+        
+        return image_url
+
+
+class AttributeValueSerializer(serializers.ModelSerializer):
+    """Serializer pour les valeurs d'attributs"""
+    
+    name = serializers.CharField(source='attribute.name', read_only=True)
+    slug = serializers.CharField(source='attribute.slug', read_only=True)
+    
+    class Meta:
+        model = AttributeValue
+        fields = ['name', 'slug', 'value']
 
 
 class ProductVariantSerializer(serializers.ModelSerializer):
     """Serializer pour les variantes de produits"""
     
+    attributes = AttributeValueSerializer(many=True, read_only=True)
+    
     class Meta:
         model = ProductVariant
-        fields = ['id', 'size', 'color', 'sku', 'stock']
+        fields = ['id', 'attributes', 'sku', 'stock']
 
 
 class ProductListSerializer(serializers.ModelSerializer):

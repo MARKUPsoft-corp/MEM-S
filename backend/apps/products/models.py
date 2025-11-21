@@ -144,11 +144,29 @@ class ProductImage(models.Model):
     )
     image = models.ImageField(
         upload_to='products/',
-        verbose_name="Image"
+        verbose_name="Image",
+        blank=True,
+        null=True
+    )
+    image_url = models.URLField(
+        max_length=500,
+        verbose_name="URL de l'image",
+        blank=True,
+        null=True,
+        help_text="URL externe de l'image (Unsplash, etc.)"
     )
     is_primary = models.BooleanField(default=False, verbose_name="Image principale")
     order = models.IntegerField(default=0, verbose_name="Ordre")
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    @property
+    def get_image_url(self):
+        """Retourne l'URL de l'image (externe ou locale)"""
+        if self.image_url:
+            return self.image_url
+        elif self.image:
+            return self.image.url
+        return None
     
     class Meta:
         verbose_name = "Image de produit"
@@ -176,8 +194,50 @@ class ProductImage(models.Model):
         super().save(*args, **kwargs)
 
 
+class Attribute(models.Model):
+    """Attribut de produit (ex: Tissu, Coupe, Collection)"""
+    
+    name = models.CharField(max_length=50, unique=True, verbose_name="Nom")
+    slug = models.SlugField(max_length=50, unique=True, verbose_name="Slug")
+    
+    class Meta:
+        verbose_name = "Attribut"
+        verbose_name_plural = "Attributs"
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class AttributeValue(models.Model):
+    """Valeur d'attribut (ex: Coton, Slim, Hiver 2024)"""
+    
+    attribute = models.ForeignKey(
+        Attribute,
+        on_delete=models.CASCADE,
+        related_name='values',
+        verbose_name="Attribut"
+    )
+    value = models.CharField(max_length=50, verbose_name="Valeur")
+    
+    class Meta:
+        verbose_name = "Valeur d'attribut"
+        verbose_name_plural = "Valeurs d'attributs"
+        ordering = ['attribute', 'value']
+        unique_together = ['attribute', 'value']
+    
+    def __str__(self):
+        return f"{self.attribute.name}: {self.value}"
+
+
 class ProductVariant(models.Model):
-    """Variante de produit (taille, couleur)"""
+    """Variante de produit (taille, couleur, attributs personnalisés)"""
+    # Force reload
     
     product = models.ForeignKey(
         Product,
@@ -185,8 +245,15 @@ class ProductVariant(models.Model):
         related_name='variants',
         verbose_name="Produit"
     )
-    size = models.CharField(max_length=20, verbose_name="Taille")
-    color = models.CharField(max_length=50, verbose_name="Couleur")
+    
+    # Nouveaux attributs dynamiques
+    attributes = models.ManyToManyField(
+        AttributeValue,
+        related_name='variants',
+        verbose_name="Attributs",
+        blank=True
+    )
+    
     sku = models.CharField(
         max_length=50,
         unique=True,
@@ -199,11 +266,11 @@ class ProductVariant(models.Model):
     class Meta:
         verbose_name = "Variante de produit"
         verbose_name_plural = "Variantes de produits"
-        ordering = ['size', 'color']
+        ordering = ['product', 'sku']
         indexes = [
             models.Index(fields=['sku']),
             models.Index(fields=['product']),
         ]
     
     def __str__(self):
-        return f"{self.product.name} - {self.size} - {self.color}"
+        return f"{self.product.name} - {self.sku}"
