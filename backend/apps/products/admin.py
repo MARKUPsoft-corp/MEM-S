@@ -1,16 +1,26 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, ProductVariant
+from .models import Collection, Category, Product, ProductImage, ProductVariant
+
+
+@admin.register(Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    """Admin pour les collections"""
+    
+    list_display = ['name', 'slug', 'order', 'created_at']
+    search_fields = ['name', 'slug']
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ['order', 'name']
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     """Admin pour les catégories"""
     
-    list_display = ['name', 'slug', 'collection_type', 'order', 'created_at']
-    list_filter = ['collection_type']
+    list_display = ['name', 'slug', 'collection', 'order', 'created_at']
+    list_filter = ['collection']
     search_fields = ['name', 'slug']
     prepopulated_fields = {'slug': ('name',)}
-    ordering = ['order', 'name']
+    ordering = ['collection__order', 'order', 'name']
 
 
 class ProductImageInline(admin.TabularInline):

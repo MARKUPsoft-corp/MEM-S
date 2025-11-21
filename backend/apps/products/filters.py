@@ -12,7 +12,7 @@ class ProductFilter(django_filters.FilterSet):
     is_new = django_filters.BooleanFilter(field_name='is_new')
     is_featured = django_filters.BooleanFilter(field_name='is_featured')
     search = django_filters.CharFilter(method='filter_search')
-    collection = django_filters.CharFilter(field_name='category__collection_type')
+    collection = django_filters.CharFilter(field_name='category__collection__slug')
     
     class Meta:
         model = Product

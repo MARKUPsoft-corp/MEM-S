@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from apps.products.models import Category, Product, ProductImage, ProductVariant
+from apps.products.models import Collection, Category, Product, ProductImage, ProductVariant
 
 
 class Command(BaseCommand):
@@ -19,7 +19,12 @@ class Command(BaseCommand):
             ProductImage.objects.all().delete()
             Product.objects.all().delete()
             Category.objects.all().delete()
+            Collection.objects.all().delete()
             self.stdout.write(self.style.SUCCESS('✓ Données supprimées'))
+
+        self.stdout.write('Création des collections...')
+        self.create_collections()
+        self.stdout.write(self.style.SUCCESS('✓ 4 collections créées'))
 
         self.stdout.write('Création des catégories...')
         self.create_categories()
@@ -31,21 +36,39 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS('\n✅ Peuplement terminé avec succès!'))
 
+    def create_collections(self):
+        """Crée les 4 collections"""
+        collections_data = [
+            {'name': 'Hommes', 'slug': 'men', 'description': 'Collection masculine traditionnelle', 'order': 1},
+            {'name': 'Femmes', 'slug': 'women', 'description': 'Collection féminine élégante', 'order': 2},
+            {'name': 'Babouches', 'slug': 'babouches', 'description': 'Babouches traditionnelles en cuir', 'order': 3},
+            {'name': 'Lins', 'slug': 'lins', 'description': 'Collection en lin léger', 'order': 4},
+        ]
+
+        for data in collections_data:
+            Collection.objects.create(**data)
+
     def create_categories(self):
         """Crée les 12 catégories"""
+        # Récupérer les collections
+        men = Collection.objects.get(slug='men')
+        women = Collection.objects.get(slug='women')
+        babouches = Collection.objects.get(slug='babouches')
+        lins = Collection.objects.get(slug='lins')
+        
         categories_data = [
-            {'name': 'Boubous', 'slug': 'boubous', 'order': 1, 'collection_type': 'men'},
-            {'name': 'Gandouras', 'slug': 'gandouras', 'order': 2, 'collection_type': 'men'},
-            {'name': 'Costumes', 'slug': 'costumes', 'order': 3, 'collection_type': 'men'},
-            {'name': 'Chemises', 'slug': 'chemises', 'order': 4, 'collection_type': 'men'},
-            {'name': 'Pantalons', 'slug': 'pantalons', 'order': 5, 'collection_type': 'men'},
-            {'name': 'Robes', 'slug': 'robes', 'order': 6, 'collection_type': 'women'},
-            {'name': 'Ensembles', 'slug': 'ensembles', 'order': 7, 'collection_type': 'women'},
-            {'name': 'Sacs', 'slug': 'sacs', 'order': 8, 'collection_type': 'women'},
-            {'name': 'Chemises Lin', 'slug': 'chemises-lin', 'order': 9, 'collection_type': 'lins'},
-            {'name': 'Pantalons Lin', 'slug': 'pantalons-lin', 'order': 10, 'collection_type': 'lins'},
-            {'name': 'Babouches Cuir', 'slug': 'babouches-cuir', 'order': 11, 'collection_type': 'babouches'},
-            {'name': 'Babouches Brodées', 'slug': 'babouches-brodees', 'order': 12, 'collection_type': 'babouches'},
+            {'name': 'Boubous', 'slug': 'boubous', 'order': 1, 'collection': men},
+            {'name': 'Gandouras', 'slug': 'gandouras', 'order': 2, 'collection': men},
+            {'name': 'Costumes', 'slug': 'costumes', 'order': 3, 'collection': men},
+            {'name': 'Chemises', 'slug': 'chemises', 'order': 4, 'collection': men},
+            {'name': 'Pantalons', 'slug': 'pantalons', 'order': 5, 'collection': men},
+            {'name': 'Robes', 'slug': 'robes', 'order': 6, 'collection': women},
+            {'name': 'Ensembles', 'slug': 'ensembles', 'order': 7, 'collection': women},
+            {'name': 'Sacs', 'slug': 'sacs', 'order': 8, 'collection': women},
+            {'name': 'Chemises Lin', 'slug': 'chemises-lin', 'order': 9, 'collection': lins},
+            {'name': 'Pantalons Lin', 'slug': 'pantalons-lin', 'order': 10, 'collection': lins},
+            {'name': 'Babouches Cuir', 'slug': 'babouches-cuir', 'order': 11, 'collection': babouches},
+            {'name': 'Babouches Brodées', 'slug': 'babouches-brodees', 'order': 12, 'collection': babouches},
         ]
 
         for cat_data in categories_data:

@@ -2,8 +2,9 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Category, Product
+from .models import Collection, Category, Product
 from .serializers import (
+    CollectionSerializer,
     CategorySerializer,
     ProductListSerializer,
     ProductDetailSerializer
@@ -11,22 +12,39 @@ from .serializers import (
 from .filters import ProductFilter
 
 
+class CollectionViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet pour les collections (lecture seule)"""
+    
+    queryset = Collection.objects.prefetch_related('categories').all()
+    serializer_class = CollectionSerializer
+    lookup_field = 'slug'
+    
+    @action(detail=True, methods=['get'])
+    def categories(self, request, slug=None):
+        """Retourne les catégories d'une collection spécifique"""
+        collection = self.get_object()
+        categories = collection.categories.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)
+
+
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet pour les catégories (lecture seule)"""
     
-    queryset = Category.objects.all()
+    queryset = Category.objects.select_related('collection').all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
     
     @action(detail=False, methods=['get'])
     def by_collection(self, request):
         """Retourne les catégories groupées par collection"""
-        collections = {}
-        for choice in Category.COLLECTION_CHOICES:
-            collection_type = choice[0]
-            categories = self.queryset.filter(collection_type=collection_type)
-            collections[collection_type] = CategorySerializer(categories, many=True).data
-        return Response(collections)
+        collections_data = {}
+        collections = Collection.objects.prefetch_related('categories').all()
+        
+        for collection in collections:
+            collections_data[collection.slug] = CategorySerializer(collection.categories.all(), many=True).data
+        
+        return Response(collections_data)
 
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):

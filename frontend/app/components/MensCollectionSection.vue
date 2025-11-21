@@ -10,22 +10,27 @@
             </div>
 
             <!-- Subcategory Tabs -->
-            <div class="subcategory-tabs">
-                <button v-for="subcategory in subcategories" :key="subcategory.id"
-                    @click="selectSubcategory(subcategory.id)"
-                    :class="['subcategory-tab', { active: activeSubcategory === subcategory.id }]">
-                    {{ subcategory.name }}
+            <div v-if="categories.length > 0" class="subcategory-tabs">
+                <button v-for="category in categories" :key="category.id"
+                    @click="selectCategory(category.slug)"
+                    :class="['subcategory-tab', { active: activeCategory === category.slug }]">
+                    {{ category.name }}
                 </button>
             </div>
 
+            <!-- Loading State -->
+            <div v-if="loading" class="loading-container">
+                <p>Chargement des produits...</p>
+            </div>
+
             <!-- Products Grid -->
-            <div class="products-grid">
-                <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" />
+            <div v-else class="products-grid">
+                <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product" />
             </div>
 
             <!-- View All Button -->
             <div class="view-all-container">
-                <NuxtLink :to="currentSubcategoryLink" class="btn-view-all">
+                <NuxtLink to="/men" class="btn-view-all">
                     Voir la collection complète
                 </NuxtLink>
             </div>
@@ -34,383 +39,57 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useProducts } from '../../composables/useProducts'
 import ProductCard from './ProductCard.vue'
 
-// Sous-catégories hommes
-const subcategories = [
-    { id: 'boubou', name: 'Boubou', link: '/men?category=boubou' },
-    { id: 'gandoura', name: 'Gandoura', link: '/men?category=gandoura' },
-    { id: 'costumes', name: 'Costumes', link: '/men?category=costumes' },
-    { id: 'chemise', name: 'Chemise', link: '/men?category=chemise' },
-    { id: 'pantalon', name: 'Pantalon', link: '/men?category=pantalon' }
-]
+const { fetchProducts, fetchCategoriesByCollection } = useProducts()
 
-const activeSubcategory = ref('boubou')
+const categories = ref([])
+const products = ref([])
+const activeCategory = ref(null)
+const loading = ref(true)
 
-// Données de produits (à remplacer par des données réelles depuis une API)
-const products = ref([
-    // Boubou
-    {
-        id: 1,
-        name: 'Boubou Traditionnel Blanc',
-        slug: 'boubou-traditionnel-blanc',
-        price: 35000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'boubou',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 2,
-        name: 'Boubou Brodé Ivoire',
-        slug: 'boubou-brode-ivoire',
-        price: 42000,
-        images: [
-            'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'boubou'
-    },
-    {
-        id: 3,
-        name: 'Boubou Royal Noir',
-        slug: 'boubou-royal-noir',
-        price: 38000,
-        images: [
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'boubou'
-    },
-    {
-        id: 16,
-        name: 'Boubou Premium Bleu',
-        slug: 'boubou-premium-bleu',
-        price: 45000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'boubou',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 21,
-        name: 'Boubou Élégant Marron',
-        slug: 'boubou-elegant-marron',
-        price: 40000,
-        images: [
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'boubou'
-    },
-    {
-        id: 22,
-        name: 'Boubou Moderne Gris',
-        slug: 'boubou-moderne-gris',
-        price: 37000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'boubou'
-    },
-    // Gandoura
-    {
-        id: 4,
-        name: 'Gandoura Élégante Beige',
-        slug: 'gandoura-elegante-beige',
-        price: 32000,
-        images: [
-            'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'gandoura',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 5,
-        name: 'Gandoura Moderne Grise',
-        slug: 'gandoura-moderne-grise',
-        price: 30000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'gandoura'
-    },
-    {
-        id: 6,
-        name: 'Gandoura Classique Blanche',
-        slug: 'gandoura-classique-blanche',
-        price: 28000,
-        images: [
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'gandoura'
-    },
-    {
-        id: 17,
-        name: 'Gandoura Luxe Marron',
-        slug: 'gandoura-luxe-marron',
-        price: 35000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'gandoura',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 23,
-        name: 'Gandoura Premium Noire',
-        slug: 'gandoura-premium-noire',
-        price: 33000,
-        images: [
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'gandoura'
-    },
-    {
-        id: 24,
-        name: 'Gandoura Chic Bleue',
-        slug: 'gandoura-chic-bleue',
-        price: 31000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'gandoura'
-    },
-    // Costumes
-    {
-        id: 7,
-        name: 'Costume 3 Pièces Marine',
-        slug: 'costume-3-pieces-marine',
-        price: 55000,
-        images: [
-            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'costumes',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 8,
-        name: 'Costume Slim Noir',
-        slug: 'costume-slim-noir',
-        price: 52000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'costumes'
-    },
-    {
-        id: 9,
-        name: 'Costume Africain Moderne',
-        slug: 'costume-africain-moderne',
-        price: 58000,
-        images: [
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'costumes'
-    },
-    {
-        id: 18,
-        name: 'Costume Élégant Gris',
-        slug: 'costume-elegant-gris',
-        price: 60000,
-        images: [
-            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'costumes',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 25,
-        name: 'Costume Classique Beige',
-        slug: 'costume-classique-beige',
-        price: 56000,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'costumes'
-    },
-    {
-        id: 26,
-        name: 'Costume Premium Bleu',
-        slug: 'costume-premium-bleu',
-        price: 62000,
-        images: [
-            'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'costumes'
-    },
-    // Chemise
-    {
-        id: 10,
-        name: 'Chemise Brodée Blanche',
-        slug: 'chemise-brodee-blanche',
-        price: 18000,
-        images: [
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'chemise',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 11,
-        name: 'Chemise Africaine Bleue',
-        slug: 'chemise-africaine-bleue',
-        price: 16000,
-        images: [
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'chemise'
-    },
-    {
-        id: 12,
-        name: 'Chemise Casual Beige',
-        slug: 'chemise-casual-beige',
-        price: 15000,
-        images: [
-            'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'chemise'
-    },
-    {
-        id: 19,
-        name: 'Chemise Élégante Noire',
-        slug: 'chemise-elegante-noire',
-        price: 19000,
-        images: [
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'chemise',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 27,
-        name: 'Chemise Lin Grise',
-        slug: 'chemise-lin-grise',
-        price: 17000,
-        images: [
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'chemise'
-    },
-    {
-        id: 28,
-        name: 'Chemise Moderne Verte',
-        slug: 'chemise-moderne-verte',
-        price: 16500,
-        images: [
-            'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'chemise'
-    },
-    // Pantalon
-    {
-        id: 13,
-        name: 'Pantalon Chino Beige',
-        slug: 'pantalon-chino-beige',
-        price: 22000,
-        images: [
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'pantalon'
-    },
-    {
-        id: 14,
-        name: 'Pantalon Africain Noir',
-        slug: 'pantalon-africain-noir',
-        price: 25000,
-        images: [
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'pantalon',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 15,
-        name: 'Pantalon Slim Marine',
-        slug: 'pantalon-slim-marine',
-        price: 20000,
-        images: [
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'pantalon'
-    },
-    {
-        id: 20,
-        name: 'Pantalon Cargo Kaki',
-        slug: 'pantalon-cargo-kaki',
-        price: 24000,
-        images: [
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'pantalon',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 29,
-        name: 'Pantalon Élégant Gris',
-        slug: 'pantalon-elegant-gris',
-        price: 23000,
-        images: [
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'pantalon'
-    },
-    {
-        id: 30,
-        name: 'Pantalon Moderne Blanc',
-        slug: 'pantalon-moderne-blanc',
-        price: 21000,
-        images: [
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'pantalon'
+// Charger les catégories de la collection "men"
+onMounted(async () => {
+    try {
+        loading.value = true
+        
+        // Récupérer les catégories groupées par collection
+        const collectionData = await fetchCategoriesByCollection()
+        categories.value = collectionData['men'] || []
+        
+        // Sélectionner la première catégorie par défaut
+        if (categories.value.length > 0) {
+            activeCategory.value = categories.value[0].slug
+        }
+        
+        // Charger les produits de la collection homme
+        const response = await fetchProducts({ collection: 'men' })
+        products.value = response.results || []
+        
+    } catch (error) {
+        console.error('Error loading men collection:', error)
+        categories.value = []
+        products.value = []
+    } finally {
+        loading.value = false
     }
-])
+})
 
-// Filtrage des produits par sous-catégorie
+// Filtrer les produits par catégorie active
 const filteredProducts = computed(() => {
-    return products.value.filter(product => product.subcategory === activeSubcategory.value)
+    if (!activeCategory.value) return products.value
+    return products.value.filter(product => product.category.slug === activeCategory.value)
 })
 
-// Lien de la sous-catégorie active
-const currentSubcategoryLink = computed(() => {
-    const subcategory = subcategories.find(sub => sub.id === activeSubcategory.value)
-    return subcategory ? subcategory.link : '/men'
+// Limiter à 6 produits pour l'affichage dans la section
+const displayedProducts = computed(() => {
+    return filteredProducts.value.slice(0, 6)
 })
 
-const selectSubcategory = (subcategoryId) => {
-    activeSubcategory.value = subcategoryId
+const selectCategory = (categorySlug) => {
+    activeCategory.value = categorySlug
 }
 </script>
 
@@ -477,6 +156,14 @@ const selectSubcategory = (subcategoryId) => {
     color: #2A2A2A;
     margin: 0;
     opacity: 0.8;
+}
+
+/* Loading State */
+.loading-container {
+    text-align: center;
+    padding: 3rem;
+    color: #2A2A2A;
+    font-family: 'Montserrat', sans-serif;
 }
 
 /* Subcategory Tabs */
@@ -638,4 +325,5 @@ const selectSubcategory = (subcategoryId) => {
         letter-spacing: 1px;
     }
 }
+
 </style>

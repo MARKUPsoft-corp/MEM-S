@@ -2,30 +2,30 @@
     <section class="womens-collection-section">
         <AfricanPatternBackground opacity="light" color="gold" />
         <div class="container">
-            <!-- Section Title -->
             <div class="section-header">
                 <h2 class="section-title">Collection Femmes</h2>
                 <div class="title-underline"></div>
-                <p class="section-subtitle">Élégance et raffinement</p>
+                <p class="section-subtitle">Élégance et raffinement africain</p>
             </div>
 
-            <!-- Subcategory Tabs -->
-            <div class="subcategory-tabs">
-                <button v-for="subcategory in subcategories" :key="subcategory.id"
-                    @click="selectSubcategory(subcategory.id)"
-                    :class="['subcategory-tab', { active: activeSubcategory === subcategory.id }]">
-                    {{ subcategory.name }}
+            <div v-if="categories.length > 0" class="subcategory-tabs">
+                <button v-for="category in categories" :key="category.id"
+                    @click="selectCategory(category.slug)"
+                    :class="['subcategory-tab', { active: activeCategory === category.slug }]">
+                    {{ category.name }}
                 </button>
             </div>
 
-            <!-- Products Grid -->
-            <div class="products-grid">
-                <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" />
+            <div v-if="loading" class="loading-container">
+                <p>Chargement des produits...</p>
             </div>
 
-            <!-- View All Button -->
+            <div v-else class="products-grid">
+                <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product" />
+            </div>
+
             <div class="view-all-container">
-                <NuxtLink :to="currentSubcategoryLink" class="btn-view-all">
+                <NuxtLink to="/women" class="btn-view-all">
                     Voir la collection complète
                 </NuxtLink>
             </div>
@@ -34,175 +34,47 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useProducts } from '../../composables/useProducts'
 import ProductCard from './ProductCard.vue'
 
-// Sous-catégories femmes
-const subcategories = [
-    { id: 'robes', name: 'Vêtements', link: '/women?category=robes' },
-    { id: 'sacs', name: 'Sacs', link: '/women?category=sacs' }
-]
+const { fetchProducts, fetchCategoriesByCollection } = useProducts()
 
-const activeSubcategory = ref('robes')
+const categories = ref([])
+const products = ref([])
+const activeCategory = ref(null)
+const loading = ref(true)
 
-// Données de produits (à remplacer par des données réelles depuis une API)
-const products = ref([
-    // Robes
-    {
-        id: 1,
-        name: 'Robe Africaine Élégante',
-        slug: 'robe-africaine-elegante',
-        price: 35000,
-        images: [
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'robes',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 2,
-        name: 'Ensemble Traditionnel Bleu',
-        slug: 'ensemble-traditionnel-bleu',
-        price: 42000,
-        images: [
-            'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'robes',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 3,
-        name: 'Robe Wax Moderne',
-        slug: 'robe-wax-moderne',
-        price: 38000,
-        images: [
-            'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'robes'
-    },
-    {
-        id: 4,
-        name: 'Ensemble Brodé Premium',
-        slug: 'ensemble-brode-premium',
-        price: 45000,
-        images: [
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'robes',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 9,
-        name: 'Robe Longue Wax',
-        slug: 'robe-longue-wax',
-        price: 40000,
-        images: [
-            'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'robes'
-    },
-    {
-        id: 10,
-        name: 'Ensemble Moderne Rose',
-        slug: 'ensemble-moderne-rose',
-        price: 36000,
-        images: [
-            'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'robes'
-    },
-    // Sacs
-    {
-        id: 5,
-        name: 'Sac à Main Cuir Marron',
-        slug: 'sac-a-main-cuir-marron',
-        price: 25000,
-        images: [
-            'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'sacs',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 6,
-        name: 'Sac Traditionnel Wax',
-        slug: 'sac-traditionnel-wax',
-        price: 22000,
-        images: [
-            'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'sacs'
-    },
-    {
-        id: 7,
-        name: 'Sac Bandoulière Élégant',
-        slug: 'sac-bandouliere-elegant',
-        price: 28000,
-        images: [
-            'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'sacs',
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 8,
-        name: 'Sac à Dos Moderne',
-        slug: 'sac-a-dos-moderne',
-        price: 30000,
-        images: [
-            'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'sacs',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 11,
-        name: 'Sac Pochette Élégante',
-        slug: 'sac-pochette-elegante',
-        price: 18000,
-        images: [
-            'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'sacs'
-    },
-    {
-        id: 12,
-        name: 'Sac Cabas Wax',
-        slug: 'sac-cabas-wax',
-        price: 26000,
-        images: [
-            'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=600&h=750&fit=crop&q=80'
-        ],
-        subcategory: 'sacs',
-        badge: { type: 'featured', text: 'VEDETTE' }
+onMounted(async () => {
+    try {
+        loading.value = true
+        const collectionData = await fetchCategoriesByCollection()
+        categories.value = collectionData['women'] || []
+        if (categories.value.length > 0) {
+            activeCategory.value = categories.value[0].slug
+        }
+        const response = await fetchProducts({ collection: 'women' })
+        products.value = response.results || []
+    } catch (error) {
+        console.error('Error loading women collection:', error)
+        categories.value = []
+        products.value = []
+    } finally {
+        loading.value = false
     }
-])
+})
 
-// Filtrage des produits par sous-catégorie
 const filteredProducts = computed(() => {
-    return products.value.filter(product => product.subcategory === activeSubcategory.value)
+    if (!activeCategory.value) return products.value
+    return products.value.filter(product => product.category.slug === activeCategory.value)
 })
 
-// Lien de la sous-catégorie active
-const currentSubcategoryLink = computed(() => {
-    const subcategory = subcategories.find(sub => sub.id === activeSubcategory.value)
-    return subcategory ? subcategory.link : '/women'
+const displayedProducts = computed(() => {
+    return filteredProducts.value.slice(0, 6)
 })
 
-const selectSubcategory = (subcategoryId) => {
-    activeSubcategory.value = subcategoryId
+const selectCategory = (categorySlug) => {
+    activeCategory.value = categorySlug
 }
 </script>
 
@@ -223,11 +95,7 @@ const selectSubcategory = (subcategoryId) => {
     width: calc(100% - 2rem);
     max-width: 1400px;
     height: 1px;
-    background: linear-gradient(to right, 
-        transparent 0%, 
-        #C9A46C 20%, 
-        #C9A46C 80%, 
-        transparent 100%);
+    background: linear-gradient(to right, transparent 0%, #C9A46C 20%, #C9A46C 80%, transparent 100%);
     opacity: 0.3;
 }
 
@@ -239,7 +107,6 @@ const selectSubcategory = (subcategoryId) => {
     z-index: 2;
 }
 
-/* Section Header */
 .section-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -271,7 +138,13 @@ const selectSubcategory = (subcategoryId) => {
     opacity: 0.8;
 }
 
-/* Subcategory Tabs */
+.loading-container {
+    text-align: center;
+    padding: 3rem;
+    color: #2A2A2A;
+    font-family: 'Montserrat', sans-serif;
+}
+
 .subcategory-tabs {
     display: flex;
     justify-content: center;
@@ -314,7 +187,6 @@ const selectSubcategory = (subcategoryId) => {
     border-bottom-color: #0E3A34;
 }
 
-/* Products Grid */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -322,7 +194,6 @@ const selectSubcategory = (subcategoryId) => {
     margin-bottom: 3rem;
 }
 
-/* View All Button */
 .view-all-container {
     display: flex;
     justify-content: center;
@@ -353,45 +224,21 @@ const selectSubcategory = (subcategoryId) => {
     box-shadow: 0 4px 12px rgba(14, 58, 52, 0.2);
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
     .products-grid {
         grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
     }
 }
 
 @media (max-width: 992px) {
     .products-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
     }
 }
 
-/* Tablet */
-@media (min-width: 768px) and (max-width: 1023px) {
-    .section-header {
-        margin-bottom: 3rem;
-    }
-
-    .subcategory-tabs {
-        margin-bottom: 2.5rem;
-    }
-
-    .subcategory-tab {
-        padding: 0.875rem 1.5rem;
-        font-size: 0.9375rem;
-    }
-}
-
-/* Mobile */
 @media (max-width: 767px) {
-    .container {
-        padding: 0 1rem;
-    }
-
-    .section-header {
-        margin-bottom: 2.5rem;
+    .womens-collection-section {
+        padding: 2rem 0 3rem 0;
     }
 
     .section-title {
@@ -402,10 +249,6 @@ const selectSubcategory = (subcategoryId) => {
         font-size: 0.9375rem;
     }
 
-    .subcategory-tabs {
-        margin-bottom: 2rem;
-    }
-
     .subcategory-tab {
         padding: 0.75rem 1.25rem;
         font-size: 0.875rem;
@@ -413,17 +256,11 @@ const selectSubcategory = (subcategoryId) => {
 
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-
-    .view-all-container {
-        margin-top: 3rem;
     }
 
     .btn-view-all {
         padding: 0.875rem 2rem;
         font-size: 0.8125rem;
-        letter-spacing: 1px;
     }
 }
 </style>

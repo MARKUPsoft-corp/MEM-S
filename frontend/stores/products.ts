@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Product, Category, ProductFilter } from '../types/product'
+import type { Product, Category, Collection, ProductFilter } from '../types/product'
 
 interface PaginatedResponse {
   count: number
@@ -12,6 +12,7 @@ export const useProductsStore = defineStore('products', {
   state: () => ({
     products: [] as Product[],
     categories: [] as Category[],
+    collections: [] as Collection[],
     filters: {
       category: undefined,
       min_price: undefined,
@@ -34,7 +35,7 @@ export const useProductsStore = defineStore('products', {
       try {
         this.loading = true
         const config = useRuntimeConfig()
-        
+
         // Construire les paramètres de requête
         const queryParams = new URLSearchParams()
         if (params) {
@@ -44,13 +45,13 @@ export const useProductsStore = defineStore('products', {
             }
           })
         }
-        
+
         const url = `${config.public.apiBase}/products/${queryParams.toString() ? '?' + queryParams.toString() : ''}`
         const response = await $fetch<PaginatedResponse>(url)
-        
+
         this.products = response.results
         this.totalCount = response.count
-        
+
         return response
       } catch (error) {
         console.error('Error fetching products:', error)
@@ -112,6 +113,18 @@ export const useProductsStore = defineStore('products', {
         return collections
       } catch (error) {
         console.error('Error fetching categories by collection:', error)
+        throw error
+      }
+    },
+
+    async fetchCollections() {
+      try {
+        const config = useRuntimeConfig()
+        const response = await $fetch<{ results: Collection[] }>(`${config.public.apiBase}/collections/`)
+        this.collections = response.results
+        return response.results
+      } catch (error) {
+        console.error('Error fetching collections:', error)
         throw error
       }
     },

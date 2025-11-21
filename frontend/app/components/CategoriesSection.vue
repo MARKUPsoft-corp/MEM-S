@@ -7,13 +7,16 @@
                 <div class="title-underline"></div>
                 <p class="section-subtitle">Découvrez nos collections d'inspiration africaine</p>
             </div>
-            <div class="categories-grid">
-                <NuxtLink v-for="category in categories" :key="category.id" :to="category.link" class="category-card">
+            <div v-if="loading" class="loading-container">
+                <p>Chargement des collections...</p>
+            </div>
+            <div v-else class="categories-grid">
+                <NuxtLink v-for="collection in collections" :key="collection.id" :to="`/${collection.slug}`" class="category-card">
                     <div class="category-image">
-                        <img :src="category.image" :alt="category.title" />
+                        <img :src="collection.image || getDefaultImage(collection.slug)" :alt="collection.name" />
                         <div class="category-overlay"></div>
                     </div>
-                    <h3 class="category-title">{{ category.title }}</h3>
+                    <h3 class="category-title">{{ collection.name.toUpperCase() }}</h3>
                 </NuxtLink>
             </div>
         </div>
@@ -21,39 +24,35 @@
 </template>
 
 <script setup lang="ts">
-interface Category {
-    id: string
-    title: string
-    image: string
-    link: string
-}
+import { useProducts } from '../../composables/useProducts'
+import type { Collection } from '../../types/product'
 
-const categories: Category[] = [
-    {
-        id: 'men',
-        title: 'Hommes',
-        image: 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=600&fit=crop&q=80',
-        link: '/men'
-    },
-    {
-        id: 'women',
-        title: 'Femmes',
-        image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=600&fit=crop&q=80',
-        link: '/women'
-    },
-    {
-        id: 'babouches',
-        title: 'Babouches',
-        image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=600&fit=crop&q=80',
-        link: '/babouches'
-    },
-    {
-        id: 'lins',
-        title: 'Lins',
-        image: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&h=600&fit=crop&q=80',
-        link: '/lins'
+const { fetchCollections, collections: collectionsData, loading } = useProducts()
+
+// Charger les collections au montage du composant
+const collections = ref<Collection[]>([])
+
+onMounted(async () => {
+    try {
+        const data = await fetchCollections()
+        collections.value = data
+    } catch (error) {
+        console.error('Error loading collections:', error)
+        // Fallback sur des collections par défaut en cas d'erreur
+        collections.value = []
     }
-]
+})
+
+// Images par défaut si l'API ne fournit pas d'image
+const getDefaultImage = (slug: string) => {
+    const defaultImages: Record<string, string> = {
+        'men': 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=600&fit=crop&q=80',
+        'women': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=600&fit=crop&q=80',
+        'babouches': 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=600&fit=crop&q=80',
+        'lins': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600&h=600&fit=crop&q=80'
+    }
+    return defaultImages[slug] || 'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=600&fit=crop&q=80'
+}
 </script>
 
 <style scoped>

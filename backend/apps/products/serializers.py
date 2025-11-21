@@ -1,13 +1,23 @@
 from rest_framework import serializers
-from .models import Category, Product, ProductImage, ProductVariant
+from .models import Collection, Category, Product, ProductImage, ProductVariant
+
+
+class CollectionSerializer(serializers.ModelSerializer):
+    """Serializer pour les collections"""
+    
+    class Meta:
+        model = Collection
+        fields = ['id', 'name', 'slug', 'description', 'image', 'order']
 
 
 class CategorySerializer(serializers.ModelSerializer):
     """Serializer pour les catégories"""
     
+    collection = CollectionSerializer(read_only=True)
+    
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'image', 'order', 'collection_type']
+        fields = ['id', 'name', 'slug', 'image', 'order', 'collection']
 
 
 class ProductImageSerializer(serializers.ModelSerializer):

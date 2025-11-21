@@ -1,9 +1,19 @@
+export interface Collection {
+  id: number
+  name: string
+  slug: string
+  description?: string
+  image?: string
+  order: number
+}
+
 export interface Category {
   id: number
   name: string
   slug: string
   image?: string
   order: number
+  collection: Collection
 }
 
 export interface ProductImage {

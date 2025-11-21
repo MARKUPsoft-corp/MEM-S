@@ -2,15 +2,42 @@ from django.db import models
 from django.utils.text import slugify
 
 
+class Collection(models.Model):
+    """Collection de produits (Hommes, Femmes, Babouches, Lins)"""
+    
+    name = models.CharField(max_length=100, verbose_name="Nom")
+    slug = models.SlugField(max_length=100, unique=True, verbose_name="Slug")
+    description = models.TextField(blank=True, verbose_name="Description")
+    image = models.ImageField(
+        upload_to='collections/',
+        blank=True,
+        null=True,
+        verbose_name="Image"
+    )
+    order = models.IntegerField(default=0, verbose_name="Ordre d'affichage")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Collection"
+        verbose_name_plural = "Collections"
+        ordering = ['order', 'name']
+        indexes = [
+            models.Index(fields=['slug']),
+            models.Index(fields=['order']),
+        ]
+    
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
 class Category(models.Model):
     """Catégorie de produits"""
-    
-    COLLECTION_CHOICES = [
-        ('men', 'Hommes'),
-        ('women', 'Femmes'),
-        ('babouches', 'Babouches'),
-        ('lins', 'Lins'),
-    ]
     
     name = models.CharField(max_length=100, verbose_name="Nom")
     slug = models.SlugField(max_length=100, unique=True, verbose_name="Slug")
@@ -21,10 +48,13 @@ class Category(models.Model):
         verbose_name="Image"
     )
     order = models.IntegerField(default=0, verbose_name="Ordre d'affichage")
-    collection_type = models.CharField(
-        max_length=20,
-        choices=COLLECTION_CHOICES,
-        verbose_name="Type de collection"
+    collection = models.ForeignKey(
+        Collection,
+        on_delete=models.CASCADE,
+        related_name='categories',
+        verbose_name="Collection",
+        null=True,  # Temporairement nullable pour la migration
+        blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -32,10 +62,10 @@ class Category(models.Model):
     class Meta:
         verbose_name = "Catégorie"
         verbose_name_plural = "Catégories"
-        ordering = ['order', 'name']
+        ordering = ['collection__order', 'order', 'name']
         indexes = [
             models.Index(fields=['slug']),
-            models.Index(fields=['collection_type']),
+            models.Index(fields=['collection']),
         ]
     
     def __str__(self):

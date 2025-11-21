@@ -2,22 +2,31 @@
     <section class="lins-collection-section">
         <AfricanPatternBackground opacity="light" color="gold" />
         <div class="container">
-            <!-- Section Title -->
             <div class="section-header">
                 <h2 class="section-title">Collection Lins</h2>
                 <div class="title-underline"></div>
-                <p class="section-subtitle">Naturel & Élégant</p>
+                <p class="section-subtitle">Fraîcheur et élégance naturelle</p>
             </div>
 
-            <!-- Products Grid -->
-            <div class="products-grid">
-                <ProductCard v-for="product in products" :key="product.id" :product="product" />
+            <div v-if="categories.length > 0" class="subcategory-tabs">
+                <button v-for="category in categories" :key="category.id"
+                    @click="selectCategory(category.slug)"
+                    :class="['subcategory-tab', { active: activeCategory === category.slug }]">
+                    {{ category.name }}
+                </button>
             </div>
 
-            <!-- View All Button -->
+            <div v-if="loading" class="loading-container">
+                <p>Chargement des produits...</p>
+            </div>
+
+            <div v-else class="products-grid">
+                <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product" />
+            </div>
+
             <div class="view-all-container">
                 <NuxtLink to="/lins" class="btn-view-all">
-                    Découvrir la collection
+                    Voir la collection complète
                 </NuxtLink>
             </div>
         </div>
@@ -25,76 +34,48 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useProducts } from '../../composables/useProducts'
 import ProductCard from './ProductCard.vue'
 
-// Données de produits lins (à remplacer par des données réelles depuis une API)
-const products = ref([
-    {
-        id: 1,
-        name: 'Chemise Lin Homme Beige',
-        slug: 'chemise-lin-homme-beige',
-        price: 18000,
-        images: [
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-        ],
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 2,
-        name: 'Pantalon Lin Naturel',
-        slug: 'pantalon-lin-naturel',
-        price: 22000,
-        images: [
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-        ],
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 3,
-        name: 'Ensemble Lin Blanc',
-        slug: 'ensemble-lin-blanc',
-        price: 35000,
-        images: [
-            'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-        ]
-    },
-    {
-        id: 4,
-        name: 'Robe Lin Femme Ivoire',
-        slug: 'robe-lin-femme-ivoire',
-        price: 28000,
-        images: [
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
-        ],
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 5,
-        name: 'Chemise Lin Blanche Homme',
-        slug: 'chemise-lin-blanche-homme',
-        price: 19000,
-        images: [
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-        ]
-    },
-    {
-        id: 6,
-        name: 'Pantalon Lin Gris',
-        slug: 'pantalon-lin-gris',
-        price: 24000,
-        images: [
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'
-        ],
-        badge: { type: 'new', text: 'NOUVEAU' }
+const { fetchProducts, fetchCategoriesByCollection } = useProducts()
+
+const categories = ref([])
+const products = ref([])
+const activeCategory = ref(null)
+const loading = ref(true)
+
+onMounted(async () => {
+    try {
+        loading.value = true
+        const collectionData = await fetchCategoriesByCollection()
+        categories.value = collectionData['lins'] || []
+        if (categories.value.length > 0) {
+            activeCategory.value = categories.value[0].slug
+        }
+        const response = await fetchProducts({ collection: 'lins' })
+        products.value = response.results || []
+    } catch (error) {
+        console.error('Error loading lins collection:', error)
+        categories.value = []
+        products.value = []
+    } finally {
+        loading.value = false
     }
-])
+})
+
+const filteredProducts = computed(() => {
+    if (!activeCategory.value) return products.value
+    return products.value.filter(product => product.category.slug === activeCategory.value)
+})
+
+const displayedProducts = computed(() => {
+    return filteredProducts.value.slice(0, 6)
+})
+
+const selectCategory = (categorySlug) => {
+    activeCategory.value = categorySlug
+}
 </script>
 
 <style scoped>
@@ -114,11 +95,7 @@ const products = ref([
     width: calc(100% - 2rem);
     max-width: 1400px;
     height: 1px;
-    background: linear-gradient(to right, 
-        transparent 0%, 
-        #C9A46C 20%, 
-        #C9A46C 80%, 
-        transparent 100%);
+    background: linear-gradient(to right, transparent 0%, #C9A46C 20%, #C9A46C 80%, transparent 100%);
     opacity: 0.3;
 }
 
@@ -130,10 +107,9 @@ const products = ref([
     z-index: 2;
 }
 
-/* Section Header */
 .section-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
 }
 
 .section-title {
@@ -162,7 +138,55 @@ const products = ref([
     opacity: 0.8;
 }
 
-/* Products Grid */
+.loading-container {
+    text-align: center;
+    padding: 3rem;
+    color: #2A2A2A;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.subcategory-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 3rem;
+    border-bottom: 2px solid #e5e5e5;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.subcategory-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.subcategory-tab {
+    padding: 1rem 2rem;
+    border: none;
+    background: transparent;
+    color: #2A2A2A;
+    font-size: 1rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    font-family: 'Montserrat', sans-serif;
+    position: relative;
+    bottom: -2px;
+}
+
+.subcategory-tab:hover {
+    color: #0E3A34;
+}
+
+.subcategory-tab.active {
+    color: #0E3A34;
+    font-weight: 600;
+    border-bottom-color: #0E3A34;
+}
+
 .products-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -170,7 +194,6 @@ const products = ref([
     margin-bottom: 3rem;
 }
 
-/* View All Button */
 .view-all-container {
     display: flex;
     justify-content: center;
@@ -201,36 +224,21 @@ const products = ref([
     box-shadow: 0 4px 12px rgba(14, 58, 52, 0.2);
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
     .products-grid {
         grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
     }
 }
 
 @media (max-width: 992px) {
     .products-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
     }
 }
 
-/* Tablet */
-@media (min-width: 768px) and (max-width: 1023px) {
-    .section-header {
-        margin-bottom: 2.5rem;
-    }
-}
-
-/* Mobile */
 @media (max-width: 767px) {
-    .container {
-        padding: 0 1rem;
-    }
-
-    .section-header {
-        margin-bottom: 2.5rem;
+    .lins-collection-section {
+        padding: 2rem 0 3rem 0;
     }
 
     .section-title {
@@ -241,19 +249,18 @@ const products = ref([
         font-size: 0.9375rem;
     }
 
-    .products-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+    .subcategory-tab {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.875rem;
     }
 
-    .view-all-container {
-        margin-top: 3rem;
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .btn-view-all {
         padding: 0.875rem 2rem;
         font-size: 0.8125rem;
-        letter-spacing: 1px;
     }
 }
 </style>

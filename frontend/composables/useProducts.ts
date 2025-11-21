@@ -71,6 +71,13 @@ export const useProducts = () => {
     return await fetchProducts({ collection: collectionType })
   }
 
+  /**
+   * Récupère toutes les collections
+   */
+  const fetchCollections = async () => {
+    return await productsStore.fetchCollections()
+  }
+
   return {
     // Méthodes
     fetchProducts,
@@ -81,10 +88,12 @@ export const useProducts = () => {
     fetchCategoriesByCollection,
     fetchProductsByCategory,
     fetchProductsByCollection,
-    
+    fetchCollections,
+
     // State du store
     products: computed(() => productsStore.products),
     categories: computed(() => productsStore.categories),
+    collections: computed(() => productsStore.collections),
     loading: computed(() => productsStore.loading),
     totalCount: computed(() => productsStore.totalCount),
   }
