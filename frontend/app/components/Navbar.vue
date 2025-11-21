@@ -10,10 +10,11 @@
                 </button>
 
                 <!-- Desktop Links -->
-                <NuxtLink to="/" class="nav-icon nav-icon-home" :class="{ 'nav-icon--active': route.path === '/' }" aria-label="Accueil">
+                <NuxtLink to="/" class="nav-icon nav-icon-home" :class="{ 'nav-icon--active': route.path === '/' }"
+                    aria-label="Accueil">
                     <i class="bi bi-house-door"></i>
                 </NuxtLink>
-                
+
                 <div class="nav-item" @mouseenter="activeDropdown = 'men'" @mouseleave="activeDropdown = null">
                     <span class="nav-link nav-link-dropdown" :class="{ 'nav-link--active': route.path === '/men' }">
                         HOMMES
@@ -120,7 +121,7 @@ const handleCartClick = async () => {
             cancelText: 'Annuler',
             type: 'info'
         })
-        
+
         if (confirmed) {
             router.push('/auth')
         }

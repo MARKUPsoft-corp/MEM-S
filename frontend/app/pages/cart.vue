@@ -48,7 +48,11 @@
                 <!-- Cart Items Section -->
                 <div class="cart-items-section">
                     <div class="cart-section-header">
-                        <h2 class="cart-section-title">Articles ({{ totalItems }})</h2>
+                        <div class="header-left">
+                            <h2 class="cart-section-title">Articles</h2>
+                            <span class="items-count-badge">{{ totalItems }} article{{ totalItems > 1 ? 's' : ''
+                                }}</span>
+                        </div>
                         <div v-if="authStore.isAuthenticated" class="sync-status">
                             <i class="bi bi-cloud-check"></i>
                             <span>Synchronisé</span>
@@ -71,49 +75,96 @@
 
                             <!-- Product Details -->
                             <div class="cart-item-details">
-                                <NuxtLink :to="`/products/${item.product.slug}`" class="cart-item-name">
-                                    {{ item.product.name }}
-                                </NuxtLink>
-                                <div v-if="item.variant && item.variant.attributes" class="cart-item-variant">
-                                    <span v-for="(attr, index) in item.variant.attributes" :key="attr.name">
-                                        {{ attr.name }}: {{ attr.value }}<span
-                                            v-if="index < item.variant.attributes.length - 1"> | </span>
-                                    </span>
-                                </div>
-                                <div class="cart-item-pricing-mobile">
-                                    <div class="price-unit-mobile">
-                                        <span class="price-label">Prix unitaire:</span>
-                                        <span class="price-badge price-badge-mobile">{{ formatPrice(item.price) }}
-                                            FCFA</span>
+                                <!-- Desktop: Two Lines Layout -->
+                                <div class="cart-item-desktop-layout">
+                                    <!-- First Line: Product Name -->
+                                    <div class="cart-item-first-line">
+                                        <NuxtLink :to="`/products/${item.product.slug}`" class="cart-item-name">
+                                            {{ item.product.name }}
+                                        </NuxtLink>
                                     </div>
-                                    <div class="price-total-mobile">
-                                        <span class="price-label">Total:</span>
-                                        <span class="price-badge price-badge-total-mobile">{{ formatPrice(item.price *
-                                            item.quantity) }} FCFA</span>
+
+                                    <!-- Second Line: Quantity and Prices -->
+                                    <div class="cart-item-second-line">
+                                        <div class="quantity-section">
+                                            <span class="section-label">Quantité</span>
+                                            <div class="quantity-controls-inline">
+                                                <button class="quantity-btn-inline" @click="decreaseQuantity(item)"
+                                                    :disabled="item.quantity <= 1" aria-label="Diminuer la quantité">
+                                                    <i class="bi bi-dash"></i>
+                                                </button>
+                                                <span class="quantity-badge-inline">{{ item.quantity }}</span>
+                                                <button class="quantity-btn-inline" @click="increaseQuantity(item)"
+                                                    aria-label="Augmenter la quantité">
+                                                    <i class="bi bi-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="price-section">
+                                            <span class="price-badge price-badge-unit">{{ formatPrice(item.price) }}
+                                                FCFA</span>
+                                            <span class="price-badge price-badge-total-inline">{{ formatPrice(item.price
+                                                *
+                                                item.quantity) }} FCFA</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile: Original Layout -->
+                                <div class="cart-item-mobile-layout">
+                                    <div class="cart-item-header-mobile">
+                                        <NuxtLink :to="`/products/${item.product.slug}`" class="cart-item-name">
+                                            {{ item.product.name }}
+                                        </NuxtLink>
+                                        <button class="cart-item-remove-mobile" @click="removeItem(item)"
+                                            aria-label="Retirer l'article">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div v-if="item.variant && item.variant.attributes" class="cart-item-variant">
+                                        <span v-for="(attr, index) in item.variant.attributes" :key="attr.name"
+                                            class="variant-tag">
+                                            {{ attr.name }}: {{ attr.value }}
+                                        </span>
+                                    </div>
+                                    <div class="cart-item-pricing-mobile">
+                                        <div class="price-unit-mobile">
+                                            <span class="price-label">Prix unitaire:</span>
+                                            <span class="price-badge price-badge-mobile">{{ formatPrice(item.price) }}
+                                                FCFA</span>
+                                        </div>
+                                        <div class="price-total-mobile">
+                                            <span class="price-label">Total:</span>
+                                            <span class="price-badge price-badge-total-mobile">{{ formatPrice(item.price
+                                                *
+                                                item.quantity) }} FCFA</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Quantity Controls -->
+                            <!-- Quantity Controls (Desktop) -->
                             <div class="cart-item-quantity">
-                                <button class="quantity-btn" @click="decreaseQuantity(item)"
-                                    :disabled="item.quantity <= 1" aria-label="Diminuer la quantité">
-                                    <i class="bi bi-dash"></i>
-                                </button>
-                                <input type="number" class="quantity-input" :value="item.quantity"
-                                    @change="updateQuantity(item, $event)" min="1" />
-                                <button class="quantity-btn" @click="increaseQuantity(item)"
-                                    aria-label="Augmenter la quantité">
-                                    <i class="bi bi-plus"></i>
-                                </button>
+                                <span class="quantity-label">Quantité</span>
+                                <div class="quantity-controls">
+                                    <button class="quantity-btn" @click="decreaseQuantity(item)"
+                                        :disabled="item.quantity <= 1" aria-label="Diminuer la quantité">
+                                        <i class="bi bi-dash"></i>
+                                    </button>
+                                    <span class="quantity-badge">{{ item.quantity }}</span>
+                                    <button class="quantity-btn" @click="increaseQuantity(item)"
+                                        aria-label="Augmenter la quantité">
+                                        <i class="bi bi-plus"></i>
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Price -->
+                            <!-- Price (Desktop) -->
                             <div class="cart-item-price">
                                 <span class="price-badge">{{ formatPrice(item.price) }} FCFA</span>
                             </div>
 
-                            <!-- Total -->
+                            <!-- Total (Desktop) -->
                             <div class="cart-item-total">
                                 <span class="price-badge price-badge-total">{{ formatPrice(item.price * item.quantity)
                                     }} FCFA</span>
@@ -144,26 +195,29 @@
                         <div class="summary-details">
                             <div class="summary-row">
                                 <span class="summary-label">Sous-total</span>
-                                <span class="summary-badge">{{ formatPrice(subtotal) }} FCFA</span>
+                                <span class="summary-value-badge">{{ formatPrice(subtotal) }} FCFA</span>
                             </div>
                             <div class="summary-row">
                                 <span class="summary-label">Livraison</span>
-                                <span class="summary-badge summary-badge-free">Gratuite</span>
+                                <span class="summary-badge-free">
+                                    <i class="bi bi-truck"></i>
+                                    Gratuite
+                                </span>
                             </div>
                             <div class="summary-divider"></div>
                             <div class="summary-row summary-row-total">
-                                <span class="summary-label">Total</span>
-                                <span class="summary-badge summary-badge-total">{{ formatPrice(total) }} FCFA</span>
+                                <span class="summary-label-total">Total à payer</span>
+                                <span class="summary-badge-total">{{ formatPrice(total) }} FCFA</span>
                             </div>
                         </div>
 
                         <!-- Checkout Button -->
-                        <button class="btn-checkout">
+                        <button @click="handleCheckout" class="btn-checkout">
                             Procéder au paiement
                         </button>
 
                         <!-- Security Info -->
-                        <div class="security-info">
+                        <div class="security-badge">
                             <i class="bi bi-shield-check"></i>
                             <span>Paiement 100% sécurisé</span>
                         </div>
@@ -216,26 +270,29 @@
                             <div class="summary-details">
                                 <div class="summary-row">
                                     <span class="summary-label">Sous-total</span>
-                                    <span class="summary-badge">{{ formatPrice(subtotal) }} FCFA</span>
+                                    <span class="summary-value-badge">{{ formatPrice(subtotal) }} FCFA</span>
                                 </div>
                                 <div class="summary-row">
                                     <span class="summary-label">Livraison</span>
-                                    <span class="summary-badge summary-badge-free">Gratuite</span>
+                                    <span class="summary-badge-free">
+                                        <i class="bi bi-truck"></i>
+                                        Gratuite
+                                    </span>
                                 </div>
                                 <div class="summary-divider"></div>
                                 <div class="summary-row summary-row-total">
-                                    <span class="summary-label">Total</span>
-                                    <span class="summary-badge summary-badge-total">{{ formatPrice(total) }} FCFA</span>
+                                    <span class="summary-label-total">Total à payer</span>
+                                    <span class="summary-badge-total">{{ formatPrice(total) }} FCFA</span>
                                 </div>
                             </div>
 
                             <!-- Checkout Button -->
-                            <button class="btn-checkout">
+                            <button @click="handleCheckout" class="btn-checkout">
                                 Procéder au paiement
                             </button>
 
                             <!-- Security Info -->
-                            <div class="security-info">
+                            <div class="security-badge">
                                 <i class="bi bi-shield-check"></i>
                                 <span>Paiement 100% sécurisé</span>
                             </div>
@@ -257,6 +314,10 @@
             </div>
         </Transition>
     </div>
+
+    <!-- Order Summary Modal -->
+    <OrderSummaryModal v-if="authStore.user" :show="showOrderModal" :items="items" :user="authStore.user"
+        :subtotal="subtotal" :total="total" @close="showOrderModal = false" />
 </template>
 
 <script setup lang="ts">
@@ -268,18 +329,20 @@ import { useNotification } from '../../composables/useNotification'
 import { useRouter } from 'vue-router'
 import type { CartItem } from '../../types/cart'
 import AfricanPatternBackground from '../components/AfricanPatternBackground.vue'
+import OrderSummaryModal from '../components/OrderSummaryModal.vue'
 
 const { items, totalItems, subtotal, total, loading, syncing, error, fetchCart, updateQuantity: updateQty, removeItem: removeItemFromCart } = useCart()
 const authStore = useAuthStore()
 const router = useRouter()
 const promoCode = ref('')
 const showSummaryModal = ref(false)
+const showOrderModal = ref(false)
 const isButtonAbsolute = ref(false)
 
 // Load cart on mount
 onMounted(async () => {
     const { confirm: showConfirm } = useConfirm()
-    
+
     // Vérifier si l'utilisateur est connecté
     if (!authStore.isAuthenticated) {
         const confirmed = await showConfirm({
@@ -289,7 +352,7 @@ onMounted(async () => {
             cancelText: 'Retour à l\'accueil',
             type: 'info'
         })
-        
+
         if (confirmed) {
             router.push('/auth')
         } else {
@@ -378,7 +441,7 @@ const updateQuantity = async (item: CartItem, event: Event) => {
 const removeItem = async (item: CartItem) => {
     const { confirm: showConfirm } = useConfirm()
     const { success } = useNotification()
-    
+
     const confirmed = await showConfirm({
         title: 'Retirer l\'article',
         message: 'Êtes-vous sûr de vouloir retirer cet article du panier ?',
@@ -386,7 +449,7 @@ const removeItem = async (item: CartItem) => {
         cancelText: 'Annuler',
         type: 'danger'
     })
-    
+
     if (confirmed) {
         await removeItemFromCart(item.id)
         success('Article retiré du panier')
@@ -396,6 +459,10 @@ const removeItem = async (item: CartItem) => {
 const applyPromoCode = () => {
     // TODO: Implement promo code logic
     console.log('Applying promo code:', promoCode.value)
+}
+
+const handleCheckout = () => {
+    showOrderModal.value = true
 }
 </script>
 
@@ -442,42 +509,44 @@ const applyPromoCode = () => {
 
 /* Sync Indicator */
 .sync-indicator {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 1rem;
+    margin: 1rem auto 0;
     padding: 0.75rem 1.5rem;
-    background: rgba(201, 164, 108, 0.1);
-    border: 1px solid rgba(201, 164, 108, 0.3);
-    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(201, 164, 108, 0.15) 0%, rgba(201, 164, 108, 0.1) 100%);
+    border: 2px solid rgba(201, 164, 108, 0.4);
+    border-radius: 25px;
     font-size: 0.875rem;
     color: #C9A46C;
-    font-weight: 500;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(201, 164, 108, 0.2);
 }
 
 .sync-indicator i {
-    font-size: 1rem;
+    font-size: 1.125rem;
 }
 
 /* Error Message */
 .error-message {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 1rem;
+    margin: 1rem auto 0;
     padding: 0.75rem 1.5rem;
-    background: rgba(161, 78, 54, 0.1);
-    border: 1px solid rgba(161, 78, 54, 0.3);
-    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(161, 78, 54, 0.15) 0%, rgba(161, 78, 54, 0.1) 100%);
+    border: 2px solid rgba(161, 78, 54, 0.4);
+    border-radius: 25px;
     font-size: 0.875rem;
     color: #A14E36;
-    font-weight: 500;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(161, 78, 54, 0.2);
 }
 
 .error-message i {
-    font-size: 1rem;
+    font-size: 1.125rem;
 }
 
 /* Loading State */
@@ -606,6 +675,12 @@ const applyPromoCode = () => {
     border-bottom: 2px solid #F5F2EC;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .cart-section-title {
     font-family: 'Montserrat', sans-serif;
     font-size: 1.5rem;
@@ -614,18 +689,32 @@ const applyPromoCode = () => {
     margin: 0;
 }
 
+.items-count-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #C9A46C 0%, #d4b07d 100%);
+    border-radius: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0B0B0B;
+    box-shadow: 0 2px 8px rgba(201, 164, 108, 0.3);
+}
+
 /* Sync Status */
 .sync-status {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: rgba(14, 58, 52, 0.1);
-    border: 1px solid rgba(14, 58, 52, 0.2);
-    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(14, 58, 52, 0.15) 0%, rgba(14, 58, 52, 0.1) 100%);
+    border: 2px solid rgba(14, 58, 52, 0.3);
+    border-radius: 20px;
     font-size: 0.8125rem;
     color: #0E3A34;
-    font-weight: 500;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(14, 58, 52, 0.1);
 }
 
 .sync-status i {
@@ -645,9 +734,9 @@ const applyPromoCode = () => {
     position: relative;
     overflow: hidden;
     display: grid;
-    grid-template-columns: 120px 1fr 140px 100px 120px 40px;
+    grid-template-columns: 120px 1fr auto;
     gap: 1.5rem;
-    align-items: center;
+    align-items: flex-start;
     padding: 1.5rem;
     background: #FFFFFF;
     border: 2px solid rgba(201, 164, 108, 0.2);
@@ -681,22 +770,25 @@ const applyPromoCode = () => {
     position: absolute;
     top: 0.5rem;
     left: 0;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0 2px 2px 0;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0 12px 12px 0;
     font-size: 0.625rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .badge-new {
-    background: #A14E36;
+    background: linear-gradient(135deg, #A14E36 0%, #c25d42 100%);
     color: #FFFFFF;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .badge-featured {
-    background: #C9A46C;
+    background: linear-gradient(135deg, #C9A46C 0%, #d4b07d 100%);
     color: #0B0B0B;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .cart-item-details {
@@ -705,24 +797,183 @@ const applyPromoCode = () => {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex: 1;
+}
+
+/* Desktop Layout: Two Lines */
+.cart-item-desktop-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* First Line: Product Name */
+.cart-item-first-line {
+    display: flex;
+    align-items: center;
+}
+
+/* Second Line: Quantity and Prices */
+.cart-item-second-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(201, 164, 108, 0.2);
+}
+
+/* Mobile Layout: Hidden on Desktop */
+.cart-item-mobile-layout {
+    display: none;
 }
 
 .cart-item-name {
     font-family: 'Montserrat', sans-serif;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     color: #0B0B0B;
     text-decoration: none;
     transition: color 0.3s ease;
+    flex: 1;
 }
 
 .cart-item-name:hover {
     color: #C9A46C;
 }
 
-.cart-item-variant {
-    font-size: 0.875rem;
+.quantity-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-label {
+    font-size: 0.75rem;
     color: #2A2A2A;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quantity-controls-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: #F5F2EC;
+    border-radius: 16px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid rgba(201, 164, 108, 0.3);
+}
+
+.quantity-btn-inline {
+    width: 24px;
+    height: 24px;
+    background: #FFFFFF;
+    border: 1px solid rgba(201, 164, 108, 0.3);
+    border-radius: 50%;
+    color: #0E3A34;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quantity-btn-inline:hover:not(:disabled) {
+    background: #C9A46C;
+    border-color: #C9A46C;
+    color: #FFFFFF;
+}
+
+.quantity-btn-inline:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.quantity-badge-inline {
+    min-width: 24px;
+    padding: 0 0.25rem;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #0E3A34;
+}
+
+.price-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.price-badge-unit {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.price-badge-total-inline {
+    padding: 0.5rem 0.875rem;
+    background: linear-gradient(135deg, rgba(14, 58, 52, 0.15) 0%, rgba(14, 58, 52, 0.1) 100%);
+    border: 2px solid rgba(14, 58, 52, 0.4);
+    color: #0E3A34;
+    font-weight: 700;
+    font-size: 0.9375rem;
+}
+
+/* Mobile Layout Styles */
+.cart-item-header-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.cart-item-remove-mobile {
+    display: none;
+}
+
+/* Show remove button on desktop in the grid */
+.cart-item-remove {
+    position: relative;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: 1px solid rgba(161, 78, 54, 0.3);
+    border-radius: 50%;
+    color: #A14E36;
+    font-size: 1.125rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-item-remove:hover {
+    background: #A14E36;
+    color: #FFFFFF;
+    border-color: #A14E36;
+}
+
+.cart-item-variant {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.variant-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(201, 164, 108, 0.15);
+    border: 1px solid rgba(201, 164, 108, 0.3);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: #0B0B0B;
+    font-weight: 500;
 }
 
 .cart-item-pricing-mobile {
@@ -751,49 +1002,64 @@ const applyPromoCode = () => {
 
 /* Mobile Price Badges */
 .price-badge-mobile {
-    display: inline-block;
-    padding: 0.375rem 0.875rem;
-    background: rgba(201, 164, 108, 0.1);
-    border: 1px solid rgba(201, 164, 108, 0.3);
-    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.875rem;
+    background: rgba(201, 164, 108, 0.15);
+    border: 2px solid rgba(201, 164, 108, 0.4);
+    border-radius: 18px;
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: 0.875rem;
+    font-weight: 700;
     color: #0B0B0B;
+    box-shadow: 0 2px 6px rgba(201, 164, 108, 0.2);
 }
 
 .price-badge-total-mobile {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: rgba(14, 58, 52, 0.15);
-    border: 1px solid rgba(14, 58, 52, 0.4);
-    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.625rem 1.125rem;
+    background: linear-gradient(135deg, #C9A46C 0%, #d4b07d 100%);
+    border: 2px solid #C9A46C;
+    border-radius: 20px;
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.9375rem;
-    font-weight: 700;
-    color: #0E3A34;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0B0B0B;
+    box-shadow: 0 3px 10px rgba(201, 164, 108, 0.3);
 }
 
-/* Quantity Controls */
+/* Quantity Controls (Desktop - Hidden) */
 .cart-item-quantity {
-    position: relative;
-    z-index: 2;
+    display: none;
+}
+
+.quantity-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #2A2A2A;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quantity-controls {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: #FFFFFF;
-    border-radius: 4px;
-    padding: 0.25rem;
+    background: #F5F2EC;
+    border-radius: 20px;
+    padding: 0.25rem 0.5rem;
+    border: 2px solid rgba(201, 164, 108, 0.3);
 }
 
 .quantity-btn {
-    width: 32px;
-    height: 32px;
-    background: #F5F2EC;
-    border: 1px solid #E5E5E5;
-    border-radius: 4px;
-    color: #0B0B0B;
-    font-size: 1rem;
+    width: 28px;
+    height: 28px;
+    background: #FFFFFF;
+    border: 1px solid rgba(201, 164, 108, 0.3);
+    border-radius: 50%;
+    color: #0E3A34;
+    font-size: 0.875rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -805,79 +1071,57 @@ const applyPromoCode = () => {
     background: #C9A46C;
     border-color: #C9A46C;
     color: #FFFFFF;
+    transform: scale(1.1);
 }
 
 .quantity-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.3;
     cursor: not-allowed;
 }
 
-.quantity-input {
-    width: 50px;
-    height: 32px;
+.quantity-badge {
+    min-width: 32px;
+    padding: 0.25rem 0.75rem;
     text-align: center;
-    border: 1px solid #E5E5E5;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #0B0B0B;
-    background: #FFFFFF;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #0E3A34;
 }
 
-.quantity-input:focus {
-    outline: none;
-    border-color: #C9A46C;
-}
-
-/* Price and Total */
+/* Price and Total (Desktop - Hidden) */
 .cart-item-price,
 .cart-item-total {
-    position: relative;
-    z-index: 2;
-    text-align: right;
+    display: none;
 }
 
 /* Price Badges */
 .price-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     padding: 0.5rem 1rem;
-    background: rgba(201, 164, 108, 0.1);
-    border: 1px solid rgba(201, 164, 108, 0.3);
+    background: rgba(201, 164, 108, 0.15);
+    border: 2px solid rgba(201, 164, 108, 0.4);
     border-radius: 20px;
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 0.9375rem;
+    font-weight: 700;
     color: #0B0B0B;
     white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(201, 164, 108, 0.2);
 }
 
 .price-badge-total {
-    background: rgba(14, 58, 52, 0.1);
-    border-color: rgba(14, 58, 52, 0.3);
+    background: linear-gradient(135deg, rgba(14, 58, 52, 0.15) 0%, rgba(14, 58, 52, 0.1) 100%);
+    border: 2px solid rgba(14, 58, 52, 0.4);
     color: #0E3A34;
-    font-weight: 700;
-    font-size: 0.9375rem;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 0.625rem 1.25rem;
+    box-shadow: 0 2px 8px rgba(14, 58, 52, 0.2);
 }
 
-/* Remove Button */
-.cart-item-remove {
-    position: relative;
-    z-index: 2;
-    width: 40px;
-    height: 40px;
-    background: transparent;
-    border: none;
-    color: #A14E36;
-    font-size: 1.25rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border-radius: 4px;
-}
-
-.cart-item-remove:hover {
-    background: #A14E36;
-    color: #FFFFFF;
-}
+/* Remove Button - Moved to cart-item-remove-mobile section */
 
 /* Continue Shopping */
 .continue-shopping-container {
@@ -948,32 +1192,53 @@ const applyPromoCode = () => {
 }
 
 /* Summary Badges */
-.summary-badge {
-    display: inline-block;
+.summary-value-badge {
+    display: inline-flex;
+    align-items: center;
     padding: 0.5rem 1rem;
-    background: rgba(201, 164, 108, 0.1);
-    border: 1px solid rgba(201, 164, 108, 0.3);
+    background: rgba(201, 164, 108, 0.15);
+    border: 2px solid rgba(201, 164, 108, 0.4);
     border-radius: 20px;
     font-family: 'Montserrat', sans-serif;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 0.9375rem;
+    font-weight: 700;
     color: #0B0B0B;
     white-space: nowrap;
 }
 
 .summary-badge-free {
-    background: rgba(14, 58, 52, 0.1);
-    border-color: rgba(14, 58, 52, 0.3);
-    color: #0E3A34;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #0E3A34 0%, #1a5449 100%);
+    border: 2px solid #0E3A34;
+    border-radius: 20px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(14, 58, 52, 0.2);
+}
+
+.summary-badge-free i {
+    font-size: 1rem;
 }
 
 .summary-badge-total {
-    background: rgba(14, 58, 52, 0.15);
-    border-color: rgba(14, 58, 52, 0.4);
-    color: #0E3A34;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.875rem;
+    background: linear-gradient(135deg, #C9A46C 0%, #d4b07d 100%);
+    border: 2px solid #C9A46C;
+    border-radius: 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.875rem;
     font-weight: 700;
-    font-size: 1rem;
-    padding: 0.625rem 1.25rem;
+    color: #0B0B0B;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(201, 164, 108, 0.3);
 }
 
 .summary-divider {
@@ -986,10 +1251,12 @@ const applyPromoCode = () => {
     margin-top: 0.5rem;
 }
 
-.summary-row-total .summary-label {
-    font-size: 1.125rem;
+.summary-label-total {
+    font-size: 0.875rem;
     font-weight: 600;
     color: #0E3A34;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Checkout Button */
@@ -1017,22 +1284,25 @@ const applyPromoCode = () => {
     box-shadow: 0 4px 12px rgba(14, 58, 52, 0.2);
 }
 
-/* Security Info */
-.security-info {
+/* Security Badge */
+.security-badge {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #E5E5E5;
+    padding: 0.75rem 1rem;
+    background: rgba(14, 58, 52, 0.1);
+    border: 2px solid rgba(14, 58, 52, 0.3);
+    border-radius: 20px;
     font-size: 0.8125rem;
-    color: #2A2A2A;
+    font-weight: 600;
+    color: #0E3A34;
 }
 
-.security-info i {
+.security-badge i {
     color: #0E3A34;
-    font-size: 1rem;
+    font-size: 1.125rem;
 }
 
 /* Promo Code Section */
@@ -1228,6 +1498,93 @@ const applyPromoCode = () => {
     opacity: 0;
 }
 
+/* Responsive - Tablet (768px to 1024px) */
+@media (max-width: 1024px) and (min-width: 768px) {
+    .cart-content {
+        grid-template-columns: 1fr;
+    }
+
+    .cart-summary-section {
+        position: static;
+    }
+
+    .cart-item {
+        grid-template-columns: 110px 1fr auto;
+        gap: 1.25rem;
+        padding: 1.5rem;
+    }
+
+    .cart-item-image {
+        width: 110px;
+        height: 135px;
+    }
+
+    .cart-item-details {
+        gap: 0.75rem;
+    }
+
+    .cart-item-first-line {
+        margin-bottom: 0;
+    }
+
+    .cart-item-name {
+        font-size: 1.0625rem;
+    }
+
+    .cart-item-second-line {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+        margin-top: 0.875rem;
+        padding-top: 0.875rem;
+        border-top: 1px solid rgba(201, 164, 108, 0.2);
+    }
+
+    .quantity-section {
+        flex: 0 0 auto;
+        gap: 0.75rem;
+    }
+
+    .section-label {
+        font-size: 0.8125rem;
+        white-space: nowrap;
+    }
+
+    .quantity-controls-inline {
+        padding: 0.3rem 0.6rem;
+    }
+
+    .quantity-btn-inline {
+        width: 26px;
+        height: 26px;
+    }
+
+    .quantity-badge-inline {
+        font-size: 0.9375rem;
+        min-width: 28px;
+    }
+
+    .price-section {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .price-badge-unit {
+        font-size: 0.875rem;
+        padding: 0.4rem 0.875rem;
+    }
+
+    .price-badge-total-inline {
+        font-size: 0.9375rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
 /* Responsive - Mobile */
 @media (max-width: 767px) {
     .cart-container {
@@ -1283,18 +1640,22 @@ const applyPromoCode = () => {
 
     .floating-btn-total {
         font-family: 'Montserrat', sans-serif;
-        font-size: 1rem;
-        font-weight: 700;
+        font-size: 1.125rem;
+        font-weight: 800;
         color: #C9A46C;
+        background: rgba(201, 164, 108, 0.15);
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        border: 1px solid rgba(201, 164, 108, 0.3);
     }
 
     .floating-btn-text {
         font-family: 'Montserrat', sans-serif;
         font-size: 0.75rem;
-        font-weight: 500;
+        font-weight: 600;
         color: #F5F2EC;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
     }
 
     /* Hide Desktop Summary on Mobile */
@@ -1317,16 +1678,49 @@ const applyPromoCode = () => {
         height: 100px;
     }
 
+    /* Hide desktop layout on mobile */
+    .cart-item-desktop-layout {
+        display: none;
+    }
+
+    /* Show mobile layout */
+    .cart-item-mobile-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
     .cart-item-pricing-mobile {
         display: block;
         width: 100%;
-        margin-top: 0.75rem;
+        margin-top: 0.5rem;
     }
 
-    .cart-item-quantity {
-        grid-column: 1 / -1;
+    .cart-item-remove-mobile {
+        display: flex;
+        width: 32px;
+        height: 32px;
+        background: transparent;
+        border: 1px solid rgba(161, 78, 54, 0.3);
+        border-radius: 50%;
+        color: #A14E36;
+        font-size: 0.875rem;
+        align-items: center;
         justify-content: center;
-        margin-top: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .cart-item-remove-mobile:hover {
+        background: #A14E36;
+        color: #FFFFFF;
+        border-color: #A14E36;
+    }
+
+    /* Hide desktop elements */
+    .cart-item-quantity {
+        display: none;
     }
 
     .cart-item-price,
@@ -1335,9 +1729,7 @@ const applyPromoCode = () => {
     }
 
     .cart-item-remove {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
+        display: none;
     }
 
     .cart-summary {
@@ -1354,6 +1746,26 @@ const applyPromoCode = () => {
 
     .btn-apply-promo {
         width: 100%;
+    }
+
+    /* Reduce total badge size on mobile */
+    .summary-label-total {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+
+    .summary-badge-total {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        border-radius: 14px;
+        box-shadow: 0 2px 6px rgba(201, 164, 108, 0.25);
+    }
+
+    .summary-row-total {
+        margin-top: 0.25rem;
+        gap: 0.5rem;
     }
 }
 </style>
