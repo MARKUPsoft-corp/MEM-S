@@ -1,6 +1,5 @@
 <template>
   <div class="category-preview">
-    <!-- African Pattern Background -->
     <AfricanPatternBackground opacity="light" color="gold" />
     
     <div class="section-header">
@@ -10,7 +9,11 @@
     </div>
 
     <div class="products-grid">
-      <ProductCard v-for="product in previewProducts" :key="product.id" :product="product" />
+      <ProductCard
+        v-for="product in previewProducts"
+        :key="product.id"
+        :product="product"
+      />
     </div>
 
     <div class="view-more-container">
@@ -26,71 +29,15 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+const props = defineProps<{
+  products: any[]
+}>()
+
 defineEmits<{
   viewAll: []
 }>()
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Pantalon Chino Beige',
-    slug: 'pantalon-chino-beige',
-    price: 22000,
-    images: [
-      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 2,
-    name: 'Pantalon Africain Noir',
-    slug: 'pantalon-africain-noir',
-    price: 25000,
-    images: [
-      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 3,
-    name: 'Pantalon Slim Marine',
-    slug: 'pantalon-slim-marine',
-    price: 20000,
-    images: [
-      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 4,
-    name: 'Pantalon Cargo Kaki',
-    slug: 'pantalon-cargo-kaki',
-    price: 24000,
-    images: [
-      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 5,
-    name: 'Pantalon Élégant Gris',
-    slug: 'pantalon-elegant-gris',
-    price: 23000,
-    images: [
-      'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 6,
-    name: 'Pantalon Moderne Blanc',
-    slug: 'pantalon-moderne-blanc',
-    price: 21000,
-    images: [
-      'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

@@ -1,6 +1,5 @@
 <template>
   <div class="category-preview">
-    <!-- African Pattern Background -->
     <AfricanPatternBackground opacity="light" color="terracotta" />
     
     <div class="section-header">
@@ -30,71 +29,15 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+const props = defineProps<{
+  products: any[]
+}>()
+
 defineEmits<{
   viewAll: []
 }>()
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Ensemble Wax 2 Pièces',
-    slug: 'ensemble-wax-2-pieces',
-    price: 45000,
-    images: [
-      'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 2,
-    name: 'Ensemble Traditionnel Complet',
-    slug: 'ensemble-traditionnel-complet',
-    price: 52000,
-    images: [
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    name: 'Ensemble Moderne Élégant',
-    slug: 'ensemble-moderne-elegant',
-    price: 48000,
-    images: [
-      'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 4,
-    name: 'Ensemble Casual Chic',
-    slug: 'ensemble-casual-chic',
-    price: 42000,
-    images: [
-      'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 5,
-    name: 'Ensemble Soirée Luxe',
-    slug: 'ensemble-soiree-luxe',
-    price: 58000,
-    images: [
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 6,
-    name: 'Ensemble Décontracté',
-    slug: 'ensemble-decontracte',
-    price: 40000,
-    images: [
-      'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

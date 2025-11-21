@@ -1,6 +1,5 @@
 <template>
   <div class="category-preview">
-    <!-- African Pattern Background -->
     <AfricanPatternBackground opacity="light" color="gold" />
     
     <div class="section-header">
@@ -30,71 +29,15 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+const props = defineProps<{
+  products: any[]
+}>()
+
 defineEmits<{
   viewAll: []
 }>()
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Gandoura Élégante Beige',
-    slug: 'gandoura-elegante-beige',
-    price: 32000,
-    images: [
-      'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 2,
-    name: 'Gandoura Moderne Grise',
-    slug: 'gandoura-moderne-grise',
-    price: 30000,
-    images: [
-      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    name: 'Gandoura Classique Blanche',
-    slug: 'gandoura-classique-blanche',
-    price: 28000,
-    images: [
-      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 4,
-    name: 'Gandoura Luxe Marron',
-    slug: 'gandoura-luxe-marron',
-    price: 35000,
-    images: [
-      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 5,
-    name: 'Gandoura Premium Noire',
-    slug: 'gandoura-premium-noire',
-    price: 33000,
-    images: [
-      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 6,
-    name: 'Gandoura Chic Bleue',
-    slug: 'gandoura-chic-bleue',
-    price: 31000,
-    images: [
-      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

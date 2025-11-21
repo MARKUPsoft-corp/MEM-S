@@ -1,6 +1,5 @@
 <template>
   <div class="category-preview">
-    <!-- African Pattern Background -->
     <AfricanPatternBackground opacity="light" color="gold" />
     
     <div class="section-header">
@@ -30,71 +29,15 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+const props = defineProps<{
+  products: any[]
+}>()
+
 defineEmits<{
   viewAll: []
 }>()
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Babouches Brodées Or',
-    slug: 'babouches-brodees-or',
-    price: 25000,
-    images: [
-      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 2,
-    name: 'Babouches Brodées Argent',
-    slug: 'babouches-brodees-argent',
-    price: 24000,
-    images: [
-      'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    name: 'Babouches Brodées Multicolores',
-    slug: 'babouches-brodees-multicolores',
-    price: 26000,
-    images: [
-      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 4,
-    name: 'Babouches Brodées Traditionnelles',
-    slug: 'babouches-brodees-traditionnelles',
-    price: 23000,
-    images: [
-      'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 5,
-    name: 'Babouches Brodées Luxe',
-    slug: 'babouches-brodees-luxe',
-    price: 28000,
-    images: [
-      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 6,
-    name: 'Babouches Brodées Élégantes',
-    slug: 'babouches-brodees-elegantes',
-    price: 24500,
-    images: [
-      'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

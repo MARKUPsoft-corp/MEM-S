@@ -1,6 +1,5 @@
 <template>
   <div class="category-preview">
-    <!-- African Pattern Background -->
     <AfricanPatternBackground opacity="light" color="green" />
     
     <div class="section-header">
@@ -30,71 +29,15 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+const props = defineProps<{
+  products: any[]
+}>()
+
 defineEmits<{
   viewAll: []
 }>()
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Chemise Lin Blanc',
-    slug: 'chemise-lin-blanc',
-    price: 22000,
-    images: [
-      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 2,
-    name: 'Chemise Lin Beige',
-    slug: 'chemise-lin-beige',
-    price: 20000,
-    images: [
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    name: 'Chemise Lin Bleu Ciel',
-    slug: 'chemise-lin-bleu-ciel',
-    price: 21000,
-    images: [
-      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 4,
-    name: 'Chemise Lin Gris',
-    slug: 'chemise-lin-gris',
-    price: 19000,
-    images: [
-      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 5,
-    name: 'Chemise Lin Vert',
-    slug: 'chemise-lin-vert',
-    price: 23000,
-    images: [
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 6,
-    name: 'Chemise Lin Rose',
-    slug: 'chemise-lin-rose',
-    price: 20500,
-    images: [
-      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

@@ -1,6 +1,5 @@
 <template>
   <div class="category-preview">
-    <!-- African Pattern Background -->
     <AfricanPatternBackground opacity="light" color="terracotta" />
     
     <div class="section-header">
@@ -30,72 +29,15 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+const props = defineProps<{
+  products: any[]
+}>()
+
 defineEmits<{
   viewAll: []
 }>()
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Robe Africaine Élégante',
-    slug: 'robe-africaine-elegante',
-    price: 38000,
-    images: [
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 2,
-    name: 'Robe Wax Colorée',
-    slug: 'robe-wax-coloree',
-    price: 35000,
-    images: [
-      'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    name: 'Robe Longue Traditionnelle',
-    slug: 'robe-longue-traditionnelle',
-    price: 42000,
-    images: [
-      'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 4,
-    name: 'Robe Courte Moderne',
-    slug: 'robe-courte-moderne',
-    price: 32000,
-    images: [
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 5,
-    name: 'Robe Soirée Élégante',
-    slug: 'robe-soiree-elegante',
-    price: 45000,
-    images: [
-      'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 6,
-    name: 'Robe Casual Chic',
-    slug: 'robe-casual-chic',
-    price: 30000,
-    images: [
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

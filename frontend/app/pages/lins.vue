@@ -44,11 +44,11 @@
           <!-- Products Grid -->
           <main class="products-main">
             <div id="chemises">
-              <ChemisesPreview @view-all="openChemisesOverlay" />
+              <ChemisesPreview :products="chemisesProducts" @view-all="openChemisesOverlay" />
             </div>
 
             <div id="pantalons">
-              <PantalonsPreview @view-all="openPantalonsOverlay" />
+              <PantalonsPreview :products="pantalonsProducts" @view-all="openPantalonsOverlay" />
             </div>
           </main>
         </div>
@@ -73,11 +73,16 @@
 </template>
 
 <script setup lang="ts">
+import { useProducts } from '../../composables/useProducts'
 import ChemisesPreview from '../components/lins/ChemisesPreview.vue'
 import PantalonsPreview from '../components/lins/PantalonsPreview.vue'
 import CategoryOverlay from '../components/lins/CategoryOverlay.vue'
 import FilterButton from '../components/FilterButton.vue'
 import FilterPopup from '../components/FilterPopup.vue'
+
+// Charger les produits depuis l'API
+const { fetchProducts } = useProducts()
+const allProducts = ref<any[]>([])
 
 const overlayOpen = ref(false)
 const overlayTitle = ref('')
@@ -93,33 +98,45 @@ const filterCategories = [
 
 const route = useRoute()
 
-const chemisesProducts = [
-  { id: 1, name: 'Chemise Lin Blanc', slug: 'chemise-lin-blanc', price: 22000, images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
-  { id: 2, name: 'Chemise Lin Beige', slug: 'chemise-lin-beige', price: 20000, images: ['https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'] },
-  { id: 3, name: 'Chemise Lin Bleu Ciel', slug: 'chemise-lin-bleu-ciel', price: 21000, images: ['https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'], badge: { type: 'new', text: 'NOUVEAU' } },
-  { id: 4, name: 'Chemise Lin Gris', slug: 'chemise-lin-gris', price: 19000, images: ['https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'] },
-  { id: 5, name: 'Chemise Lin Vert', slug: 'chemise-lin-vert', price: 23000, images: ['https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
-  { id: 6, name: 'Chemise Lin Rose', slug: 'chemise-lin-rose', price: 20500, images: ['https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'] }
-]
+// Produits groupés par catégorie
+const chemisesProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'chemises-lin'))
+const pantalonsProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'pantalons-lin'))
 
-const pantalonsProducts = [
-  { id: 1, name: 'Pantalon Lin Beige', slug: 'pantalon-lin-beige', price: 25000, images: ['https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
-  { id: 2, name: 'Pantalon Lin Blanc', slug: 'pantalon-lin-blanc', price: 24000, images: ['https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'] },
-  { id: 3, name: 'Pantalon Lin Bleu Marine', slug: 'pantalon-lin-bleu-marine', price: 26000, images: ['https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'], badge: { type: 'new', text: 'NOUVEAU' } },
-  { id: 4, name: 'Pantalon Lin Gris', slug: 'pantalon-lin-gris', price: 23000, images: ['https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'] },
-  { id: 5, name: 'Pantalon Lin Kaki', slug: 'pantalon-lin-kaki', price: 27000, images: ['https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
-  { id: 6, name: 'Pantalon Lin Noir', slug: 'pantalon-lin-noir', price: 24500, images: ['https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'] }
-]
+// Charger les produits au montage
+onMounted(async () => {
+    try {
+        const response = await fetchProducts({ collection: 'lins' })
+        // Transformer les données API pour ProductCard
+        const apiProducts = response.results || []
+        allProducts.value = apiProducts.map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            price: parseFloat(product.price),
+            originalPrice: product.discount_price ? parseFloat(product.price) : null,
+            images: product.images?.map((img: any) => img.image) || [],
+            badge: product.is_featured 
+                ? { type: 'featured', text: 'VEDETTE' }
+                : product.is_new 
+                ? { type: 'new', text: 'NOUVEAU' }
+                : null,
+            category: product.category
+        }))
+    } catch (error) {
+        console.error('Error loading lins products:', error)
+        allProducts.value = []
+    }
+})
 
 function openChemisesOverlay() {
   overlayTitle.value = 'Chemises en Lin'
-  overlayProducts.value = chemisesProducts
+  overlayProducts.value = chemisesProducts.value
   overlayOpen.value = true
 }
 
 function openPantalonsOverlay() {
   overlayTitle.value = 'Pantalons en Lin'
-  overlayProducts.value = pantalonsProducts
+  overlayProducts.value = pantalonsProducts.value
   overlayOpen.value = true
 }
 

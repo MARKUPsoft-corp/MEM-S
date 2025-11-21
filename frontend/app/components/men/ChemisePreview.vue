@@ -1,6 +1,5 @@
 <template>
   <div class="category-preview">
-    <!-- African Pattern Background -->
     <AfricanPatternBackground opacity="light" color="gold" />
     
     <div class="section-header">
@@ -30,71 +29,15 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+const props = defineProps<{
+  products: any[]
+}>()
+
 defineEmits<{
   viewAll: []
 }>()
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Chemise Brodée Blanche',
-    slug: 'chemise-brodee-blanche',
-    price: 18000,
-    images: [
-      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 2,
-    name: 'Chemise Africaine Bleue',
-    slug: 'chemise-africaine-bleue',
-    price: 16000,
-    images: [
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    name: 'Chemise Casual Beige',
-    slug: 'chemise-casual-beige',
-    price: 15000,
-    images: [
-      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 4,
-    name: 'Chemise Élégante Noire',
-    slug: 'chemise-elegante-noire',
-    price: 19000,
-    images: [
-      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 5,
-    name: 'Chemise Lin Grise',
-    slug: 'chemise-lin-grise',
-    price: 17000,
-    images: [
-      'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 6,
-    name: 'Chemise Moderne Verte',
-    slug: 'chemise-moderne-verte',
-    price: 16500,
-    images: [
-      'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

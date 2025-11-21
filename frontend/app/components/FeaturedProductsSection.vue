@@ -85,6 +85,7 @@ onMounted(async () => {
         // Ajouter le badge et categoryGroup
         featuredProducts.value = products.map(product => ({
             ...product,
+            images: product.images?.map((img: any) => img.image) || [],
             badge: { type: 'featured', text: 'VEDETTE' },
             categoryGroup: getCategoryGroup(product.category.slug)
         }))

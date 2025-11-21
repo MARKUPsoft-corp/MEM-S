@@ -169,7 +169,7 @@ function clearSearch() {
 const mappedProduct = (product: any) => {
     return {
         ...product,
-        images: product.images?.map((img: any) => typeof img === 'string' ? img : img.image) || [product.image]
+        images: product.images?.map((img: any) => typeof img === 'string' ? img : img.image) || []
     }
 }
 

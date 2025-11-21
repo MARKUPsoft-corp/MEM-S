@@ -44,11 +44,11 @@
           <!-- Products Grid -->
           <main class="products-main">
             <div id="cuir">
-              <CuirPreview @view-all="openCuirOverlay" />
+              <CuirPreview :products="cuirProducts" @view-all="openCuirOverlay" />
             </div>
 
             <div id="brodes">
-              <BrodesPreview @view-all="openBrodesOverlay" />
+              <BrodesPreview :products="brodesProducts" @view-all="openBrodesOverlay" />
             </div>
           </main>
         </div>
@@ -73,11 +73,16 @@
 </template>
 
 <script setup lang="ts">
+import { useProducts } from '../../composables/useProducts'
 import CuirPreview from '../components/babouches/CuirPreview.vue'
 import BrodesPreview from '../components/babouches/BrodesPreview.vue'
 import CategoryOverlay from '../components/babouches/CategoryOverlay.vue'
 import FilterButton from '../components/FilterButton.vue'
 import FilterPopup from '../components/FilterPopup.vue'
+
+// Charger les produits depuis l'API
+const { fetchProducts } = useProducts()
+const allProducts = ref<any[]>([])
 
 const overlayOpen = ref(false)
 const overlayTitle = ref('')
@@ -93,33 +98,45 @@ const filterCategories = [
 
 const route = useRoute()
 
-const cuirProducts = [
-  { id: 1, name: 'Babouches Cuir Premium', slug: 'babouches-cuir-premium', price: 20000, images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
-  { id: 2, name: 'Babouches Cuir Marron', slug: 'babouches-cuir-marron', price: 18000, images: ['https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'] },
-  { id: 3, name: 'Babouches Cuir Noir', slug: 'babouches-cuir-noir', price: 19000, images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'], badge: { type: 'new', text: 'NOUVEAU' } },
-  { id: 4, name: 'Babouches Cuir Beige', slug: 'babouches-cuir-beige', price: 17000, images: ['https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'] },
-  { id: 5, name: 'Babouches Cuir Rouge', slug: 'babouches-cuir-rouge', price: 21000, images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
-  { id: 6, name: 'Babouches Cuir Bleu', slug: 'babouches-cuir-bleu', price: 18500, images: ['https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'] }
-]
+// Produits groupés par catégorie
+const cuirProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'babouches-cuir'))
+const brodesProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'babouches-brodees'))
 
-const brodesProducts = [
-  { id: 1, name: 'Babouches Brodées Or', slug: 'babouches-brodees-or', price: 25000, images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
-  { id: 2, name: 'Babouches Brodées Argent', slug: 'babouches-brodees-argent', price: 24000, images: ['https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'] },
-  { id: 3, name: 'Babouches Brodées Multicolores', slug: 'babouches-brodees-multicolores', price: 26000, images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'], badge: { type: 'new', text: 'NOUVEAU' } },
-  { id: 4, name: 'Babouches Brodées Traditionnelles', slug: 'babouches-brodees-traditionnelles', price: 23000, images: ['https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'] },
-  { id: 5, name: 'Babouches Brodées Luxe', slug: 'babouches-brodees-luxe', price: 28000, images: ['https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'], badge: { type: 'featured', text: 'VEDETTE' } },
-  { id: 6, name: 'Babouches Brodées Élégantes', slug: 'babouches-brodees-elegantes', price: 24500, images: ['https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'] }
-]
+// Charger les produits au montage
+onMounted(async () => {
+    try {
+        const response = await fetchProducts({ collection: 'babouches' })
+        // Transformer les données API pour ProductCard
+        const apiProducts = response.results || []
+        allProducts.value = apiProducts.map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            price: parseFloat(product.price),
+            originalPrice: product.discount_price ? parseFloat(product.price) : null,
+            images: product.images?.map((img: any) => img.image) || [],
+            badge: product.is_featured 
+                ? { type: 'featured', text: 'VEDETTE' }
+                : product.is_new 
+                ? { type: 'new', text: 'NOUVEAU' }
+                : null,
+            category: product.category
+        }))
+    } catch (error) {
+        console.error('Error loading babouches products:', error)
+        allProducts.value = []
+    }
+})
 
 function openCuirOverlay() {
   overlayTitle.value = 'Babouches en Cuir'
-  overlayProducts.value = cuirProducts
+  overlayProducts.value = cuirProducts.value
   overlayOpen.value = true
 }
 
 function openBrodesOverlay() {
   overlayTitle.value = 'Babouches Brodées'
-  overlayProducts.value = brodesProducts
+  overlayProducts.value = brodesProducts.value
   overlayOpen.value = true
 }
 

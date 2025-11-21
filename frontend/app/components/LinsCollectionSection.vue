@@ -33,16 +33,16 @@
     </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useProducts } from '../../composables/useProducts'
 import ProductCard from './ProductCard.vue'
 
 const { fetchProducts, fetchCategoriesByCollection } = useProducts()
 
-const categories = ref([])
-const products = ref([])
-const activeCategory = ref(null)
+const categories = ref<any[]>([])
+const products = ref<any[]>([])
+const activeCategory = ref<string | null>(null)
 const loading = ref(true)
 
 onMounted(async () => {
@@ -54,7 +54,22 @@ onMounted(async () => {
             activeCategory.value = categories.value[0].slug
         }
         const response = await fetchProducts({ collection: 'lins' })
-        products.value = response.results || []
+        // Transformer les données API pour ProductCard
+        const apiProducts = response.results || []
+        products.value = apiProducts.map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            price: parseFloat(product.price),
+            originalPrice: product.discount_price ? parseFloat(product.price) : null,
+            images: product.images?.map((img: any) => img.image) || [],
+            badge: product.is_featured 
+                ? { type: 'featured', text: 'VEDETTE' }
+                : product.is_new 
+                ? { type: 'new', text: 'NOUVEAU' }
+                : null,
+            category: product.category
+        }))
     } catch (error) {
         console.error('Error loading lins collection:', error)
         categories.value = []
@@ -73,7 +88,7 @@ const displayedProducts = computed(() => {
     return filteredProducts.value.slice(0, 6)
 })
 
-const selectCategory = (categorySlug) => {
+const selectCategory = (categorySlug: string) => {
     activeCategory.value = categorySlug
 }
 </script>

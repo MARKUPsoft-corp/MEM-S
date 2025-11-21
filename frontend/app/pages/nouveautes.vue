@@ -190,7 +190,7 @@ function getCategoryTitle() {
 function mappedProduct(product: any) {
     return {
         ...product,
-        images: product.images.map((img: any) => img.image),
+        images: product.images?.map((img: any) => img.image) || [],
         badge: { type: 'new', text: 'NOUVEAU' }
     }
 }

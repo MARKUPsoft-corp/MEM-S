@@ -33,93 +33,18 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+// Props
+const props = defineProps<{
+  products: any[]
+}>()
+
 // Emit
 defineEmits<{
   viewAll: []
 }>()
 
-// Mock data - 8 produits
-const products = ref([
-  {
-    id: 1,
-    name: 'Boubou Traditionnel Blanc',
-    slug: 'boubou-traditionnel-blanc',
-    price: 35000,
-    images: [
-      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 2,
-    name: 'Boubou Brodé Ivoire',
-    slug: 'boubou-brode-ivoire',
-    price: 42000,
-    images: [
-      'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    name: 'Boubou Royal Noir',
-    slug: 'boubou-royal-noir',
-    price: 38000,
-    images: [
-      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 4,
-    name: 'Boubou Premium Bleu',
-    slug: 'boubou-premium-bleu',
-    price: 45000,
-    images: [
-      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 5,
-    name: 'Boubou Élégant Marron',
-    slug: 'boubou-elegant-marron',
-    price: 40000,
-    images: [
-      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 6,
-    name: 'Boubou Moderne Gris',
-    slug: 'boubou-moderne-gris',
-    price: 37000,
-    images: [
-      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 7,
-    name: 'Boubou Luxe Beige',
-    slug: 'boubou-luxe-beige',
-    price: 43000,
-    images: [
-      'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 8,
-    name: 'Boubou Classique Vert',
-    slug: 'boubou-classique-vert',
-    price: 36000,
-    images: [
-      'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
 // Afficher seulement les 4 premiers produits
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

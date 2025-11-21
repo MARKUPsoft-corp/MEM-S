@@ -1,6 +1,5 @@
 <template>
   <div class="category-preview">
-    <!-- African Pattern Background -->
     <AfricanPatternBackground opacity="light" color="gold" />
     
     <div class="section-header">
@@ -30,71 +29,15 @@ import { computed } from 'vue'
 import ProductCard from '../ProductCard.vue'
 import AfricanPatternBackground from '../AfricanPatternBackground.vue'
 
+const props = defineProps<{
+  products: any[]
+}>()
+
 defineEmits<{
   viewAll: []
 }>()
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Babouches Cuir Premium',
-    slug: 'babouches-cuir-premium',
-    price: 20000,
-    images: [
-      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 2,
-    name: 'Babouches Cuir Marron',
-    slug: 'babouches-cuir-marron',
-    price: 18000,
-    images: [
-      'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 3,
-    name: 'Babouches Cuir Noir',
-    slug: 'babouches-cuir-noir',
-    price: 19000,
-    images: [
-      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'new', text: 'NOUVEAU' }
-  },
-  {
-    id: 4,
-    name: 'Babouches Cuir Beige',
-    slug: 'babouches-cuir-beige',
-    price: 17000,
-    images: [
-      'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-    ]
-  },
-  {
-    id: 5,
-    name: 'Babouches Cuir Rouge',
-    slug: 'babouches-cuir-rouge',
-    price: 21000,
-    images: [
-      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-    ],
-    badge: { type: 'featured', text: 'VEDETTE' }
-  },
-  {
-    id: 6,
-    name: 'Babouches Cuir Bleu',
-    slug: 'babouches-cuir-bleu',
-    price: 18500,
-    images: [
-      'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-    ]
-  }
-])
-
-const previewProducts = computed(() => products.value.slice(0, 4))
+const previewProducts = computed(() => props.products.slice(0, 4))
 </script>
 
 <style scoped>

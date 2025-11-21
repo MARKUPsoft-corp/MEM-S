@@ -24,77 +24,41 @@
     </section>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useProducts } from '../../composables/useProducts'
 import ProductCard from './ProductCard.vue'
 
-// Données de produits babouches (à remplacer par des données réelles depuis une API)
-const products = ref([
-    {
-        id: 1,
-        name: 'Babouches Cuir Marron',
-        slug: 'babouches-cuir-marron',
-        price: 15000,
-        images: [
-            'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-        ],
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 2,
-        name: 'Babouches Traditionnelles Beige',
-        slug: 'babouches-traditionnelles-beige',
-        price: 12000,
-        images: [
-            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-        ],
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 3,
-        name: 'Babouches Brodées Noir',
-        slug: 'babouches-brodees-noir',
-        price: 18000,
-        images: [
-            'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-        ]
-    },
-    {
-        id: 4,
-        name: 'Babouches Premium Rouge',
-        slug: 'babouches-premium-rouge',
-        price: 20000,
-        images: [
-            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-        ],
-        badge: { type: 'featured', text: 'VEDETTE' }
-    },
-    {
-        id: 5,
-        name: 'Babouches Élégantes Bleues',
-        slug: 'babouches-elegantes-bleues',
-        price: 16000,
-        images: [
-            'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-        ]
-    },
-    {
-        id: 6,
-        name: 'Babouches Artisanales Vertes',
-        slug: 'babouches-artisanales-vertes',
-        price: 14000,
-        images: [
-            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80'
-        ],
-        badge: { type: 'new', text: 'NOUVEAU' }
-    }
-])
+const { fetchProducts } = useProducts()
+
+// Charger les produits babouches depuis l'API
+const products = ref<any[]>([])
+
+onMounted(async () => {
+  try {
+    const response = await fetchProducts({ collection: 'babouches' })
+    // Transformer les données API pour correspondre au format attendu par ProductCard
+    const apiProducts = response.results || []
+    products.value = apiProducts.slice(0, 6).map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: parseFloat(product.price),
+      originalPrice: product.discount_price ? parseFloat(product.price) : null,
+      // Extraire les URLs des images depuis les objets
+      images: product.images?.map((img: any) => img.image) || [],
+      // Mapper les badges
+      badge: product.is_featured 
+        ? { type: 'featured', text: 'VEDETTE' }
+        : product.is_new 
+        ? { type: 'new', text: 'NOUVEAU' }
+        : null
+    }))
+  } catch (error) {
+    console.error('Error loading babouches products:', error)
+    products.value = []
+  }
+})
 </script>
 
 <style scoped>

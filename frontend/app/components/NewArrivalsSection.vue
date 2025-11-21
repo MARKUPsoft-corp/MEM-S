@@ -84,6 +84,7 @@ onMounted(async () => {
         // Ajouter le badge et categoryGroup
         newProducts.value = products.map(product => ({
             ...product,
+            images: product.images?.map((img: any) => img.image) || [],
             badge: { type: 'new', text: 'NOUVEAU' },
             categoryGroup: getCategoryGroup(product.category.slug)
         }))
