@@ -90,6 +90,7 @@
 <script setup lang="ts">
 import { useCartStore } from '../../stores/cart'
 import { useAuthStore } from '../../stores/auth'
+import { useConfirm } from '../../composables/useConfirm'
 import { useRoute, useRouter } from 'vue-router'
 import Sidebar from './sidebar/Sidebar.vue'
 import SidebarOverlay from './sidebar/SidebarOverlay.vue'
@@ -109,9 +110,18 @@ const totalItems = computed(() => cartStore.totalItems)
 const profileLink = computed(() => authStore.isAuthenticated ? '/profile' : '/auth')
 
 // Gérer le clic sur l'icône du panier
-const handleCartClick = () => {
+const handleCartClick = async () => {
     if (!authStore.isAuthenticated) {
-        if (confirm('Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?')) {
+        const { confirm: showConfirm } = useConfirm()
+        const confirmed = await showConfirm({
+            title: 'Connexion requise',
+            message: 'Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?',
+            confirmText: 'Se connecter',
+            cancelText: 'Annuler',
+            type: 'info'
+        })
+        
+        if (confirmed) {
             router.push('/auth')
         }
     } else {

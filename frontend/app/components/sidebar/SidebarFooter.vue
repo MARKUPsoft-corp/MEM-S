@@ -18,6 +18,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../../../stores/cart'
 import { useAuthStore } from '../../../stores/auth'
+import { useConfirm } from '../../../composables/useConfirm'
 
 const emit = defineEmits<{
   navigate: []
@@ -32,9 +33,18 @@ const profileLink = computed(() => authStore.isAuthenticated ? '/profile' : '/au
 const authText = computed(() => authStore.isAuthenticated ? 'MON PROFIL' : 'CONNEXION')
 
 // Gérer le clic sur le lien panier
-const handleCartClick = () => {
+const handleCartClick = async () => {
   if (!authStore.isAuthenticated) {
-    if (confirm('Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?')) {
+    const { confirm: showConfirm } = useConfirm()
+    const confirmed = await showConfirm({
+      title: 'Connexion requise',
+      message: 'Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?',
+      confirmText: 'Se connecter',
+      cancelText: 'Annuler',
+      type: 'info'
+    })
+    
+    if (confirmed) {
       router.push('/auth')
       emit('navigate')
     }

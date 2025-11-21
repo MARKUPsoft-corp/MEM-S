@@ -8,6 +8,12 @@
       <slot />
     </main>
 
+    <!-- Notifications -->
+    <NotificationContainer />
+    
+    <!-- Confirm Modal -->
+    <ConfirmModalContainer />
+
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
@@ -49,7 +55,8 @@
 </template>
 
 <script setup lang="ts">
-// Layout par défaut avec la nouvelle navbar
+import NotificationContainer from '../components/NotificationContainer.vue'
+import ConfirmModalContainer from '../components/ConfirmModalContainer.vue'
 </script>
 
 <style scoped>

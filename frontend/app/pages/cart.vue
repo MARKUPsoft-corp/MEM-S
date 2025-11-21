@@ -263,6 +263,8 @@
 import { useCart } from '../../composables/useCart'
 import { useCartStore } from '../../stores/cart'
 import { useAuthStore } from '../../stores/auth'
+import { useConfirm } from '../../composables/useConfirm'
+import { useNotification } from '../../composables/useNotification'
 import { useRouter } from 'vue-router'
 import type { CartItem } from '../../types/cart'
 import AfricanPatternBackground from '../components/AfricanPatternBackground.vue'
@@ -276,9 +278,19 @@ const isButtonAbsolute = ref(false)
 
 // Load cart on mount
 onMounted(async () => {
+    const { confirm: showConfirm } = useConfirm()
+    
     // Vérifier si l'utilisateur est connecté
     if (!authStore.isAuthenticated) {
-        if (confirm('Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?')) {
+        const confirmed = await showConfirm({
+            title: 'Connexion requise',
+            message: 'Vous devez être connecté pour accéder au panier. Voulez-vous vous connecter maintenant ?',
+            confirmText: 'Se connecter',
+            cancelText: 'Retour à l\'accueil',
+            type: 'info'
+        })
+        
+        if (confirmed) {
             router.push('/auth')
         } else {
             router.push('/')
@@ -364,8 +376,20 @@ const updateQuantity = async (item: CartItem, event: Event) => {
 }
 
 const removeItem = async (item: CartItem) => {
-    if (confirm('Êtes-vous sûr de vouloir retirer cet article ?')) {
+    const { confirm: showConfirm } = useConfirm()
+    const { success } = useNotification()
+    
+    const confirmed = await showConfirm({
+        title: 'Retirer l\'article',
+        message: 'Êtes-vous sûr de vouloir retirer cet article du panier ?',
+        confirmText: 'Retirer',
+        cancelText: 'Annuler',
+        type: 'danger'
+    })
+    
+    if (confirmed) {
         await removeItemFromCart(item.id)
+        success('Article retiré du panier')
     }
 }
 

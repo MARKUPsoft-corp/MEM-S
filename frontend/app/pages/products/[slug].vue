@@ -155,6 +155,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCartStore } from '../../../stores/cart'
 import { useAuthStore } from '../../../stores/auth'
 import { useProducts } from '../../../composables/useProducts'
+import { useConfirm } from '../../../composables/useConfirm'
+import { useNotification } from '../../../composables/useNotification'
 import type { Product } from '../../../types/product'
 import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
 import ProductCard from '../../components/ProductCard.vue'
@@ -373,8 +375,19 @@ const addToCart = async () => {
 
     // Vérifier si l'utilisateur est connecté
     const authStore = useAuthStore()
+    const { confirm: showConfirm } = useConfirm()
+    const { success, error: showError } = useNotification()
+    
     if (!authStore.isAuthenticated) {
-        if (confirm('Vous devez être connecté pour ajouter des articles au panier. Voulez-vous vous connecter maintenant ?')) {
+        const confirmed = await showConfirm({
+            title: 'Connexion requise',
+            message: 'Vous devez être connecté pour ajouter des articles au panier. Voulez-vous vous connecter maintenant ?',
+            confirmText: 'Se connecter',
+            cancelText: 'Annuler',
+            type: 'info'
+        })
+        
+        if (confirmed) {
             router.push('/auth')
         }
         return
@@ -399,7 +412,7 @@ const addToCart = async () => {
             })
 
             if (!selectedVariant) {
-                alert('Cette combinaison n\'est pas disponible.')
+                showError('Cette combinaison n\'est pas disponible.')
                 return
             }
         } else {
@@ -410,10 +423,10 @@ const addToCart = async () => {
 
     try {
         await cartStore.addItem(product.value, selectedVariant || undefined, quantity.value)
-        alert('Produit ajouté au panier !')
+        success('Produit ajouté au panier !')
     } catch (error) {
         console.error('Erreur lors de l\'ajout au panier:', error)
-        alert('Une erreur est survenue. Veuillez réessayer.')
+        showError('Une erreur est survenue. Veuillez réessayer.')
     }
 }
 
