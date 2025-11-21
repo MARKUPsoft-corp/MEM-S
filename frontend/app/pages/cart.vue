@@ -116,7 +116,7 @@
                             <!-- Total -->
                             <div class="cart-item-total">
                                 <span class="price-badge price-badge-total">{{ formatPrice(item.price * item.quantity)
-                                }} FCFA</span>
+                                    }} FCFA</span>
                             </div>
 
                             <!-- Remove Button -->
@@ -285,7 +285,7 @@ onMounted(async () => {
         }
         return
     }
-    
+
     // Charger le panier depuis le backend
     await fetchCart()
 
@@ -324,8 +324,17 @@ const handleScroll = () => {
 
 // Get product image
 const getProductImage = (product: any) => {
-    if (product.images && product.images.length > 0) {
-        return product.images[0].image || product.images[0]
+    if (product?.images && product.images.length > 0) {
+        const imageUrl = product.images[0].image || product.images[0]
+
+        // Si l'URL est relative, ajouter le domaine du backend (sans /api)
+        if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('/')) {
+            const config = useRuntimeConfig()
+            // Enlever /api de l'URL de base pour les médias
+            const baseUrl = config.public.apiBase.replace('/api', '')
+            return `${baseUrl}${imageUrl}`
+        }
+        return imageUrl
     }
     return '/images/placeholder.jpg'
 }

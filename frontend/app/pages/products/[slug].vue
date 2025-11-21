@@ -391,7 +391,7 @@ const addToCart = async () => {
             // Chercher la variante correspondant aux sélections
             selectedVariant = product.value.variants.find(v => {
                 if (v.attributes && v.attributes.length > 0) {
-                    return v.attributes.every(attr => 
+                    return v.attributes.every(attr =>
                         selectedAttributes.value[attr.name] === attr.value
                     )
                 }
