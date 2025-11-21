@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/auth/google/', GoogleLogin.as_view(), name='google_login'),
     
     # Custom accounts endpoints
+    path('api/accounts/', include('apps.accounts.urls')),
 ]
 
 # Serve media files in development
