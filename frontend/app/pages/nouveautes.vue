@@ -111,12 +111,12 @@ import AfricanPatternBackground from '../components/AfricanPatternBackground.vue
 import FilterButton from '../components/FilterButton.vue'
 import FilterPopup from '../components/FilterPopup.vue'
 
-// Récupérer tous les produits
-const { getAllProducts } = useProducts()
-const allProducts = getAllProducts()
+// Récupérer les nouveaux produits depuis l'API
+const { fetchNewArrivals } = useProducts()
 
-// Filtrer uniquement les nouveaux produits
-const newProducts = allProducts.filter(product => product.is_new)
+// Nouveaux produits
+const newProducts = ref<any[]>([])
+const loading = ref(false)
 
 // Catégorie active
 const activeCategory = ref('all')
@@ -150,12 +150,24 @@ const getCategoryGroup = (categorySlug: string) => {
     return 'all'
 }
 
+// Charger les nouveaux produits au montage
+onMounted(async () => {
+    try {
+        loading.value = true
+        newProducts.value = await fetchNewArrivals()
+    } catch (error) {
+        console.error('Erreur lors du chargement des nouveaux produits:', error)
+    } finally {
+        loading.value = false
+    }
+})
+
 // Produits filtrés par catégorie
 const filteredProducts = computed(() => {
     if (activeCategory.value === 'all') {
-        return newProducts
+        return newProducts.value
     }
-    return newProducts.filter(product => getCategoryGroup(product.category.slug) === activeCategory.value)
+    return newProducts.value.filter(product => getCategoryGroup(product.category.slug) === activeCategory.value)
 })
 
 // Sélectionner une catégorie

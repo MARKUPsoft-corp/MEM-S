@@ -8,6 +8,7 @@
             <div class="auth-card">
                 <div class="auth-form">
                     <h2 class="auth-title">Bienvenue</h2>
+                    <div class="title-underline"></div>
                     <p class="auth-subtitle">Connectez-vous pour continuer vos achats</p>
 
                     <!-- Error Message -->
@@ -168,7 +169,15 @@ useHead({
     font-size: 1.75rem;
     font-weight: 600;
     color: #0E3A34;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 1rem 0;
+}
+
+.title-underline {
+    width: 80px;
+    height: 3px;
+    background: #C9A46C;
+    border-radius: 2px;
+    margin: 0 auto 1rem;
 }
 
 .auth-subtitle {

@@ -33,14 +33,19 @@
     </section>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import ProductCard from './ProductCard.vue'
 import { useProducts } from '../../composables/useProducts'
+import type { Product } from '../../types/product'
 
-// Récupérer tous les produits depuis le composable
-const { getAllProducts } = useProducts()
-const allProducts = getAllProducts()
+const { fetchFeaturedProducts } = useProducts()
+
+// Type étendu pour les produits avec badge et categoryGroup
+interface ExtendedProduct extends Product {
+    badge?: { type: string; text: string }
+    categoryGroup?: string
+}
 
 // Categories de filtrage
 const categories = [
@@ -52,9 +57,11 @@ const categories = [
 ]
 
 const activeCategory = ref('all')
+const featuredProducts = ref<ExtendedProduct[]>([])
+const loading = ref(false)
 
-// Mapper les catégories du composable aux catégories de filtrage
-const getCategoryGroup = (categorySlug) => {
+// Mapper les catégories aux collections
+const getCategoryGroup = (categorySlug: string) => {
     if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(categorySlug)) {
         return 'men'
     }
@@ -70,29 +77,22 @@ const getCategoryGroup = (categorySlug) => {
     return 'all'
 }
 
-// Sélectionner 6 produits en vedette (2 par catégorie principale)
-const featuredProducts = computed(() => {
-    const featured = []
-    
-    // 2 produits hommes (boubous)
-    featured.push(...allProducts.filter(p => p.category.slug === 'boubous').slice(0, 2))
-    
-    // 2 produits femmes (robes)
-    featured.push(...allProducts.filter(p => p.category.slug === 'robes').slice(0, 2))
-    
-    // 1 produit babouches
-    featured.push(...allProducts.filter(p => p.category.slug === 'babouches-cuir').slice(0, 1))
-    
-    // 1 produit lins
-    featured.push(...allProducts.filter(p => p.category.slug === 'chemises-lin').slice(0, 1))
-    
-    // Ajouter le badge VEDETTE et mapper les images
-    return featured.map(product => ({
-        ...product,
-        images: product.images.map(img => img.image),
-        badge: { type: 'featured', text: 'VEDETTE' },
-        categoryGroup: getCategoryGroup(product.category.slug)
-    }))
+// Charger les produits en vedette
+onMounted(async () => {
+    try {
+        loading.value = true
+        const products = await fetchFeaturedProducts()
+        // Ajouter le badge et categoryGroup
+        featuredProducts.value = products.map(product => ({
+            ...product,
+            badge: { type: 'featured', text: 'VEDETTE' },
+            categoryGroup: getCategoryGroup(product.category.slug)
+        }))
+    } catch (error) {
+        console.error('Erreur lors du chargement des produits vedettes:', error)
+    } finally {
+        loading.value = false
+    }
 })
 
 // Filtrage des produits par catégorie
@@ -103,7 +103,7 @@ const filteredProducts = computed(() => {
     return featuredProducts.value.filter(product => product.categoryGroup === activeCategory.value)
 })
 
-const selectCategory = (categoryId) => {
+const selectCategory = (categoryId: string) => {
     activeCategory.value = categoryId
 }
 </script>
@@ -125,11 +125,11 @@ const selectCategory = (categoryId) => {
     width: calc(100% - 2rem);
     max-width: 1400px;
     height: 1px;
-    background: linear-gradient(to right, 
-        transparent 0%, 
-        #C9A46C 20%, 
-        #C9A46C 80%, 
-        transparent 100%);
+    background: linear-gradient(to right,
+            transparent 0%,
+            #C9A46C 20%,
+            #C9A46C 80%,
+            transparent 100%);
     opacity: 0.3;
 }
 

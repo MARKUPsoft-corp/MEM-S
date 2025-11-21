@@ -30,6 +30,9 @@ urlpatterns = [
     
     # Custom accounts endpoints
     path('api/accounts/', include('apps.accounts.urls')),
+    
+    # Products endpoints
+    path('api/', include('apps.products.urls')),
 ]
 
 # Serve media files in development

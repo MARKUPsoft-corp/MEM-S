@@ -111,12 +111,12 @@ import AfricanPatternBackground from '../components/AfricanPatternBackground.vue
 import FilterButton from '../components/FilterButton.vue'
 import FilterPopup from '../components/FilterPopup.vue'
 
-// Récupérer tous les produits
-const { getAllProducts } = useProducts()
-const allProducts = getAllProducts()
+// Récupérer les produits en vedette depuis l'API
+const { fetchFeaturedProducts } = useProducts()
 
-// Filtrer uniquement les produits en vedette
-const featuredProducts = allProducts.filter(product => product.featured)
+// Produits en vedette
+const featuredProducts = ref<any[]>([])
+const loading = ref(false)
 
 // Catégorie active
 const activeCategory = ref('all')
@@ -150,12 +150,24 @@ const getCategoryGroup = (categorySlug: string) => {
     return 'all'
 }
 
+// Charger les produits en vedette au montage
+onMounted(async () => {
+    try {
+        loading.value = true
+        featuredProducts.value = await fetchFeaturedProducts()
+    } catch (error) {
+        console.error('Erreur lors du chargement des produits vedettes:', error)
+    } finally {
+        loading.value = false
+    }
+})
+
 // Produits filtrés par catégorie
 const filteredProducts = computed(() => {
     if (activeCategory.value === 'all') {
-        return featuredProducts
+        return featuredProducts.value
     }
-    return featuredProducts.filter(product => getCategoryGroup(product.category.slug) === activeCategory.value)
+    return featuredProducts.value.filter(product => getCategoryGroup(product.category.slug) === activeCategory.value)
 })
 
 // Sélectionner une catégorie

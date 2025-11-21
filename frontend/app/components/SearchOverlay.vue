@@ -103,43 +103,49 @@ const emit = defineEmits<{
     close: []
 }>()
 
-const { getAllProducts } = useProducts()
+const { fetchProducts, products } = useProducts()
 
 const searchQuery = ref('')
 const searchResults = ref<any[]>([])
 const hasSearched = ref(false)
 const searchInput = ref<HTMLInputElement | null>(null)
-const allProducts = getAllProducts()
+const loading = ref(false)
 
 const popularTags = [
     'Boubou', 'Robe', 'Babouches', 'Lin', 'Gandoura', 
     'Costume', 'Ensemble', 'Sac', 'Brodé', 'Cuir'
 ]
 
-// Perform search
-const performSearch = () => {
+// Perform search using API
+const performSearch = async () => {
     if (!searchQuery.value.trim()) return
     
     hasSearched.value = true
-    const query = searchQuery.value.toLowerCase().trim()
+    loading.value = true
     
-    // Search in product name, description, and category
-    searchResults.value = allProducts.filter(product => {
-        const searchableText = [
-            product.name,
-            product.description,
-            product.category.name,
-            product.category.slug
-        ].join(' ').toLowerCase()
-        
-        return searchableText.includes(query)
-    })
+    try {
+        const query = searchQuery.value.toLowerCase().trim()
+        // Utiliser l'API pour rechercher
+        await fetchProducts({ search: query })
+        searchResults.value = products.value
+    } catch (error) {
+        console.error('Erreur lors de la recherche:', error)
+        searchResults.value = []
+    } finally {
+        loading.value = false
+    }
 }
 
-// Search on input (real-time search)
+// Search on input (real-time search with debounce)
+let searchTimeout: NodeJS.Timeout
 const onSearchInput = () => {
+    clearTimeout(searchTimeout)
+    
     if (searchQuery.value.trim()) {
-        performSearch()
+        // Debounce de 300ms pour éviter trop de requêtes
+        searchTimeout = setTimeout(() => {
+            performSearch()
+        }, 300)
     } else {
         hasSearched.value = false
         searchResults.value = []

@@ -7,6 +7,7 @@
             <div class="profile-card">
                 <div class="profile-header">
                     <h2 class="profile-title">Mon Profil</h2>
+                    <div class="title-underline"></div>
                     <p class="profile-subtitle">Gérez vos informations personnelles</p>
                 </div>
 
@@ -202,7 +203,15 @@ useHead({
     font-size: 1.75rem;
     font-weight: 600;
     color: #0E3A34;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 1rem 0;
+}
+
+.title-underline {
+    width: 80px;
+    height: 3px;
+    background: #C9A46C;
+    border-radius: 2px;
+    margin: 0 auto 1rem;
 }
 
 .profile-subtitle {

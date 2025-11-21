@@ -49,9 +49,11 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'corsheaders',
+    'django_filters',
     
     # Local apps
     'apps.accounts',
+    'apps.products',
 ]
 
 MIDDLEWARE = [

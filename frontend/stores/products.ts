@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 import type { Product, Category, ProductFilter } from '../types/product'
 
+interface PaginatedResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: Product[]
+}
+
 export const useProductsStore = defineStore('products', {
   state: () => ({
     products: [] as Product[],
@@ -13,53 +20,38 @@ export const useProductsStore = defineStore('products', {
       search: undefined,
     } as ProductFilter,
     loading: false,
+    totalCount: 0,
   }),
 
   getters: {
     filteredProducts: (state) => {
-      let filtered = [...state.products]
-
-      if (state.filters.category) {
-        filtered = filtered.filter(p => p.category.slug === state.filters.category)
-      }
-
-      if (state.filters.min_price !== undefined) {
-        filtered = filtered.filter(p => {
-          const price = p.discount_price || p.price
-          return price >= state.filters.min_price!
-        })
-      }
-
-      if (state.filters.max_price !== undefined) {
-        filtered = filtered.filter(p => {
-          const price = p.discount_price || p.price
-          return price <= state.filters.max_price!
-        })
-      }
-
-      if (state.filters.is_new !== undefined) {
-        filtered = filtered.filter(p => p.is_new === state.filters.is_new)
-      }
-
-      if (state.filters.search) {
-        const searchLower = state.filters.search.toLowerCase()
-        filtered = filtered.filter(p => 
-          p.name.toLowerCase().includes(searchLower) ||
-          p.description.toLowerCase().includes(searchLower)
-        )
-      }
-
-      return filtered
+      return state.products
     },
   },
 
   actions: {
-    async fetchProducts() {
+    async fetchProducts(params?: Record<string, any>) {
       try {
         this.loading = true
         const config = useRuntimeConfig()
-        const products = await $fetch<Product[]>(`${config.public.apiBase}/products/`)
-        this.products = products
+        
+        // Construire les paramètres de requête
+        const queryParams = new URLSearchParams()
+        if (params) {
+          Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              queryParams.append(key, String(value))
+            }
+          })
+        }
+        
+        const url = `${config.public.apiBase}/products/${queryParams.toString() ? '?' + queryParams.toString() : ''}`
+        const response = await $fetch<PaginatedResponse>(url)
+        
+        this.products = response.results
+        this.totalCount = response.count
+        
+        return response
       } catch (error) {
         console.error('Error fetching products:', error)
         throw error
@@ -79,13 +71,47 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
+    async fetchFeaturedProducts() {
+      try {
+        const config = useRuntimeConfig()
+        const products = await $fetch<Product[]>(`${config.public.apiBase}/products/featured/`)
+        return products
+      } catch (error) {
+        console.error('Error fetching featured products:', error)
+        throw error
+      }
+    },
+
+    async fetchNewArrivals() {
+      try {
+        const config = useRuntimeConfig()
+        const products = await $fetch<Product[]>(`${config.public.apiBase}/products/new_arrivals/`)
+        return products
+      } catch (error) {
+        console.error('Error fetching new arrivals:', error)
+        throw error
+      }
+    },
+
     async fetchCategories() {
       try {
         const config = useRuntimeConfig()
         const categories = await $fetch<Category[]>(`${config.public.apiBase}/categories/`)
         this.categories = categories
+        return categories
       } catch (error) {
         console.error('Error fetching categories:', error)
+        throw error
+      }
+    },
+
+    async fetchCategoriesByCollection() {
+      try {
+        const config = useRuntimeConfig()
+        const collections = await $fetch<Record<string, Category[]>>(`${config.public.apiBase}/categories/by_collection/`)
+        return collections
+      } catch (error) {
+        console.error('Error fetching categories by collection:', error)
         throw error
       }
     },

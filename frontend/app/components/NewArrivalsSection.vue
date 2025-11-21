@@ -32,9 +32,19 @@
     </section>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import ProductCard from './ProductCard.vue'
+import { useProducts } from '../../composables/useProducts'
+import type { Product } from '../../types/product'
+
+const { fetchNewArrivals } = useProducts()
+
+// Type étendu pour les produits avec badge et categoryGroup
+interface ExtendedProduct extends Product {
+    badge?: { type: string; text: string }
+    categoryGroup?: string
+}
 
 // Categories de filtrage
 const categories = [
@@ -46,95 +56,53 @@ const categories = [
 ]
 
 const activeCategory = ref('all')
+const newProducts = ref<ExtendedProduct[]>([])
+const loading = ref(false)
 
-// Données de produits (à remplacer par des données réelles depuis une API)
-const products = ref([
-    {
-        id: 1,
-        name: 'Boubou Traditionnel',
-        slug: 'boubou-traditionnel',
-        price: 252.00,
-        images: [
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'men',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 2,
-        name: 'Gandoura Élégante',
-        slug: 'gandoura-elegante',
-        price: 504.00,
-        images: [
-            'https://images.unsplash.com/photo-1622445275576-721325763afe?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'men',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 3,
-        name: 'Robe Africaine',
-        slug: 'robe-africaine',
-        price: 350.00,
-        images: [
-            'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1624206112918-f140f087f9b5?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'women',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 4,
-        name: 'Babouches Cuir',
-        slug: 'babouches-cuir',
-        price: 120.00,
-        images: [
-            'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'babouches',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 5,
-        name: 'Chemise Lin Homme',
-        slug: 'chemise-lin-homme',
-        price: 180.00,
-        images: [
-            'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'lins',
-        badge: { type: 'new', text: 'NOUVEAU' }
-    },
-    {
-        id: 6,
-        name: 'Pantalon Lin',
-        slug: 'pantalon-lin',
-        price: 150.00,
-        images: [
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&h=750&fit=crop&q=80',
-            'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=750&fit=crop&q=80'
-        ],
-        category: 'lins',
-        badge: { type: 'new', text: 'NOUVEAU' }
+// Mapper les catégories aux collections
+const getCategoryGroup = (categorySlug: string) => {
+    if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(categorySlug)) {
+        return 'men'
     }
-])
+    if (['robes', 'ensembles', 'sacs'].includes(categorySlug)) {
+        return 'women'
+    }
+    if (['babouches-cuir', 'babouches-brodees'].includes(categorySlug)) {
+        return 'babouches'
+    }
+    if (['chemises-lin', 'pantalons-lin'].includes(categorySlug)) {
+        return 'lins'
+    }
+    return 'all'
+}
+
+// Charger les nouveaux produits
+onMounted(async () => {
+    try {
+        loading.value = true
+        const products = await fetchNewArrivals()
+        // Ajouter le badge et categoryGroup
+        newProducts.value = products.map(product => ({
+            ...product,
+            badge: { type: 'new', text: 'NOUVEAU' },
+            categoryGroup: getCategoryGroup(product.category.slug)
+        }))
+    } catch (error) {
+        console.error('Erreur lors du chargement des nouveaux produits:', error)
+    } finally {
+        loading.value = false
+    }
+})
 
 // Filtrage des produits par catégorie
 const filteredProducts = computed(() => {
     if (activeCategory.value === 'all') {
-        return products.value
+        return newProducts.value
     }
-    return products.value.filter(product => product.category === activeCategory.value)
+    return newProducts.value.filter(product => product.categoryGroup === activeCategory.value)
 })
 
-const selectCategory = (categoryId) => {
+const selectCategory = (categoryId: string) => {
     activeCategory.value = categoryId
 }
 </script>
