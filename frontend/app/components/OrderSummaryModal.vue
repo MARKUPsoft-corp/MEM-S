@@ -4,7 +4,7 @@
       <div v-if="show" class="modal-overlay" @click="$emit('close')">
         <div class="modal-container" @click.stop>
           <AfricanPatternBackground opacity="light" color="gold" />
-
+          
           <!-- Modal Header -->
           <div class="modal-header">
             <h2 class="modal-title">Résumé de votre commande</h2>
@@ -98,9 +98,12 @@
                 <i class="bi bi-chat-dots"></i>
                 Message (optionnel)
               </h3>
-              <textarea v-model="customMessage" class="message-input"
+              <textarea
+                v-model="customMessage"
+                class="message-input"
                 placeholder="Ajoutez un message pour votre commande (adresse de livraison, instructions spéciales, etc.)"
-                rows="3"></textarea>
+                rows="3"
+              ></textarea>
             </div>
           </div>
 
@@ -146,66 +149,48 @@ const formatPrice = (price: number) => {
 
 const sendToWhatsApp = () => {
   const whatsappNumber = '237696962662' // Format international sans + ni espaces
-
+  
   // Construire le message
-  let message = `╔═══════════════════════════╗\n`
-  message += `║  🛍️ *NOUVELLE COMMANDE*  ║\n`
-  message += `║      *MEM'S BOUTIQUE*     ║\n`
-  message += `╚═══════════════════════════╝\n\n`
-
+  let message = `🛍️ *NOUVELLE COMMANDE - MEM'S*\n\n`
+  
   // Informations client
-  message += `┌─────────────────────────┐\n`
-  message += `│ 👤 *INFORMATIONS CLIENT* │\n`
-  message += `└─────────────────────────┘\n`
-  message += `📌 *Nom:* ${props.user.first_name} ${props.user.last_name}\n`
-  message += `📧 *Email:* ${props.user.email}\n`
-  if (props.user.phone) message += `📱 *Téléphone:* ${props.user.phone}\n`
-  if (props.user.address) message += `📍 *Adresse:* ${props.user.address}\n`
+  message += `👤 *Client:*\n`
+  message += `Nom: ${props.user.first_name} ${props.user.last_name}\n`
+  message += `Email: ${props.user.email}\n`
+  if (props.user.phone) message += `Téléphone: ${props.user.phone}\n`
+  if (props.user.address) message += `Adresse: ${props.user.address}\n`
   message += `\n`
-
+  
   // Articles commandés
-  message += `┌─────────────────────────┐\n`
-  message += `│ 📦 *ARTICLES COMMANDÉS*  │\n`
-  message += `└─────────────────────────┘\n\n`
-
+  message += `📦 *Articles commandés:*\n`
   props.items.forEach((item, index) => {
-    message += `*${index + 1}. ${item.product.name}*\n`
+    message += `\n${index + 1}. ${item.product.name}\n`
     if (item.variant && item.variant.attributes) {
-      const variantText = item.variant.attributes.map(attr => `${attr.name}: ${attr.value}`).join(' • ')
-      message += `   🏷️ ${variantText}\n`
+      const variantText = item.variant.attributes.map(attr => `${attr.name}: ${attr.value}`).join(', ')
+      message += `   ${variantText}\n`
     }
-    message += `   ✖️ Quantité: *${item.quantity}*\n`
-    message += `   💵 Prix unitaire: ${formatPrice(item.price)} FCFA\n`
-    message += `   💰 Sous-total: *${formatPrice(item.price * item.quantity)} FCFA*\n`
-    message += `   ─────────────────────────\n`
+    message += `   Quantité: ${item.quantity}\n`
+    message += `   Prix: ${formatPrice(item.price * item.quantity)} FCFA\n`
   })
   message += `\n`
-
+  
   // Total
-  message += `┌─────────────────────────┐\n`
-  message += `│ 💰 *RÉSUMÉ FINANCIER*    │\n`
-  message += `└─────────────────────────┘\n`
-  message += `📊 Sous-total: ${formatPrice(props.subtotal)} FCFA\n`
-  message += `🚚 Livraison: *GRATUITE* ✅\n`
-  message += `━━━━━━━━━━━━━━━━━━━━━━━━━\n`
-  message += `💎 *TOTAL À PAYER: ${formatPrice(props.total)} FCFA*\n`
-  message += `━━━━━━━━━━━━━━━━━━━━━━━━━\n`
-  message += `\n`
-
+  message += `💰 *Résumé:*\n`
+  message += `Sous-total: ${formatPrice(props.subtotal)} FCFA\n`
+  message += `Livraison: Gratuite\n`
+  message += `*Total: ${formatPrice(props.total)} FCFA*\n`
+  
   // Message personnalisé
   if (customMessage.value.trim()) {
-    message += `┌─────────────────────────┐\n`
-    message += `│ 📝 *MESSAGE CLIENT*      │\n`
-    message += `└─────────────────────────┘\n`
-    message += `${customMessage.value.trim()}\n\n`
+    message += `\n📝 *Message:*\n${customMessage.value.trim()}\n`
   }
-
+  
   // Encoder le message
   const encodedMessage = encodeURIComponent(message)
-
+  
   // Détecter si mobile ou desktop
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-
+  
   // Construire l'URL WhatsApp
   let whatsappUrl = ''
   if (isMobile) {
@@ -215,10 +200,10 @@ const sendToWhatsApp = () => {
     // Sur desktop : ouvrir WhatsApp Web
     whatsappUrl = `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`
   }
-
+  
   // Ouvrir WhatsApp
   window.open(whatsappUrl, '_blank')
-
+  
   // Fermer la modale après un court délai
   setTimeout(() => {
     emit('close')
