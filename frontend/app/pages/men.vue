@@ -18,7 +18,7 @@
                     <aside class="filters-sidebar">
                         <!-- African Pattern Background -->
                         <AfricanPatternBackground opacity="light" color="gold" />
-                        
+
                         <!-- Breadcrumb -->
                         <nav class="breadcrumb">
                             <NuxtLink to="/" class="breadcrumb-link">Accueil</NuxtLink>
@@ -88,17 +88,13 @@
         <!-- Category Overlay -->
         <CategoryOverlay :is-open="overlayOpen" :title="overlayTitle" :products="overlayProducts"
             @close="closeOverlay" />
-        
+
         <!-- Mobile Filter Button -->
         <FilterButton @open="filterPopupOpen = true" />
-        
+
         <!-- Mobile Filter Popup -->
-        <FilterPopup 
-            :is-open="filterPopupOpen" 
-            :categories="filterCategories"
-            v-model="activeMobileCategory"
-            @close="filterPopupOpen = false" 
-        />
+        <FilterPopup :is-open="filterPopupOpen" :categories="filterCategories" v-model="activeMobileCategory"
+            @close="filterPopupOpen = false" />
     </div>
 </template>
 

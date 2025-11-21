@@ -6,9 +6,9 @@
       <span v-if="totalItems > 0" class="sidebar-footer__badge">{{ totalItems }}</span>
     </NuxtLink>
 
-    <NuxtLink to="/auth" class="sidebar-footer__link" @click="$emit('navigate')">
+    <NuxtLink :to="profileLink" class="sidebar-footer__link" @click="$emit('navigate')">
       <i class="bi bi-person sidebar-footer__icon"></i>
-      <span>CONNEXION</span>
+      <span>{{ authText }}</span>
     </NuxtLink>
   </div>
 </template>
@@ -16,13 +16,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useCartStore } from '../../../stores/cart'
+import { useAuthStore } from '../../../stores/auth'
 
 defineEmits<{
   navigate: []
 }>()
 
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 const totalItems = computed(() => cartStore.totalItems || 0)
+
+const profileLink = computed(() => authStore.isAuthenticated ? '/profile' : '/auth')
+const authText = computed(() => authStore.isAuthenticated ? 'MON PROFIL' : 'CONNEXION')
 </script>
 
 <style scoped>

@@ -17,7 +17,9 @@
     "nuxt": "^4.2.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.22",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "vue3-google-login": "^2.0.34",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^24.10.0"

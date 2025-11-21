@@ -66,7 +66,7 @@
                 <button class="nav-icon" aria-label="Rechercher" @click="toggleSearch">
                     <i class="bi bi-search"></i>
                 </button>
-                <NuxtLink to="/auth" class="nav-icon" aria-label="Compte">
+                <NuxtLink :to="profileLink" class="nav-icon" aria-label="Compte">
                     <i class="bi bi-person"></i>
                 </NuxtLink>
                 <NuxtLink to="/cart" class="nav-icon cart-icon" aria-label="Panier">
@@ -89,18 +89,23 @@
 
 <script setup lang="ts">
 import { useCartStore } from '../../stores/cart'
+import { useAuthStore } from '../../stores/auth'
 import { useRoute } from 'vue-router'
 import Sidebar from './sidebar/Sidebar.vue'
 import SidebarOverlay from './sidebar/SidebarOverlay.vue'
 import SearchOverlay from './SearchOverlay.vue'
 
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 const route = useRoute()
 const sidebarOpen = ref(false)
 const searchOpen = ref(false)
 const isScrolled = ref(false)
 const activeDropdown = ref<string | null>(null)
 const totalItems = computed(() => cartStore.totalItems)
+
+// Lien vers le profil ou la connexion selon l'état
+const profileLink = computed(() => authStore.isAuthenticated ? '/profile' : '/auth')
 
 // Vérifier si on est sur une page avec hero (transparent navbar)
 const hasHeroPage = computed(() => {
