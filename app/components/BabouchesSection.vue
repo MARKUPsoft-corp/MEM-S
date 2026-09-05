@@ -43,8 +43,9 @@ onMounted(async () => {
       id: product.id,
       name: product.name,
       slug: product.slug,
-      price: parseFloat(product.price),
+      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
       originalPrice: product.discount_price ? parseFloat(product.price) : null,
+      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
       // Extraire les URLs des images depuis les objets
       images: product.images?.map((img: any) => img.image) || [],
       // Mapper les badges
