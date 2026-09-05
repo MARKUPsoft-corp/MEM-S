@@ -39,7 +39,7 @@
                             </nav>
 
                             <!-- Navigation Arrows (visible on mobile) -->
-                            <div class="product-navigation product-navigation-breadcrumb">
+                            <div class="product-navigation-breadcrumb">
                                 <button class="nav-arrow" :disabled="!canGoToPrevious" @click="goToPreviousProduct"
                                     aria-label="Produit précédent">
                                     <i class="bi bi-arrow-left"></i>
@@ -626,25 +626,33 @@ watch(() => route.params.slug, async (newSlug) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 0.75rem;
     margin-bottom: 1.5rem;
     padding: 0;
+    width: 100%;
 }
 
 /* Breadcrumb */
 .breadcrumb {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     font-family: 'Montserrat', sans-serif;
     font-size: 0.75rem;
     margin: 0;
     padding: 0;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .breadcrumb-item {
     color: #2A2A2A;
     text-decoration: none;
     transition: color 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .breadcrumb-item:hover {
@@ -654,11 +662,17 @@ watch(() => route.params.slug, async (newSlug) => {
 .breadcrumb-item.active {
     color: #0E3A34;
     font-weight: 500;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
 }
 
 .breadcrumb-separator {
     color: #2A2A2A;
     opacity: 0.5;
+    flex-shrink: 0;
 }
 
 .container {
@@ -796,6 +810,38 @@ watch(() => route.params.slug, async (newSlug) => {
 
 .product-navigation-breadcrumb {
     display: none;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.product-navigation-breadcrumb .nav-arrow {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(42, 42, 42, 0.25);
+    background: #FFFFFF;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #2A2A2A;
+    font-size: 0.85rem;
+}
+
+.product-navigation-breadcrumb .nav-arrow:hover:not(:disabled) {
+    background: #0E3A34;
+    color: #F5F2EC;
+    border-color: #0E3A34;
+}
+
+.product-navigation-breadcrumb .nav-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: rgba(42, 42, 42, 0.15);
+    background: transparent;
 }
 
 .nav-arrow {
@@ -1206,6 +1252,8 @@ watch(() => route.params.slug, async (newSlug) => {
 
     .breadcrumb-wrapper {
         padding: 0;
+        margin-bottom: 1rem;
+        gap: 0.5rem;
     }
 
     /* Thumbnails en dessous en horizontal */
@@ -1223,19 +1271,6 @@ watch(() => route.params.slug, async (newSlug) => {
         flex-shrink: 0;
         width: 70px;
         height: 88px;
-    }
-
-    .breadcrumb {
-        padding: 0;
-        margin: 0;
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .breadcrumb-item {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .product-title {
