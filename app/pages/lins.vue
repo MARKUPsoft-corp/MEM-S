@@ -90,9 +90,27 @@ const heroBannerStyle = computed(() => ({
     backgroundImage: `url(${bannerUrl.value})`
 }))
 
-const overlayOpen = ref(false)
-const overlayTitle = ref('')
-const overlayProducts = ref<any[]>([])
+const router = useRouter()
+const activeOverlayCategory = ref<string | null>(null)
+
+const categoryConfig: Record<string, { slug: string; title: string }> = {
+  chemises: { slug: 'chemises-lin', title: 'Chemises en Lin' },
+  'chemises-lin': { slug: 'chemises-lin', title: 'Chemises en Lin' },
+  pantalons: { slug: 'pantalons-lin', title: 'Pantalons en Lin' },
+  'pantalons-lin': { slug: 'pantalons-lin', title: 'Pantalons en Lin' }
+}
+
+const overlayTitle = computed(() => {
+  return activeOverlayCategory.value ? (categoryConfig[activeOverlayCategory.value]?.title || 'Lins') : ''
+})
+
+const overlayOpen = computed(() => !!activeOverlayCategory.value)
+
+const overlayProducts = computed(() => {
+  if (!activeOverlayCategory.value) return []
+  const targetSlug = categoryConfig[activeOverlayCategory.value]?.slug || activeOverlayCategory.value
+  return allProducts.value.filter(p => p.category?.slug === targetSlug)
+})
 
 const filterPopupOpen = ref(false)
 const activeMobileCategory = ref('')
@@ -105,57 +123,60 @@ const filterCategories = [
 const route = useRoute()
 
 // Produits groupés par catégorie
-const chemisesProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'chemises-lin'))
-const pantalonsProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'pantalons-lin'))
+const chemisesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'chemises-lin'))
+const pantalonsProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'pantalons-lin'))
+
+async function loadProducts() {
+  try {
+    const response = await fetchProducts({ collection: 'lins' })
+    const apiProducts = response.results || []
+    allProducts.value = apiProducts.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
+      originalPrice: product.discount_price ? parseFloat(product.price) : null,
+      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
+      images: product.images?.map((img: any) => img.image) || [],
+      badge: product.is_featured 
+        ? { type: 'featured', text: 'VEDETTE' }
+        : product.is_new 
+        ? { type: 'new', text: 'NOUVEAU' }
+        : null,
+      category: product.category
+    }))
+  } catch (error) {
+    console.error('Error loading lins products:', error)
+    allProducts.value = []
+  }
+}
 
 // Charger les produits et la bannière au montage
 onMounted(async () => {
-    try {
-        const banners = await ContentService.getPageBanners()
-        if (banners?.lins) bannerUrl.value = banners.lins
-    } catch (e) {
-        console.warn('[LinsPage] Banner error:', e)
-    }
+  try {
+    const banners = await ContentService.getPageBanners()
+    if (banners?.lins) bannerUrl.value = banners.lins
+  } catch (e) {
+    console.warn('[LinsPage] Banner error:', e)
+  }
 
-    try {
-        const response = await fetchProducts({ collection: 'lins' })
-        // Transformer les données API pour ProductCard
-        const apiProducts = response.results || []
-        allProducts.value = apiProducts.map((product: any) => ({
-            id: product.id,
-            name: product.name,
-            slug: product.slug,
-            price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
-            originalPrice: product.discount_price ? parseFloat(product.price) : null,
-            discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
-            images: product.images?.map((img: any) => img.image) || [],
-            badge: product.is_featured 
-                ? { type: 'featured', text: 'VEDETTE' }
-                : product.is_new 
-                ? { type: 'new', text: 'NOUVEAU' }
-                : null,
-            category: product.category
-        }))
-    } catch (error) {
-        console.error('Error loading lins products:', error)
-        allProducts.value = []
-    }
+  checkUrlCategory()
+  await loadProducts()
 })
 
 function openChemisesOverlay() {
-  overlayTitle.value = 'Chemises en Lin'
-  overlayProducts.value = chemisesProducts.value
-  overlayOpen.value = true
+  activeOverlayCategory.value = 'chemises'
+  router.push({ query: { category: 'chemises' } })
 }
 
 function openPantalonsOverlay() {
-  overlayTitle.value = 'Pantalons en Lin'
-  overlayProducts.value = pantalonsProducts.value
-  overlayOpen.value = true
+  activeOverlayCategory.value = 'pantalons'
+  router.push({ query: { category: 'pantalons' } })
 }
 
 function closeOverlay() {
-  overlayOpen.value = false
+  activeOverlayCategory.value = null
+  router.replace({ query: {} })
 }
 
 function scrollToCategory(categoryId: string) {
@@ -174,26 +195,17 @@ watch(activeMobileCategory, (newCategory) => {
   }
 })
 
-function openOverlayFromUrl() {
+function checkUrlCategory() {
   const category = route.query.category as string
-  if (category) {
-    switch (category) {
-      case 'chemises':
-        openChemisesOverlay()
-        break
-      case 'pantalons':
-        openPantalonsOverlay()
-        break
-    }
+  if (category && categoryConfig[category]) {
+    activeOverlayCategory.value = category
+  } else if (!category) {
+    activeOverlayCategory.value = null
   }
 }
 
-onMounted(() => {
-  openOverlayFromUrl()
-})
-
 watch(() => route.query.category, () => {
-  openOverlayFromUrl()
+  checkUrlCategory()
 })
 
 useHead({

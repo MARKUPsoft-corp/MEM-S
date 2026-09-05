@@ -120,10 +120,28 @@ const heroBannerStyle = computed(() => ({
     backgroundImage: `url(${bannerUrl.value})`
 }))
 
-// Overlay state
-const overlayOpen = ref(false)
-const overlayTitle = ref('')
-const overlayProducts = ref<any[]>([])
+// Overlay state réactif
+const router = useRouter()
+const activeOverlayCategory = ref<string | null>(null)
+
+const categoryTitles: Record<string, string> = {
+    boubous: 'Boubous',
+    gandouras: 'Gandouras',
+    costumes: 'Costumes',
+    chemises: 'Chemises',
+    pantalons: 'Pantalons'
+}
+
+const overlayTitle = computed(() => {
+    return activeOverlayCategory.value ? (categoryTitles[activeOverlayCategory.value] || 'Produits') : ''
+})
+
+const overlayOpen = computed(() => !!activeOverlayCategory.value)
+
+const overlayProducts = computed(() => {
+    if (!activeOverlayCategory.value) return []
+    return allProducts.value.filter(p => p.category?.slug === activeOverlayCategory.value)
+})
 
 // Filter popup state
 const filterPopupOpen = ref(false)
@@ -144,17 +162,16 @@ const activeMobileCategory = ref('')
 const route = useRoute()
 
 // Produits groupés par catégorie
-const boubouProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'boubous'))
-const gandouraProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'gandouras'))
-const costumesProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'costumes'))
-const chemiseProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'chemises'))
-const pantalonProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'pantalons'))
+const boubouProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'boubous'))
+const gandouraProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'gandouras'))
+const costumesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'costumes'))
+const chemiseProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'chemises'))
+const pantalonProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'pantalons'))
 
-// Charger les produits au montage
-onMounted(async () => {
+// Charger les produits
+async function loadProducts() {
     try {
         const response = await fetchProducts({ collection: 'men' })
-        // Transformer les données API pour ProductCard
         const apiProducts = response.results || []
         allProducts.value = apiProducts.map((product: any) => ({
             id: product.id,
@@ -175,49 +192,45 @@ onMounted(async () => {
         console.error('Error loading men products:', error)
         allProducts.value = []
     }
-})
+}
 
 // Open overlay functions
 function openBoubouOverlay() {
-    overlayTitle.value = 'Boubous'
-    overlayProducts.value = boubouProducts.value
-    overlayOpen.value = true
+    activeOverlayCategory.value = 'boubous'
+    router.push({ query: { category: 'boubous' } })
 }
 
 function openGandouraOverlay() {
-    overlayTitle.value = 'Gandouras'
-    overlayProducts.value = gandouraProducts.value
-    overlayOpen.value = true
+    activeOverlayCategory.value = 'gandouras'
+    router.push({ query: { category: 'gandouras' } })
 }
 
 function openCostumesOverlay() {
-    overlayTitle.value = 'Costumes'
-    overlayProducts.value = costumesProducts.value
-    overlayOpen.value = true
+    activeOverlayCategory.value = 'costumes'
+    router.push({ query: { category: 'costumes' } })
 }
 
 function openChemiseOverlay() {
-    overlayTitle.value = 'Chemises'
-    overlayProducts.value = chemiseProducts.value
-    overlayOpen.value = true
+    activeOverlayCategory.value = 'chemises'
+    router.push({ query: { category: 'chemises' } })
 }
 
 function openPantalonOverlay() {
-    overlayTitle.value = 'Pantalons'
-    overlayProducts.value = pantalonProducts.value
-    overlayOpen.value = true
+    activeOverlayCategory.value = 'pantalons'
+    router.push({ query: { category: 'pantalons' } })
 }
 
 // Close overlay
 function closeOverlay() {
-    overlayOpen.value = false
+    activeOverlayCategory.value = null
+    router.replace({ query: {} })
 }
 
 // Smooth scroll to category
 function scrollToCategory(categoryId: string) {
     const element = document.getElementById(categoryId)
     if (element) {
-        const yOffset = -20 // Offset pour positionner juste au-dessus de la box
+        const yOffset = -20
         const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
         window.scrollTo({ top: y, behavior: 'smooth' })
     }
@@ -227,48 +240,34 @@ function scrollToCategory(categoryId: string) {
 watch(activeMobileCategory, (newCategory) => {
     if (newCategory) {
         scrollToCategory(newCategory)
-        activeMobileCategory.value = '' // Reset after scroll
+        activeMobileCategory.value = ''
     }
 })
 
-// Open overlay based on category parameter
-function openOverlayFromUrl() {
+// Sync overlay from URL parameter
+function checkUrlCategory() {
     const category = route.query.category as string
-    if (category) {
-        switch (category) {
-            case 'boubous':
-                openBoubouOverlay()
-                break
-            case 'gandouras':
-                openGandouraOverlay()
-                break
-            case 'costumes':
-                openCostumesOverlay()
-                break
-            case 'chemises':
-                openChemiseOverlay()
-                break
-            case 'pantalons':
-                openPantalonOverlay()
-                break
-        }
+    if (category && categoryTitles[category]) {
+        activeOverlayCategory.value = category
+    } else if (!category) {
+        activeOverlayCategory.value = null
     }
 }
 
-// Check URL on mount
 onMounted(async () => {
-    openOverlayFromUrl()
     try {
         const banners = await ContentService.getPageBanners()
         if (banners?.men) bannerUrl.value = banners.men
     } catch (e) {
         console.warn('[MenPage] Banner error:', e)
     }
+
+    checkUrlCategory()
+    await loadProducts()
 })
 
-// Watch for route changes
 watch(() => route.query.category, () => {
-    openOverlayFromUrl()
+    checkUrlCategory()
 })
 
 // Page metadata

@@ -306,6 +306,7 @@ const adjustStock = async (product: Product, delta: number) => {
         stock: newStock,
         updated_at: new Date().toISOString()
       })
+      FirestoreProductsService.clearCache()
     } catch (err) {
       console.warn('[Admin] Erreur mise à jour stock:', err)
     }
@@ -321,6 +322,7 @@ const confirmDelete = async (product: Product) => {
   if (db) {
     try {
       await deleteDoc(doc(db, 'products', product.slug))
+      FirestoreProductsService.clearCache()
     } catch (err) {
       console.warn('[Admin] Erreur suppression Firestore:', err)
     }

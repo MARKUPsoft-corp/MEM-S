@@ -90,9 +90,28 @@ const heroBannerStyle = computed(() => ({
     backgroundImage: `url(${bannerUrl.value})`
 }))
 
-const overlayOpen = ref(false)
-const overlayTitle = ref('')
-const overlayProducts = ref<any[]>([])
+const router = useRouter()
+const activeOverlayCategory = ref<string | null>(null)
+
+const categoryConfig: Record<string, { slug: string; title: string }> = {
+  cuir: { slug: 'babouches-cuir', title: 'Babouches en Cuir' },
+  'babouches-cuir': { slug: 'babouches-cuir', title: 'Babouches en Cuir' },
+  brodes: { slug: 'babouches-brodees', title: 'Babouches Brodées' },
+  brodees: { slug: 'babouches-brodees', title: 'Babouches Brodées' },
+  'babouches-brodees': { slug: 'babouches-brodees', title: 'Babouches Brodées' }
+}
+
+const overlayTitle = computed(() => {
+  return activeOverlayCategory.value ? (categoryConfig[activeOverlayCategory.value]?.title || 'Babouches') : ''
+})
+
+const overlayOpen = computed(() => !!activeOverlayCategory.value)
+
+const overlayProducts = computed(() => {
+  if (!activeOverlayCategory.value) return []
+  const targetSlug = categoryConfig[activeOverlayCategory.value]?.slug || activeOverlayCategory.value
+  return allProducts.value.filter(p => p.category?.slug === targetSlug)
+})
 
 const filterPopupOpen = ref(false)
 const activeMobileCategory = ref('')
@@ -105,57 +124,60 @@ const filterCategories = [
 const route = useRoute()
 
 // Produits groupés par catégorie
-const cuirProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'babouches-cuir'))
-const brodesProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'babouches-brodees'))
+const cuirProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'babouches-cuir'))
+const brodesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'babouches-brodees'))
+
+async function loadProducts() {
+  try {
+    const response = await fetchProducts({ collection: 'babouches' })
+    const apiProducts = response.results || []
+    allProducts.value = apiProducts.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
+      originalPrice: product.discount_price ? parseFloat(product.price) : null,
+      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
+      images: product.images?.map((img: any) => img.image) || [],
+      badge: product.is_featured 
+        ? { type: 'featured', text: 'VEDETTE' }
+        : product.is_new 
+        ? { type: 'new', text: 'NOUVEAU' }
+        : null,
+      category: product.category
+    }))
+  } catch (error) {
+    console.error('Error loading babouches products:', error)
+    allProducts.value = []
+  }
+}
 
 // Charger les produits et la bannière au montage
 onMounted(async () => {
-    try {
-        const banners = await ContentService.getPageBanners()
-        if (banners?.babouches) bannerUrl.value = banners.babouches
-    } catch (e) {
-        console.warn('[BabouchesPage] Banner error:', e)
-    }
+  try {
+    const banners = await ContentService.getPageBanners()
+    if (banners?.babouches) bannerUrl.value = banners.babouches
+  } catch (e) {
+    console.warn('[BabouchesPage] Banner error:', e)
+  }
 
-    try {
-        const response = await fetchProducts({ collection: 'babouches' })
-        // Transformer les données API pour ProductCard
-        const apiProducts = response.results || []
-        allProducts.value = apiProducts.map((product: any) => ({
-            id: product.id,
-            name: product.name,
-            slug: product.slug,
-            price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
-            originalPrice: product.discount_price ? parseFloat(product.price) : null,
-            discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
-            images: product.images?.map((img: any) => img.image) || [],
-            badge: product.is_featured 
-                ? { type: 'featured', text: 'VEDETTE' }
-                : product.is_new 
-                ? { type: 'new', text: 'NOUVEAU' }
-                : null,
-            category: product.category
-        }))
-    } catch (error) {
-        console.error('Error loading babouches products:', error)
-        allProducts.value = []
-    }
+  checkUrlCategory()
+  await loadProducts()
 })
 
 function openCuirOverlay() {
-  overlayTitle.value = 'Babouches en Cuir'
-  overlayProducts.value = cuirProducts.value
-  overlayOpen.value = true
+  activeOverlayCategory.value = 'cuir'
+  router.push({ query: { category: 'cuir' } })
 }
 
 function openBrodesOverlay() {
-  overlayTitle.value = 'Babouches Brodées'
-  overlayProducts.value = brodesProducts.value
-  overlayOpen.value = true
+  activeOverlayCategory.value = 'brodes'
+  router.push({ query: { category: 'brodes' } })
 }
 
 function closeOverlay() {
-  overlayOpen.value = false
+  activeOverlayCategory.value = null
+  router.replace({ query: {} })
 }
 
 function scrollToCategory(categoryId: string) {
@@ -174,26 +196,17 @@ watch(activeMobileCategory, (newCategory) => {
   }
 })
 
-function openOverlayFromUrl() {
+function checkUrlCategory() {
   const category = route.query.category as string
-  if (category) {
-    switch (category) {
-      case 'cuir':
-        openCuirOverlay()
-        break
-      case 'brodes':
-        openBrodesOverlay()
-        break
-    }
+  if (category && categoryConfig[category]) {
+    activeOverlayCategory.value = category
+  } else if (!category) {
+    activeOverlayCategory.value = null
   }
 }
 
-onMounted(() => {
-  openOverlayFromUrl()
-})
-
 watch(() => route.query.category, () => {
-  openOverlayFromUrl()
+  checkUrlCategory()
 })
 
 useHead({

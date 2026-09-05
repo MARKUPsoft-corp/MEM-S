@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import type { Product, Category, Collection, ProductFilter } from '../types/product'
 import { FirestoreProductsService } from '../services/firestoreProducts'
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_COLLECTIONS } from '../data/productsData'
 
 interface PaginatedResponse {
   count: number
@@ -11,9 +12,9 @@ interface PaginatedResponse {
 
 export const useProductsStore = defineStore('products', {
   state: () => ({
-    products: [] as Product[],
-    categories: [] as Category[],
-    collections: [] as Collection[],
+    products: [...INITIAL_PRODUCTS] as Product[],
+    categories: [...INITIAL_CATEGORIES] as Category[],
+    collections: [...INITIAL_COLLECTIONS] as Collection[],
     filters: {
       category: undefined,
       min_price: undefined,
@@ -22,7 +23,7 @@ export const useProductsStore = defineStore('products', {
       search: undefined,
     } as ProductFilter,
     loading: false,
-    totalCount: 0,
+    totalCount: INITIAL_PRODUCTS.length,
   }),
 
   getters: {
@@ -32,9 +33,16 @@ export const useProductsStore = defineStore('products', {
   },
 
   actions: {
+    /**
+     * Récupération ultra-rapide des produits
+     */
     async fetchProducts(params?: Record<string, any>) {
       try {
-        this.loading = true
+        // N'activer le loader que si la liste est complètement vide
+        if (this.products.length === 0) {
+          this.loading = true
+        }
+
         const response = await FirestoreProductsService.getProducts(params)
 
         this.products = response.results
@@ -54,6 +62,9 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
+    /**
+     * Récupération d'un produit par slug
+     */
     async fetchProductBySlug(slug: string) {
       try {
         const product = await FirestoreProductsService.getProductBySlug(slug)
@@ -64,6 +75,9 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
+    /**
+     * Récupération des produits en vedette
+     */
     async fetchFeaturedProducts() {
       try {
         const response = await FirestoreProductsService.getProducts({ is_featured: true })
@@ -74,6 +88,9 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
+    /**
+     * Récupération des nouveautés
+     */
     async fetchNewArrivals() {
       try {
         const response = await FirestoreProductsService.getProducts({ is_new: true })
@@ -84,6 +101,9 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
+    /**
+     * Récupération des catégories
+     */
     async fetchCategories() {
       try {
         const categories = await FirestoreProductsService.getCategories()
@@ -95,6 +115,9 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
+    /**
+     * Récupération des catégories par collection
+     */
     async fetchCategoriesByCollection() {
       try {
         const collections = await FirestoreProductsService.getCategoriesByCollection()
@@ -105,6 +128,9 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
+    /**
+     * Récupération des collections
+     */
     async fetchCollections() {
       try {
         const collections = await FirestoreProductsService.getCollections()
@@ -114,6 +140,13 @@ export const useProductsStore = defineStore('products', {
         console.error('[Products Store] Erreur chargement collections:', error)
         throw error
       }
+    },
+
+    /**
+     * Invalidation du cache (appelé après modifications admin)
+     */
+    invalidateCache() {
+      FirestoreProductsService.clearCache()
     },
 
     setFilter(filter: Partial<ProductFilter>) {

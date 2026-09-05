@@ -375,6 +375,7 @@ const handleSubmit = async () => {
   if (db) {
     try {
       await setDoc(doc(db, 'products', cleanData.slug), cleanData)
+      FirestoreProductsService.clearCache()
     } catch (err: any) {
       console.error('[ProductForm] Erreur sauvegarde Firestore:', err)
       alert(`Erreur d'enregistrement : ${err.message}`)

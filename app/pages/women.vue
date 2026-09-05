@@ -99,9 +99,25 @@ const heroBannerStyle = computed(() => ({
     backgroundImage: `url(${bannerUrl.value})`
 }))
 
-const overlayOpen = ref(false)
-const overlayTitle = ref('')
-const overlayProducts = ref<any[]>([])
+const router = useRouter()
+const activeOverlayCategory = ref<string | null>(null)
+
+const categoryTitles: Record<string, string> = {
+  robes: 'Robes Africaines',
+  ensembles: 'Ensembles',
+  sacs: 'Sacs & Accessoires'
+}
+
+const overlayTitle = computed(() => {
+  return activeOverlayCategory.value ? (categoryTitles[activeOverlayCategory.value] || 'Produits') : ''
+})
+
+const overlayOpen = computed(() => !!activeOverlayCategory.value)
+
+const overlayProducts = computed(() => {
+  if (!activeOverlayCategory.value) return []
+  return allProducts.value.filter(p => p.category?.slug === activeOverlayCategory.value)
+})
 
 const filterPopupOpen = ref(false)
 const activeMobileCategory = ref('')
@@ -115,64 +131,66 @@ const filterCategories = [
 const route = useRoute()
 
 // Produits groupés par catégorie
-const robesProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'robes'))
-const ensemblesProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'ensembles'))
-const sacsProducts = computed(() => allProducts.value.filter(p => p.category.slug === 'sacs'))
+const robesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'robes'))
+const ensemblesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'ensembles'))
+const sacsProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'sacs'))
+
+async function loadProducts() {
+  try {
+    const response = await fetchProducts({ collection: 'women' })
+    const apiProducts = response.results || []
+    allProducts.value = apiProducts.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
+      originalPrice: product.discount_price ? parseFloat(product.price) : null,
+      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
+      images: product.images?.map((img: any) => img.image) || [],
+      badge: product.is_featured 
+        ? { type: 'featured', text: 'VEDETTE' }
+        : product.is_new 
+        ? { type: 'new', text: 'NOUVEAU' }
+        : null,
+      category: product.category
+    }))
+  } catch (error) {
+    console.error('Error loading women products:', error)
+    allProducts.value = []
+  }
+}
 
 // Charger les produits et la bannière au montage
 onMounted(async () => {
-    try {
-        const banners = await ContentService.getPageBanners()
-        if (banners?.women) bannerUrl.value = banners.women
-    } catch (e) {
-        console.warn('[WomenPage] Banner error:', e)
-    }
+  try {
+    const banners = await ContentService.getPageBanners()
+    if (banners?.women) bannerUrl.value = banners.women
+  } catch (e) {
+    console.warn('[WomenPage] Banner error:', e)
+  }
 
-    try {
-        const response = await fetchProducts({ collection: 'women' })
-        // Transformer les données API pour ProductCard
-        const apiProducts = response.results || []
-        allProducts.value = apiProducts.map((product: any) => ({
-            id: product.id,
-            name: product.name,
-            slug: product.slug,
-            price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
-            originalPrice: product.discount_price ? parseFloat(product.price) : null,
-            discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
-            images: product.images?.map((img: any) => img.image) || [],
-            badge: product.is_featured 
-                ? { type: 'featured', text: 'VEDETTE' }
-                : product.is_new 
-                ? { type: 'new', text: 'NOUVEAU' }
-                : null,
-            category: product.category
-        }))
-    } catch (error) {
-        console.error('Error loading women products:', error)
-        allProducts.value = []
-    }
+  checkUrlCategory()
+  await loadProducts()
 })
 
 function openRobesOverlay() {
-  overlayTitle.value = 'Robes Africaines'
-  overlayProducts.value = robesProducts.value
-  overlayOpen.value = true
+  activeOverlayCategory.value = 'robes'
+  router.push({ query: { category: 'robes' } })
 }
 
 function openEnsemblesOverlay() {
-  overlayTitle.value = 'Ensembles'
-  overlayProducts.value = ensemblesProducts.value
-  overlayOpen.value = true
+  activeOverlayCategory.value = 'ensembles'
+  router.push({ query: { category: 'ensembles' } })
 }
 
 function openSacsOverlay() {
-  overlayTitle.value = 'Sacs & Accessoires'
-  overlayProducts.value = sacsProducts.value
-  overlayOpen.value = true
+  activeOverlayCategory.value = 'sacs'
+  router.push({ query: { category: 'sacs' } })
 }
 
 function closeOverlay() {
-  overlayOpen.value = false
+  activeOverlayCategory.value = null
+  router.replace({ query: {} })
 }
 
 function scrollToCategory(categoryId: string) {
@@ -191,29 +209,17 @@ watch(activeMobileCategory, (newCategory) => {
   }
 })
 
-function openOverlayFromUrl() {
+function checkUrlCategory() {
   const category = route.query.category as string
-  if (category) {
-    switch (category) {
-      case 'robes':
-        openRobesOverlay()
-        break
-      case 'ensembles':
-        openEnsemblesOverlay()
-        break
-      case 'sacs':
-        openSacsOverlay()
-        break
-    }
+  if (category && categoryTitles[category]) {
+    activeOverlayCategory.value = category
+  } else if (!category) {
+    activeOverlayCategory.value = null
   }
 }
 
-onMounted(() => {
-  openOverlayFromUrl()
-})
-
 watch(() => route.query.category, () => {
-  openOverlayFromUrl()
+  checkUrlCategory()
 })
 
 useHead({

@@ -47,12 +47,33 @@
                     </transition>
                 </div>
 
-                <NuxtLink to="/babouches" class="nav-link" :class="{ 'nav-link--active': route.path === '/babouches' }">
-                    BABOUCHES
-                </NuxtLink>
-                <NuxtLink to="/lins" class="nav-link" :class="{ 'nav-link--active': route.path === '/lins' }">
-                    LINS
-                </NuxtLink>
+                <div class="nav-item" @mouseenter="activeDropdown = 'babouches'" @mouseleave="activeDropdown = null">
+                    <span class="nav-link nav-link-dropdown" :class="{ 'nav-link--active': route.path === '/babouches' }">
+                        BABOUCHES
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </span>
+                    <transition name="dropdown-fade">
+                        <div v-if="activeDropdown === 'babouches'" class="dropdown-menu">
+                            <NuxtLink to="/babouches" class="dropdown-item">Tous les produits</NuxtLink>
+                            <NuxtLink to="/babouches?category=cuir" class="dropdown-item">Cuir</NuxtLink>
+                            <NuxtLink to="/babouches?category=brodes" class="dropdown-item">Brodées</NuxtLink>
+                        </div>
+                    </transition>
+                </div>
+
+                <div class="nav-item" @mouseenter="activeDropdown = 'lins'" @mouseleave="activeDropdown = null">
+                    <span class="nav-link nav-link-dropdown" :class="{ 'nav-link--active': route.path === '/lins' }">
+                        LINS
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </span>
+                    <transition name="dropdown-fade">
+                        <div v-if="activeDropdown === 'lins'" class="dropdown-menu">
+                            <NuxtLink to="/lins" class="dropdown-item">Tous les produits</NuxtLink>
+                            <NuxtLink to="/lins?category=chemises" class="dropdown-item">Chemises</NuxtLink>
+                            <NuxtLink to="/lins?category=pantalons" class="dropdown-item">Pantalons</NuxtLink>
+                        </div>
+                    </transition>
+                </div>
             </div>
 
             <!-- Center Logo -->
