@@ -53,7 +53,67 @@ export const DEFAULT_PAGE_BANNERS: PageBanners = {
   about: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&h=600&fit=crop&q=80'
 }
 
+export interface StoreSettings {
+  whatsappNumber: string
+  storeName?: string
+  contactEmail?: string
+  contactPhone?: string
+  address?: string
+}
+
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  whatsappNumber: '237696962662',
+  storeName: "MEM'S Concept",
+  contactEmail: 'contact@mems-concept.com',
+  contactPhone: '+237 6 96 96 26 62',
+  address: 'Douala, Cameroun'
+}
+
 export class ContentService {
+  private static storeSettingsCache: StoreSettings | null = null
+
+  /**
+   * Récupère les paramètres généraux de la boutique (dont le numéro WhatsApp des commandes)
+   */
+  static async getStoreSettings(): Promise<StoreSettings> {
+    if (this.storeSettingsCache) {
+      return this.storeSettingsCache
+    }
+
+    const { db } = useFirebase()
+    if (!db) return DEFAULT_STORE_SETTINGS
+
+    try {
+      const snap = await getDoc(doc(db, 'content', 'settings'))
+      if (snap.exists()) {
+        this.storeSettingsCache = { ...DEFAULT_STORE_SETTINGS, ...snap.data() }
+        return this.storeSettingsCache
+      }
+    } catch (err) {
+      console.warn('[ContentService] Fallback store settings:', err)
+    }
+
+    return DEFAULT_STORE_SETTINGS
+  }
+
+  /**
+   * Enregistre les paramètres de la boutique
+   */
+  static async saveStoreSettings(settings: Partial<StoreSettings>): Promise<void> {
+    const { db } = useFirebase()
+    if (!db) throw new Error('Firestore non initialisé')
+
+    const current = await this.getStoreSettings()
+    const merged: StoreSettings = { ...current, ...settings }
+    this.storeSettingsCache = merged
+
+    const clean = JSON.parse(JSON.stringify(merged))
+    await setDoc(doc(db, 'content', 'settings'), {
+      ...clean,
+      updatedAt: new Date().toISOString()
+    })
+  }
+
   /**
    * Récupère les slides du Hero
    */

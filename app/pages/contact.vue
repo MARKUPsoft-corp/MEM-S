@@ -13,17 +13,19 @@
             
             <div class="mb-3">
               <i class="bi bi-whatsapp text-success fs-5"></i>
-              <a :href="`https://wa.me/${config.public.whatsappNumber}`" target="_blank" class="ms-2 text-decoration-none text-dark fw-semibold">+237 6 96 96 26 62</a>
+              <a :href="`https://wa.me/${whatsappNumber}`" target="_blank" class="ms-2 text-decoration-none text-dark fw-semibold">
+                {{ displayPhone }}
+              </a>
             </div>
             
             <div class="mb-3">
               <i class="bi bi-envelope fs-5"></i>
-              <span class="ms-2">contact@mensmarkup.com</span>
+              <span class="ms-2">{{ storeSettings.contactEmail || 'contact@mems-concept.com' }}</span>
             </div>
             
             <div class="mb-3">
               <i class="bi bi-geo-alt fs-5"></i>
-              <span class="ms-2">Cameroun</span>
+              <span class="ms-2">{{ storeSettings.address || 'Douala, Cameroun' }}</span>
             </div>
             
             <hr>
@@ -43,9 +45,31 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import AfricanPatternBackground from '../components/AfricanPatternBackground.vue'
+import { ContentService, type StoreSettings, DEFAULT_STORE_SETTINGS } from '~~/services/contentService'
 
 const config = useRuntimeConfig()
+const storeSettings = ref<StoreSettings>({ ...DEFAULT_STORE_SETTINGS })
+
+onMounted(async () => {
+  try {
+    const loaded = await ContentService.getStoreSettings()
+    if (loaded) {
+      storeSettings.value = { ...loaded }
+    }
+  } catch (e) {
+    console.warn('[Contact] Erreur chargement paramètres:', e)
+  }
+})
+
+const whatsappNumber = computed(() => {
+  return (storeSettings.value.whatsappNumber || config.public.whatsappNumber || '237696962662').replace(/[^0-9]/g, '')
+})
+
+const displayPhone = computed(() => {
+  return storeSettings.value.contactPhone || `+${whatsappNumber.value}`
+})
 
 definePageMeta({
   layout: 'default'

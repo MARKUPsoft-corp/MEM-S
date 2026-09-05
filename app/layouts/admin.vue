@@ -90,6 +90,16 @@
           <i class="bi bi-people"></i>
           <span>Clients & Accès</span>
         </NuxtLink>
+
+        <NuxtLink
+          to="/admin/settings"
+          class="sidebar-link"
+          :class="{ active: route.path.startsWith('/admin/settings') }"
+          @click="sidebarOpen = false"
+        >
+          <i class="bi bi-whatsapp"></i>
+          <span>Paramètres & WhatsApp</span>
+        </NuxtLink>
       </nav>
 
       <!-- Sidebar Footer -->

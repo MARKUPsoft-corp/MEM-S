@@ -6,12 +6,15 @@
         <h1 class="page-title">Tableau de Bord</h1>
         <p class="text-muted mb-0">Aperçu en temps réel de votre boutique MEM'S</p>
       </div>
-      <div class="d-flex gap-2">
+      <div class="d-flex flex-wrap gap-2">
         <NuxtLink to="/admin/products/create" class="btn btn-mems-gold">
           <i class="bi bi-plus-circle me-1"></i> Ajouter un produit
         </NuxtLink>
         <NuxtLink to="/admin/banners" class="btn btn-outline-dark">
           <i class="bi bi-images me-1"></i> Bannières & Hero
+        </NuxtLink>
+        <NuxtLink to="/admin/settings" class="btn btn-outline-dark">
+          <i class="bi bi-whatsapp me-1 text-success"></i> Paramètres WhatsApp
         </NuxtLink>
       </div>
     </div>

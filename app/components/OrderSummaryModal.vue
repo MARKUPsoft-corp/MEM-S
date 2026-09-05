@@ -128,15 +128,20 @@ import AfricanPatternBackground from './AfricanPatternBackground.vue'
 import type { CartItem } from '../../types/cart'
 import type { User } from '../../types/auth'
 
+import { ContentService } from '~~/services/contentService'
+
 interface Props {
   show: boolean
   items: CartItem[]
   user: User
   subtotal: number
   total: number
+  clearCartOnOrder?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  clearCartOnOrder: true
+})
 const emit = defineEmits<{
   close: []
 }>()
@@ -155,7 +160,16 @@ const formatPrice = (price: number) => {
 
 const sendToWhatsApp = async () => {
   isSubmitting.value = true
-  const whatsappNumber = config.public.whatsappNumber || '237696962662'
+  const config = useRuntimeConfig()
+  let whatsappNumber = config.public.whatsappNumber || '237696962662'
+  try {
+    const settings = await ContentService.getStoreSettings()
+    if (settings?.whatsappNumber) {
+      whatsappNumber = settings.whatsappNumber.replace(/[^0-9]/g, '')
+    }
+  } catch (err) {
+    console.warn('[OrderSummaryModal] Fallback numéro WhatsApp:', err)
+  }
   const orderNumber = `MEM-${Date.now().toString().slice(-6)}`
 
   // 1. Enregistrer la commande dans Firestore
@@ -241,9 +255,11 @@ const sendToWhatsApp = async () => {
     whatsappUrl = `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`
   }
   
-  // Vider le panier
-  const cartStore = useCartStore()
-  await cartStore.clear()
+  // Vider le panier si demandé (ex: commande passée depuis la page panier)
+  if (props.clearCartOnOrder) {
+    const cartStore = useCartStore()
+    await cartStore.clear()
+  }
 
   // Ouvrir WhatsApp
   window.open(whatsappUrl, '_blank')

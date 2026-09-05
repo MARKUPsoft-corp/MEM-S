@@ -163,6 +163,18 @@
                 </div>
             </div>
         </div>
+
+        <!-- Order Summary Modal (identique au panier) -->
+        <OrderSummaryModal
+            v-if="authStore.user"
+            :show="showOrderModal"
+            :items="orderItems"
+            :user="authStore.user"
+            :subtotal="orderSubtotal"
+            :total="orderTotal"
+            :clear-cart-on-order="false"
+            @close="showOrderModal = false"
+        />
     </div>
 </template>
 
@@ -174,16 +186,25 @@ import { useAuthStore } from '../../../stores/auth'
 import { useProducts } from '../../../composables/useProducts'
 import { useConfirm } from '../../../composables/useConfirm'
 import { useNotification } from '../../../composables/useNotification'
-import type { Product } from '../../../types/product'
+import type { Product, ProductVariant } from '../../../types/product'
+import type { CartItem } from '../../../types/cart'
 import { useProductsStore } from '../../../stores/products'
 import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
 import ProductCard from '../../components/ProductCard.vue'
+import OrderSummaryModal from '../../components/OrderSummaryModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
+const authStore = useAuthStore()
 const productsStore = useProductsStore()
 const { fetchProductBySlug, fetchProducts } = useProducts()
+
+// Modal de commande WhatsApp (identique au panier)
+const showOrderModal = ref(false)
+const orderItems = ref<CartItem[]>([])
+const orderSubtotal = ref(0)
+const orderTotal = ref(0)
 
 // Charger le produit dynamiquement basé sur le slug (instantané depuis le cache store)
 const currentSlug = computed(() => route.params.slug as string)
@@ -483,14 +504,30 @@ const decreaseQuantity = () => {
     }
 }
 
+// Helper pour obtenir la variante sélectionnée
+const getSelectedVariant = (): ProductVariant | undefined => {
+    if (!product.value?.variants || product.value.variants.length === 0) return undefined
+
+    const hasSelection = Object.values(selectedAttributes.value).some(val => val)
+    if (hasSelection) {
+        return product.value.variants.find(v => {
+            if (v.attributes && v.attributes.length > 0) {
+                return v.attributes.every(attr =>
+                    selectedAttributes.value[attr.name] === attr.value
+                )
+            }
+            return false
+        }) || product.value.variants[0]
+    }
+    return product.value.variants[0]
+}
+
 const addToCart = async () => {
     if (!product.value) return
 
-    // Vérifier si l'utilisateur est connecté
-    const authStore = useAuthStore()
     const { confirm: showConfirm } = useConfirm()
     const { success, error: showError } = useNotification()
-    
+
     if (!authStore.isAuthenticated) {
         const confirmed = await showConfirm({
             title: 'Connexion requise',
@@ -499,43 +536,17 @@ const addToCart = async () => {
             cancelText: 'Annuler',
             type: 'info'
         })
-        
+
         if (confirmed) {
             router.push('/auth')
         }
         return
     }
 
-    let selectedVariant = null
-
-    // Si le produit a des variantes
-    if (product.value.variants && product.value.variants.length > 0) {
-        // Vérifier si des attributs ont été sélectionnés
-        const hasSelection = Object.values(selectedAttributes.value).some(val => val)
-
-        if (hasSelection) {
-            // Chercher la variante correspondant aux sélections
-            selectedVariant = product.value.variants.find(v => {
-                if (v.attributes && v.attributes.length > 0) {
-                    return v.attributes.every(attr =>
-                        selectedAttributes.value[attr.name] === attr.value
-                    )
-                }
-                return false
-            })
-
-            if (!selectedVariant) {
-                showError('Cette combinaison n\'est pas disponible.')
-                return
-            }
-        } else {
-            // Aucune sélection : prendre la première variante disponible
-            selectedVariant = product.value.variants[0]
-        }
-    }
+    const selectedVariant = getSelectedVariant()
 
     try {
-        await cartStore.addItem(product.value, selectedVariant || undefined, quantity.value)
+        await cartStore.addItem(product.value, selectedVariant, quantity.value)
         success('Produit ajouté au panier !')
     } catch (error) {
         console.error('Erreur lors de l\'ajout au panier:', error)
@@ -543,31 +554,43 @@ const addToCart = async () => {
     }
 }
 
-const orderViaWhatsApp = () => {
+// Commande WhatsApp : agit exactement comme dans le panier
+const orderViaWhatsApp = async () => {
     if (!product.value) return
 
-    const config = useRuntimeConfig()
-    const whatsappNumber = config.public.whatsappNumber
-
-    // Construire le message WhatsApp
-    let variantsMessage = ''
-    for (const [key, value] of Object.entries(selectedAttributes.value)) {
-        if (value) {
-            variantsMessage += `- ${key}: ${value}\n`
+    // 1. Vérification de la connexion comme dans le panier
+    if (!authStore.isAuthenticated) {
+        const { confirm: showConfirm } = useConfirm()
+        const confirmed = await showConfirm({
+            title: 'Connexion requise',
+            message: 'Connectez-vous pour finaliser et valider votre commande.',
+            confirmText: 'Se connecter',
+            cancelText: 'Continuer mes achats',
+            type: 'info'
+        })
+        if (confirmed) {
+            router.push('/auth')
         }
+        return
     }
 
-    const message = `Bonjour, je suis intéressé(e) par ce produit:\n\n` +
-        `*${product.value.name}*\n` +
-        `Prix: ${product.value.discount_price || product.value.price} FCFA\n` +
-        `Quantité: ${quantity.value}\n\n` +
-        `Variantes sélectionnées:\n` +
-        variantsMessage
+    // 2. Préparer l'article et la variante pour la modale de commande
+    const selectedVariant = getSelectedVariant()
+    const unitPrice = product.value.discount_price ? parseFloat(String(product.value.discount_price)) : parseFloat(String(product.value.price))
+    const totalAmount = unitPrice * quantity.value
 
-    const encodedMessage = encodeURIComponent(message)
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`
+    orderItems.value = [{
+        id: `direct-${product.value.id}-${Date.now()}`,
+        product: product.value,
+        variant: selectedVariant,
+        quantity: quantity.value,
+        price: unitPrice
+    }]
+    orderSubtotal.value = totalAmount
+    orderTotal.value = totalAmount
 
-    window.open(whatsappUrl, '_blank')
+    // 3. Ouvrir la modale de résumé de commande (identique au panier)
+    showOrderModal.value = true
 }
 
 // Watcher pour recharger le produit quand le slug change (navigation entre produits)
