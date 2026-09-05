@@ -19,7 +19,7 @@
 
             <!-- Products Grid -->
             <div class="products-grid">
-                <ProductCard v-for="product in filteredProducts" :key="product.id" :product="product" />
+                <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product" />
             </div>
 
             <!-- View All Button -->
@@ -102,6 +102,11 @@ const filteredProducts = computed(() => {
         return featuredProducts.value
     }
     return featuredProducts.value.filter(product => product.categoryGroup === activeCategory.value)
+})
+
+// Limiter à 6 produits pour afficher une seule ligne comme les autres sections
+const displayedProducts = computed(() => {
+    return filteredProducts.value.slice(0, 6)
 })
 
 const selectCategory = (categoryId: string) => {
