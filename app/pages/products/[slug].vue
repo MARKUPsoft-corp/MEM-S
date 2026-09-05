@@ -104,8 +104,9 @@
 
                         <!-- Price -->
                         <div class="product-price">
-                            <span v-if="product?.discount_price" class="original-price">{{ product?.price }} FCFA</span>
-                            <span class="current-price">{{ product?.discount_price || product?.price }} FCFA</span>
+                            <span class="current-price">{{ formattedCurrentPrice }} FCFA</span>
+                            <span v-if="formattedOriginalPrice" class="original-price">{{ formattedOriginalPrice }} FCFA</span>
+                            <span v-if="discountPercent" class="discount-badge">-{{ discountPercent }}%</span>
                         </div>
 
                         <!-- Variants Grid -->
@@ -174,17 +175,50 @@ import { useProducts } from '../../../composables/useProducts'
 import { useConfirm } from '../../../composables/useConfirm'
 import { useNotification } from '../../../composables/useNotification'
 import type { Product } from '../../../types/product'
+import { useProductsStore } from '../../../stores/products'
 import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
 import ProductCard from '../../components/ProductCard.vue'
 
 const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
+const productsStore = useProductsStore()
 const { fetchProductBySlug, fetchProducts } = useProducts()
 
-// Charger le produit dynamiquement basé sur le slug
-const product = ref<Product | null>(null)
-const loading = ref(true)
+// Charger le produit dynamiquement basé sur le slug (instantané depuis le cache store)
+const currentSlug = computed(() => route.params.slug as string)
+const initialProduct = productsStore.products.find(p => p.slug === currentSlug.value) || null
+const product = ref<Product | null>(initialProduct)
+const loading = ref(!initialProduct)
+
+// Formatage des prix
+const formatPrice = (price: number | string | undefined | null) => {
+    if (price === undefined || price === null) return ''
+    const num = typeof price === 'string' ? parseFloat(price) : price
+    if (isNaN(num)) return ''
+    return new Intl.NumberFormat('fr-FR').format(num)
+}
+
+const formattedCurrentPrice = computed(() => {
+    if (!product.value) return ''
+    const p = product.value.discount_price ? product.value.discount_price : product.value.price
+    return formatPrice(p)
+})
+
+const formattedOriginalPrice = computed(() => {
+    if (!product.value || !product.value.discount_price) return null
+    return formatPrice(product.value.price)
+})
+
+const discountPercent = computed(() => {
+    if (!product.value || !product.value.discount_price || !product.value.price) return null
+    const orig = parseFloat(String(product.value.price))
+    const disc = parseFloat(String(product.value.discount_price))
+    if (orig > disc && orig > 0) {
+        return Math.round(((orig - disc) / orig) * 100)
+    }
+    return null
+})
 
 // Détecter la page précédente
 const previousPage = ref<{ name: string; path: string }>({ name: '', path: '' })
@@ -221,8 +255,13 @@ const categoryMapping: Record<string, { name: string; parentPath: string }> = {
 onMounted(async () => {
     const slug = route.params.slug as string
     try {
-        loading.value = true
-        product.value = await fetchProductBySlug(slug)
+        if (!product.value) {
+            loading.value = true
+        }
+        const fetched = await fetchProductBySlug(slug)
+        if (fetched) {
+            product.value = fetched
+        }
 
         // Charger les produits de la même catégorie pour la navigation
         if (product.value?.category?.slug) {
@@ -534,9 +573,17 @@ const orderViaWhatsApp = () => {
 // Watcher pour recharger le produit quand le slug change (navigation entre produits)
 watch(() => route.params.slug, async (newSlug) => {
     if (newSlug) {
-        try {
+        const cached = productsStore.products.find(p => p.slug === newSlug)
+        if (cached) {
+            product.value = cached
+        } else {
             loading.value = true
-            product.value = await fetchProductBySlug(newSlug as string)
+        }
+        try {
+            const fetched = await fetchProductBySlug(newSlug as string)
+            if (fetched) {
+                product.value = fetched
+            }
 
             // Mettre à jour l'index du produit actuel et les produits similaires
             currentProductIndex.value = categoryProducts.value.findIndex(p => p.slug === newSlug)
@@ -807,6 +854,20 @@ watch(() => route.params.slug, async (newSlug) => {
     font-size: 2rem;
     font-weight: 700;
     color: #C9A46C;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.discount-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: #A14E36;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
     font-family: 'Montserrat', sans-serif;
 }
 

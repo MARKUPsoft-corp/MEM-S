@@ -43,11 +43,13 @@ const { fetchProducts, fetchCategoriesByCollection } = useProducts()
 const categories = ref<any[]>([])
 const products = ref<any[]>([])
 const activeCategory = ref<string | null>(null)
-const loading = ref(true)
+const loading = ref(false)
 
 onMounted(async () => {
     try {
-        loading.value = true
+        if (products.value.length === 0) {
+            loading.value = true
+        }
         const collectionData = await fetchCategoriesByCollection()
         categories.value = collectionData['lins'] || []
         if (categories.value.length > 0) {

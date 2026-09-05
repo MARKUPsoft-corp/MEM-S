@@ -129,6 +129,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProducts } from '../../../composables/useProducts'
+import { useProductsStore } from '../../../stores/products'
 import ProductCard from '../../components/ProductCard.vue'
 import AfricanPatternBackground from '../../components/AfricanPatternBackground.vue'
 import FilterButton from '../../components/FilterButton.vue'
@@ -138,8 +139,9 @@ import type { Product } from '../../../types/product'
 const route = useRoute()
 const { fetchProducts } = useProducts()
 
-const allProducts = ref<Product[]>([])
-const loading = ref(true)
+const productsStore = useProductsStore()
+const allProducts = ref<Product[]>([...productsStore.products])
+const loading = ref(productsStore.products.length === 0)
 const activeCollection = ref('all')
 const sortBy = ref('default')
 const filterPopupOpen = ref(false)
@@ -176,7 +178,9 @@ onMounted(async () => {
     }
 
     try {
-        loading.value = true
+        if (allProducts.value.length === 0) {
+            loading.value = true
+        }
         const response: any = await fetchProducts()
         if (response && response.results) {
             allProducts.value = response.results
