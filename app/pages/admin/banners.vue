@@ -1,35 +1,35 @@
 <template>
   <div class="admin-banners-page">
     <!-- Header -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
       <div>
         <h1 class="page-title">Gestion des Bannières & Visuels</h1>
-        <p class="text-muted mb-0">Personnalisez les carrousels de la page d'accueil et les bannières de vos collections</p>
+        <p class="text-muted page-subtitle mb-0">Personnalisez les carrousels de la page d'accueil et les bannières de vos collections</p>
       </div>
       <div>
-        <button class="btn btn-mems-gold px-4" :disabled="saving" @click="saveAll">
-          <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
-          <i v-else class="bi bi-check-circle me-2"></i>
+        <button class="btn btn-sm btn-mems-gold px-3" :disabled="saving" @click="saveAll">
+          <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
+          <i v-else class="bi bi-check-circle me-1"></i>
           Enregistrer tous les visuels
         </button>
       </div>
     </div>
 
     <!-- Alert toast succès -->
-    <div v-if="successMsg" class="alert alert-success d-flex align-items-center justify-content-between mb-4">
+    <div v-if="successMsg" class="alert alert-success d-flex align-items-center justify-content-between mb-3 py-2 px-3 small">
       <span><i class="bi bi-check-circle-fill me-2"></i>{{ successMsg }}</span>
-      <button type="button" class="btn-close" @click="successMsg = ''"></button>
+      <button type="button" class="btn-close btn-sm" @click="successMsg = ''"></button>
     </div>
 
     <!-- Onglets : 1. Hero Carousel Accueil | 2. Bannières des Collections -->
-    <ul class="nav nav-pills custom-admin-tabs mb-4">
+    <ul class="nav nav-pills custom-admin-tabs mb-3">
       <li class="nav-item">
         <button
           class="nav-link"
           :class="{ active: activeTab === 'hero' }"
           @click="activeTab = 'hero'"
         >
-          <i class="bi bi-sliders me-2"></i>
+          <i class="bi bi-sliders me-1"></i>
           Carrousel Accueil (Hero)
         </button>
       </li>
@@ -39,7 +39,7 @@
           :class="{ active: activeTab === 'pages' }"
           @click="activeTab = 'pages'"
         >
-          <i class="bi bi-card-image me-2"></i>
+          <i class="bi bi-card-image me-1"></i>
           Bannières des Collections & Pages
         </button>
       </li>
@@ -48,8 +48,8 @@
     <!-- Contenu Onglet 1 : Carrousel Hero Accueil -->
     <div v-if="activeTab === 'hero'">
       <div class="d-flex align-items-center justify-content-between mb-3">
-        <h3 class="section-subtitle mb-0">Diapositives du Carrousel Principal (3)</h3>
-        <button class="btn btn-sm btn-outline-dark" @click="addHeroSlide">
+        <h3 class="section-subtitle mb-0">Diapositives du Carrousel Principal ({{ heroSlides.length }})</h3>
+        <button class="btn btn-sm btn-outline-soft" @click="addHeroSlide">
           <i class="bi bi-plus-lg me-1"></i> Ajouter une diapositive
         </button>
       </div>
@@ -251,30 +251,36 @@ onMounted(async () => {
 
 <style scoped>
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 600;
   color: #0B0B0B;
+  letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+  font-size: 0.75rem;
+  color: #7A7A7A;
 }
 
 .section-subtitle {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: #0B0B0B;
 }
 
 .content-card {
   background: #FFFFFF !important;
-  border-radius: 8px;
-  border: 1px solid #E5E0D8;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(11, 11, 11, 0.04);
+  border-radius: 6px;
+  border: 1px solid #EAE6DF;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   position: relative;
   z-index: 2;
 }
 
 .card-clean-title {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 600;
   color: #0B0B0B;
 }
 
@@ -282,13 +288,13 @@ onMounted(async () => {
 .custom-admin-tabs .nav-link {
   color: #555;
   background: #F5F2EC;
-  border: 1px solid #E5E0D8;
-  font-weight: 600;
-  font-size: 0.875rem;
-  padding: 0.6rem 1.25rem;
-  border-radius: 6px;
+  border: 1px solid #EAE6DF;
+  font-weight: 500;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 4px;
   margin-right: 0.5rem;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .custom-admin-tabs .nav-link.active {
@@ -301,7 +307,7 @@ onMounted(async () => {
 .slide-preview-box {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: 6px;
+  border-radius: 4px;
   overflow: hidden;
   background: #0B0B0B;
 }
@@ -319,28 +325,28 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 1rem;
+  padding: 0.75rem 0.85rem;
 }
 
 .slide-preview-title {
   color: #FFFFFF;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   margin-bottom: 0.15rem;
 }
 
 .slide-preview-price {
   color: #C9A46C;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 /* Page Banner Preview */
 .page-banner-preview {
   position: relative;
-  height: 120px;
-  border-radius: 6px;
+  height: 100px;
+  border-radius: 4px;
   overflow: hidden;
   background: #0B0B0B;
 }
@@ -359,20 +365,38 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
-  font-weight: 700;
-  letter-spacing: 2px;
-  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  font-size: 0.875rem;
 }
 
 .btn-mems-gold {
   background: #C9A46C;
   color: #0B0B0B;
   border: none;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: 4px;
+  font-size: 0.75rem;
 }
 
 .btn-mems-gold:hover {
   background: #B89358;
+}
+
+.btn-outline-soft {
+  background: #FFFFFF;
+  border: 1px solid #E5E0D8;
+  color: #555;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.btn-outline-soft:hover {
+  background: #F5F2EC;
+  color: #0B0B0B;
+  border-color: #D8D2C7;
 }
 </style>

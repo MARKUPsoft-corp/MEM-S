@@ -675,9 +675,10 @@ onMounted(() => {
 
 <style scoped>
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0B0B0B;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #111111;
+  letter-spacing: -0.2px;
 }
 
 .spin-icon {
@@ -692,10 +693,10 @@ onMounted(() => {
 /* Content Card */
 .content-card {
   background: #FFFFFF !important;
-  border-radius: 8px;
-  border: 1px solid #E5E0D8;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(11, 11, 11, 0.04);
+  border-radius: 6px;
+  border: 1px solid #ECE7E1;
+  padding: 1.1rem 1.15rem;
+  box-shadow: 0 1px 3px rgba(11, 11, 11, 0.02);
   position: relative;
   z-index: 2;
 }
@@ -703,54 +704,53 @@ onMounted(() => {
 /* KPIs */
 .kpi-card {
   background: #FFFFFF !important;
-  border: 1px solid #E5E0D8;
-  border-radius: 8px;
-  padding: 1.25rem 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: 1px solid #ECE7E1;
+  border-radius: 6px;
+  padding: 0.85rem 0.95rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   position: relative;
   z-index: 2;
 }
 
 .kpi-label {
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #7A7A7A;
+  letter-spacing: 0.6px;
+  color: #8C8C8C;
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .kpi-val {
-  font-size: 1.625rem;
-  font-weight: 700;
-  color: #0B0B0B;
-  font-family: 'Montserrat', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #111111;
   line-height: 1.2;
 }
 
 .kpi-currency {
-  font-size: 0.875rem;
-  color: #7A7A7A;
+  font-size: 0.6875rem;
+  color: #8C8C8C;
   font-weight: 500;
 }
 
 .kpi-sub {
-  font-size: 0.75rem;
-  color: #888;
-  margin-top: 0.35rem;
+  font-size: 0.6875rem;
+  color: #8A8A8A;
+  margin-top: 0.25rem;
 }
 
 /* Status Pills */
 .status-pill-btn {
   background: #FAF8F5;
-  border: 1px solid #E5E0D8;
-  padding: 0.35rem 0.75rem;
+  border: 1px solid #ECE7E1;
+  padding: 0.25rem 0.6rem;
   border-radius: 20px;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #555;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -769,8 +769,8 @@ onMounted(() => {
 
 .pill-badge {
   background: rgba(0, 0, 0, 0.08);
-  font-size: 0.6875rem;
-  padding: 1px 6px;
+  font-size: 0.625rem;
+  padding: 1px 5px;
   border-radius: 10px;
 }
 
@@ -808,23 +808,24 @@ onMounted(() => {
 
 .search-icon {
   position: absolute;
-  left: 12px;
+  left: 10px;
   color: #888;
+  font-size: 0.8125rem;
 }
 
 .admin-search-control {
-  padding-left: 36px;
+  padding-left: 32px;
   background: #FAF8F5;
-  border: 1px solid #E5E0D8;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  border: 1px solid #ECE7E1;
+  border-radius: 4px;
+  font-size: 0.75rem;
 }
 
 .admin-select-control {
   background: #FAF8F5;
-  border: 1px solid #E5E0D8;
-  border-radius: 6px;
-  font-size: 0.8125rem;
+  border: 1px solid #ECE7E1;
+  border-radius: 4px;
+  font-size: 0.75rem;
 }
 
 .btn-clear-search {
@@ -841,41 +842,42 @@ onMounted(() => {
 }
 
 .custom-admin-table th {
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #7A7A7A;
+  letter-spacing: 0.6px;
+  color: #8C8C8C;
   font-weight: 600;
-  border-bottom: 2px solid #F5F2EC;
-  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #ECE7E1;
+  padding: 0.5rem 0.4rem;
   background: #FFFFFF !important;
 }
 
 .custom-admin-table td {
-  padding: 0.75rem 0.5rem;
+  padding: 0.55rem 0.4rem;
   border-bottom: 1px solid #F5F2EC;
   background: #FFFFFF !important;
+  font-size: 0.8125rem;
 }
 
 .order-ref-badge {
   font-family: monospace;
-  font-weight: 700;
-  color: #0B0B0B;
+  font-weight: 600;
+  color: #111111;
   background: #FAF8F5;
-  padding: 3px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid #E5E0D8;
-  font-size: 0.8125rem;
+  border: 1px solid #ECE7E1;
+  font-size: 0.75rem;
 }
 
 .client-avatar-circle {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #0B0B0B;
   color: #C9A46C;
-  font-weight: 700;
-  font-size: 0.75rem;
+  font-weight: 600;
+  font-size: 0.6875rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -883,28 +885,29 @@ onMounted(() => {
 }
 
 .client-name {
-  font-weight: 600;
-  color: #0B0B0B;
-  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111111;
+  font-size: 0.75rem;
   display: block;
 }
 
 .order-price {
-  font-weight: 700;
-  color: #0B0B0B;
+  font-weight: 600;
+  color: #111111;
+  font-size: 0.75rem;
 }
 
 .order-currency {
-  font-size: 0.75rem;
-  color: #7A7A7A;
+  font-size: 0.6875rem;
+  color: #8A8A8A;
 }
 
 /* Status select */
 .status-select {
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 6px;
-  padding: 0.25rem 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
 }
 
 .status-pending {

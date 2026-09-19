@@ -1,82 +1,82 @@
 <template>
   <div class="admin-settings-page">
     <!-- Header -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
       <div>
         <h1 class="page-title">Paramètres & WhatsApp</h1>
-        <p class="text-muted mb-0">Configurez le numéro WhatsApp officiel qui reçoit toutes les commandes des clients</p>
+        <p class="text-muted page-subtitle mb-0">Configurez le numéro WhatsApp officiel qui reçoit toutes les commandes des clients</p>
       </div>
       <div>
-        <button class="btn btn-mems-gold px-4" :disabled="saving" @click="saveSettings">
-          <span v-if="saving" class="spinner-border spinner-border-sm me-2"></span>
-          <i v-else class="bi bi-check-circle me-2"></i>
+        <button class="btn btn-sm btn-mems-gold px-3" :disabled="saving" @click="saveSettings">
+          <span v-if="saving" class="spinner-border spinner-border-sm me-1"></span>
+          <i v-else class="bi bi-check-circle me-1"></i>
           Enregistrer les paramètres
         </button>
       </div>
     </div>
 
     <!-- Alert toast succès -->
-    <div v-if="successMsg" class="alert alert-success d-flex align-items-center justify-content-between mb-4">
+    <div v-if="successMsg" class="alert alert-success d-flex align-items-center justify-content-between mb-3 py-2 px-3 small">
       <span><i class="bi bi-check-circle-fill me-2"></i>{{ successMsg }}</span>
-      <button type="button" class="btn-close" @click="successMsg = ''"></button>
+      <button type="button" class="btn-close btn-sm" @click="successMsg = ''"></button>
     </div>
 
     <!-- Alert toast erreur -->
-    <div v-if="errorMsg" class="alert alert-danger d-flex align-items-center justify-content-between mb-4">
+    <div v-if="errorMsg" class="alert alert-danger d-flex align-items-center justify-content-between mb-3 py-2 px-3 small">
       <span><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMsg }}</span>
-      <button type="button" class="btn-close" @click="errorMsg = ''"></button>
+      <button type="button" class="btn-close btn-sm" @click="errorMsg = ''"></button>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-3">
       <!-- Section Principale : WhatsApp des Commandes -->
       <div class="col-lg-7">
-        <div class="content-card mb-4">
-          <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <div class="content-card mb-3">
+          <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
             <div class="whatsapp-icon-circle">
               <i class="bi bi-whatsapp"></i>
             </div>
             <div>
-              <h3 class="card-clean-title mb-1">Numéro WhatsApp de Commande</h3>
-              <p class="text-muted small mb-0">Toutes les commandes du panier et des fiches produits sont transmises à ce numéro</p>
+              <h3 class="card-clean-title mb-0">Numéro WhatsApp de Commande</h3>
+              <p class="text-muted page-subtitle mb-0">Toutes les commandes du panier et des fiches produits sont transmises à ce numéro</p>
             </div>
           </div>
 
-          <div class="mb-4">
-            <label class="form-label fw-semibold">
+          <div class="mb-3">
+            <label class="form-label-soft">
               Numéro de téléphone WhatsApp (avec indicatif pays)
               <span class="text-danger">*</span>
             </label>
-            <div class="input-group input-group-lg">
-              <span class="input-group-text bg-light">
-                <i class="bi bi-telephone-fill text-success"></i>
+            <div class="input-group">
+              <span class="input-group-text bg-light px-2 border-end-0">
+                <i class="bi bi-telephone-fill text-success" style="font-size: 0.75rem;"></i>
               </span>
               <input
                 v-model="settings.whatsappNumber"
                 type="text"
-                class="form-control"
+                class="form-control admin-form-control"
                 placeholder="237696962662"
                 @input="cleanNumber"
               />
             </div>
-            <div class="form-text mt-2">
+            <div class="form-text-soft mt-1">
               <i class="bi bi-info-circle me-1"></i>
-              Format international <strong>sans le signe +</strong> et <strong>sans espaces</strong>.<br />
-              <em>Exemple Cameroun : <code>237696962662</code> | Exemple France : <code>33612345678</code></em>
+              Format international sans le signe + et sans espaces. Ex: <code>237696962662</code>
             </div>
           </div>
 
           <!-- Carte de Test et Prévisualisation -->
-          <div class="preview-box p-3 rounded-3 bg-light border mb-4">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <span class="text-muted small fw-semibold text-uppercase">Aperçu du lien de commande</span>
-              <span class="badge bg-success-subtle text-success">Actif</span>
+          <div class="preview-box p-2 rounded bg-light border mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="text-muted small fw-semibold text-uppercase" style="font-size: 0.6875rem;">Aperçu du lien de commande</span>
+              <span class="badge bg-success-subtle text-success" style="font-size: 0.625rem;">Actif</span>
             </div>
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-              <code class="text-dark fs-6">{{ whatsappLinkPreview }}</code>
+              <code class="text-dark" style="font-size: 0.75rem;">{{ whatsappLinkPreview }}</code>
               <a
                 :href="testWhatsAppUrl"
                 target="_blank"
-                class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-2"
+                class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 py-1 px-2"
+                style="font-size: 0.75rem;"
               >
                 <i class="bi bi-box-arrow-up-right"></i>
                 Tester sur WhatsApp
@@ -84,12 +84,12 @@
             </div>
           </div>
 
-          <div class="alert alert-info d-flex gap-3 align-items-start mb-0">
-            <i class="bi bi-shield-check fs-4 text-info mt-1"></i>
-            <div class="small">
+          <div class="alert alert-info d-flex gap-2 align-items-start mb-0 py-2 px-3 small">
+            <i class="bi bi-shield-check text-info mt-1"></i>
+            <div>
               <strong>Synchronisation universelle :</strong> Dès que vous enregistrez ce numéro, il sera automatiquement utilisé pour :
               <ul class="mb-0 mt-1 ps-3">
-                <li>Le bouton <strong>Commander sur WhatsApp</strong> de chaque fiche article (slug).</li>
+                <li>Le bouton <strong>Commander sur WhatsApp</strong> de chaque fiche article.</li>
                 <li>La validation finale du <strong>Panier d'achats</strong>.</li>
                 <li>La page de contact et le service client.</li>
               </ul>
@@ -100,53 +100,53 @@
 
       <!-- Section Coordonnées de la boutique -->
       <div class="col-lg-5">
-        <div class="content-card mb-4">
-          <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+        <div class="content-card mb-3">
+          <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
             <div class="settings-icon-circle">
               <i class="bi bi-shop"></i>
             </div>
             <div>
-              <h3 class="card-clean-title mb-1">Informations de la Boutique</h3>
-              <p class="text-muted small mb-0">Coordonnées affichées sur le site et les messages</p>
+              <h3 class="card-clean-title mb-0">Informations de la Boutique</h3>
+              <p class="text-muted page-subtitle mb-0">Coordonnées affichées sur le site et les messages</p>
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Nom de la marque / boutique</label>
+          <div class="mb-2">
+            <label class="form-label-soft">Nom de la marque / boutique</label>
             <input
               v-model="settings.storeName"
               type="text"
-              class="form-control"
+              class="form-control admin-form-control"
               placeholder="MEM'S Concept"
             />
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Email de contact</label>
+          <div class="mb-2">
+            <label class="form-label-soft">Email de contact</label>
             <input
               v-model="settings.contactEmail"
               type="email"
-              class="form-control"
+              class="form-control admin-form-control"
               placeholder="contact@mems-concept.com"
             />
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Téléphone affiché aux clients</label>
+          <div class="mb-2">
+            <label class="form-label-soft">Téléphone affiché aux clients</label>
             <input
               v-model="settings.contactPhone"
               type="text"
-              class="form-control"
+              class="form-control admin-form-control"
               placeholder="+237 6 96 96 26 62"
             />
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Adresse physique / Ville</label>
+          <div class="mb-2">
+            <label class="form-label-soft">Adresse physique / Ville</label>
             <input
               v-model="settings.address"
               type="text"
-              class="form-control"
+              class="form-control admin-form-control"
               placeholder="Douala, Cameroun"
             />
           </div>
@@ -233,65 +233,99 @@ const saveSettings = async () => {
 <style scoped>
 .page-title {
   font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 1.75rem;
-  color: #0E3A34;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: #0B0B0B;
+  letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+  font-size: 0.75rem;
+  color: #7A7A7A;
 }
 
 .content-card {
   background: #FFFFFF;
-  border-radius: 8px;
-  padding: 1.75rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  border: 1px solid #EAE6DF;
 }
 
 .card-clean-title {
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  font-size: 1.15rem;
-  color: #0E3A34;
+  font-size: 0.875rem;
+  color: #0B0B0B;
 }
 
 .whatsapp-icon-circle {
-  width: 48px;
-  height: 48px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #25D366;
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 0.875rem;
   flex-shrink: 0;
 }
 
 .settings-icon-circle {
-  width: 48px;
-  height: 48px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: #0E3A34;
-  color: #FFFFFF;
+  background: #0B0B0B;
+  color: #C9A46C;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  font-size: 0.8125rem;
   flex-shrink: 0;
+}
+
+.form-label-soft {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #8C827A;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.form-text-soft {
+  font-size: 0.6875rem;
+  color: #8C827A;
+}
+
+.admin-form-control {
+  font-size: 0.8125rem;
+  background: #FAF8F5;
+  border: 1px solid #EAE6DF;
+  border-radius: 4px;
+}
+
+.admin-form-control:focus {
+  background: #FFFFFF;
+  border-color: #C9A46C;
+  box-shadow: 0 0 0 2px rgba(201, 164, 108, 0.15);
 }
 
 .btn-mems-gold {
   background-color: #C9A46C;
-  color: #FFFFFF;
+  color: #0B0B0B;
   border: none;
-  font-weight: 600;
-  border-radius: 6px;
-  padding: 0.6rem 1.5rem;
-  transition: all 0.2s ease;
+  font-weight: 500;
+  border-radius: 4px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.75rem;
+  transition: all 0.15s ease;
 }
 
 .btn-mems-gold:hover:not(:disabled) {
-  background-color: #b38e56;
-  color: #FFFFFF;
+  background-color: #B89358;
 }
 
 .btn-mems-gold:disabled {
@@ -300,6 +334,6 @@ const saveSettings = async () => {
 
 .preview-box {
   background-color: #FAF8F5 !important;
-  border-color: #E8E2D8 !important;
+  border-color: #EAE6DF !important;
 }
 </style>

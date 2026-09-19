@@ -1,54 +1,66 @@
 <template>
   <div class="admin-customers-page">
     <!-- En-tête -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
       <div>
         <h1 class="page-title">Clients & Gestion des Accès</h1>
-        <p class="text-muted mb-0">Base clientèle, historique d'achats et attribution des privilèges administrateur</p>
+        <p class="text-muted page-subtitle mb-0">Base clientèle, historique d'achats et attribution des privilèges administrateur</p>
       </div>
       <div>
-        <button class="btn btn-outline-dark" @click="loadData" :disabled="loading">
+        <button class="btn btn-sm btn-outline-soft" @click="loadData" :disabled="loading">
           <i class="bi bi-arrow-clockwise me-1" :class="{ 'spin-icon': loading }"></i>
           Actualiser
         </button>
       </div>
     </div>
 
-    <!-- KPIs Clients -->
-    <div class="row g-3 mb-4">
-      <div class="col-sm-6 col-lg-3">
+    <!-- KPIs Clients (2x2 sur mobile) -->
+    <div class="row g-2 g-md-3 mb-3">
+      <div class="col-6 col-lg-3">
         <div class="kpi-card">
-          <div class="kpi-label">TOTAL COMPTES</div>
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <span class="kpi-label">TOTAL COMPTES</span>
+            <div class="kpi-icon-badge"><i class="bi bi-people text-gold"></i></div>
+          </div>
           <div class="kpi-val">{{ users.length }}</div>
-          <div class="kpi-sub"><i class="bi bi-people me-1 text-gold"></i>Utilisateurs enregistrés</div>
+          <div class="kpi-sub">Utilisateurs enregistrés</div>
         </div>
       </div>
-      <div class="col-sm-6 col-lg-3">
+      <div class="col-6 col-lg-3">
         <div class="kpi-card">
-          <div class="kpi-label">CLIENTS</div>
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <span class="kpi-label">CLIENTS</span>
+            <div class="kpi-icon-badge text-primary"><i class="bi bi-person-check"></i></div>
+          </div>
           <div class="kpi-val text-primary">{{ customersCount }}</div>
-          <div class="kpi-sub"><i class="bi bi-person-check me-1 text-primary"></i>Acheteurs boutique</div>
+          <div class="kpi-sub">Acheteurs boutique</div>
         </div>
       </div>
-      <div class="col-sm-6 col-lg-3">
+      <div class="col-6 col-lg-3">
         <div class="kpi-card">
-          <div class="kpi-label">ADMINISTRATEURS</div>
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <span class="kpi-label">ADMINS</span>
+            <div class="kpi-icon-badge text-gold"><i class="bi bi-shield-lock"></i></div>
+          </div>
           <div class="kpi-val text-gold">{{ adminsCount }}</div>
-          <div class="kpi-sub"><i class="bi bi-shield-lock me-1 text-gold"></i>Accès complet au dashboard</div>
+          <div class="kpi-sub">Accès complet dashboard</div>
         </div>
       </div>
-      <div class="col-sm-6 col-lg-3">
+      <div class="col-6 col-lg-3">
         <div class="kpi-card">
-          <div class="kpi-label">VILLES CLIENTS</div>
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <span class="kpi-label">VILLES</span>
+            <div class="kpi-icon-badge"><i class="bi bi-geo-alt"></i></div>
+          </div>
           <div class="kpi-val">{{ uniqueCitiesCount }}</div>
-          <div class="kpi-sub"><i class="bi bi-geo-alt me-1"></i>Répartition géographique</div>
+          <div class="kpi-sub">Répartition géographique</div>
         </div>
       </div>
     </div>
 
     <!-- Barre de recherche & Filtres -->
-    <div class="filter-bar content-card mb-4">
-      <div class="row g-3 align-items-center">
+    <div class="filter-bar content-card mb-3 py-2 px-3">
+      <div class="row g-2 align-items-center">
         <!-- Champ Recherche -->
         <div class="col-md-6">
           <div class="search-input-box">
@@ -73,22 +85,22 @@
         <div class="col-md-6 d-flex justify-content-md-end">
           <div class="btn-group btn-group-sm">
             <button
-              class="btn"
-              :class="roleFilter === 'all' ? 'btn-dark' : 'btn-outline-secondary'"
+              class="btn btn-filter"
+              :class="roleFilter === 'all' ? 'active' : ''"
               @click="roleFilter = 'all'"
             >
               Tous ({{ users.length }})
             </button>
             <button
-              class="btn"
-              :class="roleFilter === 'customer' ? 'btn-dark' : 'btn-outline-secondary'"
+              class="btn btn-filter"
+              :class="roleFilter === 'customer' ? 'active' : ''"
               @click="roleFilter = 'customer'"
             >
               Clients ({{ customersCount }})
             </button>
             <button
-              class="btn"
-              :class="roleFilter === 'admin' ? 'btn-dark' : 'btn-outline-secondary'"
+              class="btn btn-filter"
+              :class="roleFilter === 'admin' ? 'active' : ''"
               @click="roleFilter = 'admin'"
             >
               Admins ({{ adminsCount }})
@@ -513,9 +525,32 @@ onMounted(() => {
 
 <style scoped>
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 600;
   color: #0B0B0B;
+  letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+  font-size: 0.75rem;
+  color: #7A7A7A;
+}
+
+.btn-outline-soft {
+  background: #FFFFFF;
+  border: 1px solid #E5E0D8;
+  color: #555;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.btn-outline-soft:hover {
+  background: #F5F2EC;
+  color: #0B0B0B;
+  border-color: #D8D2C7;
 }
 
 .spin-icon {
@@ -530,10 +565,9 @@ onMounted(() => {
 /* Content Card */
 .content-card {
   background: #FFFFFF !important;
-  border-radius: 8px;
-  border: 1px solid #E5E0D8;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(11, 11, 11, 0.04);
+  border-radius: 6px;
+  border: 1px solid #EAE6DF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   position: relative;
   z-index: 2;
 }
@@ -541,35 +575,46 @@ onMounted(() => {
 /* KPIs */
 .kpi-card {
   background: #FFFFFF !important;
-  border: 1px solid #E5E0D8;
-  border-radius: 8px;
-  padding: 1.25rem 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: 1px solid #EAE6DF;
+  border-radius: 6px;
+  padding: 0.75rem 0.85rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   position: relative;
   z-index: 2;
 }
 
 .kpi-label {
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  color: #8C827A;
+  font-weight: 500;
+}
+
+.kpi-icon-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: #FAF8F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
   color: #7A7A7A;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
 }
 
 .kpi-val {
-  font-size: 1.625rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 600;
   color: #0B0B0B;
   font-family: 'Montserrat', sans-serif;
   line-height: 1.2;
+  margin-bottom: 0.15rem;
 }
 
 .kpi-sub {
-  font-size: 0.75rem;
-  color: #888;
-  margin-top: 0.35rem;
+  font-size: 0.6875rem;
+  color: #8C827A;
 }
 
 /* Search Box */
@@ -581,24 +626,55 @@ onMounted(() => {
 
 .search-icon {
   position: absolute;
-  left: 12px;
-  color: #888;
+  left: 10px;
+  color: #9E9E9E;
+  font-size: 0.75rem;
 }
 
 .admin-search-control {
-  padding-left: 36px;
+  padding-left: 30px;
   background: #FAF8F5;
-  border: 1px solid #E5E0D8;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  border: 1px solid #EAE6DF;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  height: 32px;
+}
+
+.admin-search-control:focus {
+  background: #FFFFFF;
+  border-color: #C9A46C;
+  box-shadow: 0 0 0 2px rgba(201, 164, 108, 0.15);
 }
 
 .btn-clear-search {
   position: absolute;
-  right: 8px;
+  right: 6px;
   background: transparent;
   border: none;
   color: #888;
+  font-size: 0.75rem;
+}
+
+/* Filter buttons */
+.btn-filter {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px solid #EAE6DF;
+  background: #FFFFFF;
+  color: #666;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.btn-filter:hover {
+  background: #FAF8F5;
+  color: #0B0B0B;
+}
+
+.btn-filter.active {
+  background: #0B0B0B;
+  color: #FFFFFF;
+  border-color: #0B0B0B;
 }
 
 /* Custom Table */
@@ -607,30 +683,31 @@ onMounted(() => {
 }
 
 .custom-admin-table th {
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #7A7A7A;
+  letter-spacing: 0.6px;
+  color: #8C827A;
   font-weight: 600;
-  border-bottom: 2px solid #F5F2EC;
-  padding: 0.75rem 0.5rem;
-  background: #FFFFFF !important;
+  border-bottom: 1px solid #EAE6DF;
+  padding: 0.6rem 0.65rem;
+  background: #FAF8F5 !important;
 }
 
 .custom-admin-table td {
-  padding: 0.75rem 0.5rem;
+  padding: 0.6rem 0.65rem;
   border-bottom: 1px solid #F5F2EC;
   background: #FFFFFF !important;
+  font-size: 0.8125rem;
 }
 
 .client-avatar-circle {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #0B0B0B;
   color: #F5F2EC;
-  font-weight: 700;
-  font-size: 0.75rem;
+  font-weight: 600;
+  font-size: 0.6875rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -650,30 +727,31 @@ onMounted(() => {
 }
 
 .user-fullname {
-  font-weight: 600;
+  font-weight: 500;
   color: #0B0B0B;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   display: block;
 }
 
 .user-email {
-  font-size: 0.8125rem;
-  color: #444;
+  font-size: 0.75rem;
+  color: #666;
 }
 
 /* Badges */
 .badge-role {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .badge-role-admin {
-  background: rgba(201, 164, 108, 0.2);
+  background: rgba(201, 164, 108, 0.15);
   color: #8C6D37;
-  border: 1px solid rgba(201, 164, 108, 0.4);
+  border: 1px solid rgba(201, 164, 108, 0.3);
 }
 
 .badge-role-customer {
@@ -683,28 +761,34 @@ onMounted(() => {
 
 .badge-orders-btn {
   background: #FAF8F5;
-  border: 1px solid #E5E0D8;
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  border: 1px solid #EAE6DF;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  font-weight: 500;
   color: #0B0B0B;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
 .badge-orders-btn:hover {
   background: #0B0B0B;
   color: #F5F2EC;
+  border-color: #0B0B0B;
+}
+
+.text-gold {
+  color: #C9A46C !important;
 }
 
 .btn-mems-gold {
   background: #C9A46C;
   color: #0B0B0B;
   border: none;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
+  font-weight: 500;
+  padding: 0.35rem 0.85rem;
   border-radius: 4px;
+  font-size: 0.75rem;
 }
 
 .btn-mems-gold:hover {
@@ -726,29 +810,30 @@ onMounted(() => {
 
 .modal-dialog-custom {
   background: #FFFFFF;
-  border-radius: 10px;
+  border-radius: 6px;
   width: 100%;
-  max-width: 620px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  border: 1px solid #EAE6DF;
 }
 
 .modal-header-luxury {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #E5E0D8;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid #EAE6DF;
   background: #FAF8F5;
 }
 
 .modal-title-custom {
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: #0B0B0B;
 }
 
 .btn-close-luxury {
   background: transparent;
   border: none;
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: #7A7A7A;
   cursor: pointer;
 }
@@ -758,14 +843,15 @@ onMounted(() => {
 }
 
 .modal-body-content {
-  padding: 1.5rem;
+  padding: 1.25rem;
   max-height: 65vh;
   overflow-y: auto;
+  font-size: 0.8125rem;
 }
 
 .modal-footer-luxury {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #E5E0D8;
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid #EAE6DF;
   background: #FAF8F5;
 }
 </style>

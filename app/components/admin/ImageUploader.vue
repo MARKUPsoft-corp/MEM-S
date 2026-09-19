@@ -295,60 +295,59 @@ const processFiles = async (files: File[]) => {
 }
 
 .upload-dropzone {
-  border: 2px dashed #C9A46C;
+  border: 1.5px dashed rgba(201, 164, 108, 0.6);
   background: #FAF8F5;
-  border-radius: 8px;
-  padding: 2.5rem 1.5rem;
+  border-radius: 6px;
+  padding: 1.5rem 1rem;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   position: relative;
 }
 
 .upload-dropzone:hover,
 .upload-dropzone.is-dragging {
   background: #F5F2EC;
-  border-color: #A14E36;
-  transform: scale(1.005);
+  border-color: #C9A46C;
 }
 
 .upload-icon-circle {
-  width: 54px;
-  height: 54px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: rgba(201, 164, 108, 0.15);
   color: #C9A46C;
-  font-size: 1.75rem;
+  font-size: 1.15rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1rem auto;
+  margin: 0 auto 0.5rem auto;
 }
 
 .upload-main-text {
-  font-size: 1rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #0B0B0B;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
 }
 
 .upload-sub-text {
-  font-size: 0.875rem;
-  color: #555;
+  font-size: 0.75rem;
+  color: #666;
   display: block;
 }
 
 .browse-link {
-  color: #A14E36;
+  color: #C9A46C;
   font-weight: 600;
   text-decoration: underline;
 }
 
 .upload-hint {
   display: block;
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  color: #888;
+  margin-top: 0.35rem;
+  font-size: 0.6875rem;
+  color: #8C827A;
 }
 
 .text-gold {
@@ -358,16 +357,16 @@ const processFiles = async (files: File[]) => {
 /* Grille des previews */
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
 }
 
 .image-item-card {
   position: relative;
   aspect-ratio: 4 / 5;
-  border-radius: 6px;
+  border-radius: 4px;
   overflow: hidden;
-  border: 2px solid #E5E0D8;
+  border: 1.5px solid #EAE6DF;
   background: #0B0B0B;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }

@@ -517,17 +517,18 @@ onMounted(() => {
 
 <style scoped>
 .page-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0B0B0B;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #111111;
+  letter-spacing: -0.2px;
 }
 
 .content-card {
   background: #FFFFFF !important;
-  border-radius: 8px;
-  border: 1px solid #E5E0D8;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(11, 11, 11, 0.04);
+  border-radius: 6px;
+  border: 1px solid #ECE7E1;
+  padding: 1.1rem 1.15rem;
+  box-shadow: 0 1px 3px rgba(11, 11, 11, 0.02);
   position: relative;
   z-index: 2;
 }
@@ -535,20 +536,19 @@ onMounted(() => {
 /* Collection Cards */
 .collection-kpi-card {
   background: #FFFFFF !important;
-  border: 1px solid #E5E0D8;
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
+  border: 1px solid #ECE7E1;
+  border-radius: 6px;
+  padding: 0.75rem 0.95rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   position: relative;
   z-index: 2;
 }
 
 .collection-kpi-card:hover {
-  transform: translateY(-2px);
   border-color: #C9A46C;
-  box-shadow: 0 4px 12px rgba(201, 164, 108, 0.15);
+  box-shadow: 0 2px 8px rgba(201, 164, 108, 0.1);
 }
 
 .collection-kpi-card.active {
@@ -557,25 +557,25 @@ onMounted(() => {
 }
 
 .collection-badge-kpi {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #7A7A7A;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: #8C8C8C;
 }
 
 .count-pill {
   background: #F5F2EC;
   color: #8C6D37;
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 600;
-  padding: 2px 6px;
+  padding: 1px 6px;
   border-radius: 10px;
 }
 
 .collection-card-name {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #0B0B0B;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111111;
   margin: 0;
 }
 
@@ -588,23 +588,24 @@ onMounted(() => {
 
 .search-icon {
   position: absolute;
-  left: 12px;
+  left: 10px;
   color: #888;
+  font-size: 0.8125rem;
 }
 
 .admin-search-control {
-  padding-left: 36px;
+  padding-left: 32px;
   background: #FAF8F5;
-  border: 1px solid #E5E0D8;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  border: 1px solid #ECE7E1;
+  border-radius: 4px;
+  font-size: 0.75rem;
 }
 
 .admin-select-control {
   background: #FAF8F5;
-  border: 1px solid #E5E0D8;
-  border-radius: 6px;
-  font-size: 0.875rem;
+  border: 1px solid #ECE7E1;
+  border-radius: 4px;
+  font-size: 0.75rem;
 }
 
 .btn-clear-search {
@@ -621,49 +622,51 @@ onMounted(() => {
 }
 
 .custom-admin-table th {
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #7A7A7A;
+  letter-spacing: 0.6px;
+  color: #8C8C8C;
   font-weight: 600;
-  border-bottom: 2px solid #F5F2EC;
-  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid #ECE7E1;
+  padding: 0.5rem 0.4rem;
   background: #FFFFFF !important;
 }
 
 .custom-admin-table td {
-  padding: 0.75rem 0.5rem;
+  padding: 0.55rem 0.4rem;
   border-bottom: 1px solid #F5F2EC;
   background: #FFFFFF !important;
+  font-size: 0.8125rem;
 }
 
 .order-number-badge {
   font-family: monospace;
-  font-weight: 700;
+  font-weight: 600;
   background: #FAF8F5;
   color: #555;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.8125rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.75rem;
 }
 
 .category-name-text {
-  font-weight: 600;
-  color: #0B0B0B;
+  font-weight: 500;
+  color: #111111;
+  font-size: 0.8125rem;
   display: block;
 }
 
 .category-slug-text {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: #888;
   font-family: monospace;
 }
 
 .badge-collection {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
   text-transform: uppercase;
 }
 
@@ -691,9 +694,11 @@ onMounted(() => {
   background: #C9A46C;
   color: #0B0B0B;
   border: none;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
   border-radius: 4px;
+  letter-spacing: 0.2px;
 }
 
 .btn-mems-gold:hover {

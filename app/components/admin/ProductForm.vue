@@ -423,32 +423,42 @@ onMounted(async () => {
 <style scoped>
 .content-card {
   background: #FFFFFF !important;
-  border-radius: 8px;
-  border: 1px solid #E5E0D8;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(11, 11, 11, 0.04);
+  border-radius: 6px;
+  border: 1px solid #EAE6DF;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   position: relative;
   z-index: 2;
 }
 
 .card-clean-title {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 0.875rem;
+  font-weight: 600;
   color: #0B0B0B;
+}
+
+.form-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: #8C827A;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
 }
 
 .admin-input,
 .admin-select-control {
   background: #FAF8F5;
-  border: 1px solid #E5E0D8;
-  border-radius: 6px;
-  padding: 0.6rem 0.85rem;
+  border: 1px solid #EAE6DF;
+  border-radius: 4px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .admin-input:focus,
 .admin-select-control:focus {
   border-color: #C9A46C;
-  box-shadow: 0 0 0 3px rgba(201, 164, 108, 0.2);
+  box-shadow: 0 0 0 2px rgba(201, 164, 108, 0.15);
   background: #FFFFFF;
 }
 
@@ -464,11 +474,20 @@ onMounted(async () => {
   background: #C9A46C;
   color: #0B0B0B;
   border: none;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: 4px;
+  font-size: 0.8125rem;
+  padding: 0.45rem 1rem;
 }
 
 .btn-mems-gold:hover {
   background: #B89358;
+}
+
+.variant-row-card {
+  border: 1px solid #EAE6DF !important;
+  border-radius: 4px !important;
+  padding: 0.6rem 0.75rem !important;
+  background: #FAF8F5 !important;
 }
 </style>

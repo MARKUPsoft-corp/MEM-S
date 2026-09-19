@@ -207,14 +207,16 @@ const handleLogout = async () => {
   display: flex;
   min-height: 100vh;
   background: #FAF8F5;
-  color: #0B0B0B;
+  color: #1A1A1A;
   position: relative;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Sidebar */
 .admin-sidebar {
-  width: 270px;
+  width: 240px;
   background: #0B0B0B;
   color: #FFFFFF;
   display: flex;
@@ -224,28 +226,28 @@ const handleLogout = async () => {
   bottom: 0;
   left: 0;
   z-index: 1040;
-  border-right: 1px solid rgba(201, 164, 108, 0.2);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-header {
-  padding: 1.5rem 1.25rem;
+  padding: 1.1rem 1.15rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .admin-brand {
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .brand-name {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: 600;
   letter-spacing: 2px;
   color: #FFFFFF;
 }
@@ -253,89 +255,103 @@ const handleLogout = async () => {
 .brand-badge {
   background: #C9A46C;
   color: #0B0B0B;
-  font-size: 0.65rem;
+  font-size: 0.5625rem;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
-  letter-spacing: 1px;
+  padding: 1px 5px;
+  border-radius: 2px;
+  letter-spacing: 0.8px;
 }
 
 .btn-close-sidebar {
   background: transparent;
   border: none;
-  color: #FFFFFF;
-  font-size: 1.25rem;
+  color: #8C8C8C;
+  font-size: 1.1rem;
   cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.btn-close-sidebar:hover {
+  color: #FFFFFF;
 }
 
 .sidebar-nav {
-  padding: 1.25rem 0.75rem;
+  padding: 1rem 0.65rem;
   flex: 1;
   overflow-y: auto;
 }
 
 .nav-section-title {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: #7A7A7A;
-  letter-spacing: 1.5px;
-  padding: 0 0.75rem 0.5rem 0.75rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: #6E6E6E;
+  letter-spacing: 1.2px;
+  padding: 0 0.65rem 0.35rem 0.65rem;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.75rem 0.85rem;
-  color: #C5C1BA;
+  gap: 0.7rem;
+  padding: 0.45rem 0.65rem;
+  color: #A39E96;
   text-decoration: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  margin-bottom: 0.25rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  transition: all 0.15s ease;
+  margin-bottom: 2px;
 }
 
 .sidebar-link i {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: #C9A46C;
+  opacity: 0.85;
 }
 
 .sidebar-link:hover {
-  background: rgba(201, 164, 108, 0.12);
+  background: rgba(201, 164, 108, 0.08);
   color: #FFFFFF;
-  transform: translateX(3px);
+}
+
+.sidebar-link:hover i {
+  opacity: 1;
 }
 
 .sidebar-link.active {
-  background: #C9A46C;
-  color: #0B0B0B;
-  font-weight: 600;
+  background: rgba(201, 164, 108, 0.12);
+  color: #F5E8D2;
+  font-weight: 500;
+  border-left: 2.5px solid #C9A46C;
+  border-radius: 0 4px 4px 0;
 }
 
 .sidebar-link.active i {
-  color: #0B0B0B;
+  color: #C9A46C;
+  opacity: 1;
 }
 
 .sidebar-footer {
-  padding: 1rem 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.75rem 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .footer-action-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.85rem;
-  color: #9E9E9E;
+  gap: 0.65rem;
+  padding: 0.4rem 0.65rem;
+  color: #7E7A74;
   text-decoration: none;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
 }
 
 .footer-action-link:hover {
@@ -345,7 +361,7 @@ const handleLogout = async () => {
 /* Main Content Area */
 .admin-main {
   flex: 1;
-  margin-left: 270px;
+  margin-left: 240px;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -355,106 +371,122 @@ const handleLogout = async () => {
 
 .admin-topbar {
   background: #FFFFFF !important;
-  border-bottom: 1px solid #E5E0D8;
-  padding: 1rem 2rem;
+  border-bottom: 1px solid #ECE7E1;
+  padding: 0.65rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 1020;
-  box-shadow: 0 1px 3px rgba(11, 11, 11, 0.03);
+  box-shadow: 0 1px 2px rgba(11, 11, 11, 0.02);
+}
+
+.topbar-welcome {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.topbar-welcome .small {
+  font-size: 0.625rem;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #8C8C8C;
+  margin-bottom: 1px;
 }
 
 .topbar-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #0B0B0B;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #1A1A1A;
 }
 
 .btn-toggle-sidebar {
-  background: #F5F2EC;
+  background: #FAF8F5;
   border: 1px solid #E5E0D8;
-  width: 38px;
-  height: 38px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
-  color: #0B0B0B;
+  font-size: 1.1rem;
+  color: #1A1A1A;
+  cursor: pointer;
 }
 
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.75rem;
 }
 
 .btn-mems-gold {
   background: #C9A46C;
   color: #0B0B0B;
   border: none;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
   border-radius: 4px;
-  letter-spacing: 0.5px;
-  transition: background 0.2s ease, transform 0.2s ease;
+  letter-spacing: 0.3px;
+  transition: all 0.15s ease;
 }
 
 .btn-mems-gold:hover {
   background: #B89358;
   color: #0B0B0B;
-  transform: translateY(-1px);
 }
 
 .admin-user-pill {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.35rem 0.75rem;
-  background: #F5F2EC;
-  border-radius: 50px;
-  border: 1px solid #E5E0D8;
+  gap: 0.5rem;
+  padding: 0.2rem 0.55rem;
+  background: #FAF8F5;
+  border-radius: 40px;
+  border: 1px solid #ECE7E1;
 }
 
 .user-avatar-circle {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: #A14E36;
   color: #FFFFFF;
-  font-weight: 700;
-  font-size: 0.875rem;
+  font-weight: 600;
+  font-size: 0.6875rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .user-name {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #1A1A1A;
   display: block;
   line-height: 1.1;
 }
 
 .user-role-badge {
-  font-size: 0.6875rem;
+  font-size: 0.5625rem;
   color: #A14E36;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .admin-content-view {
-  padding: 2rem;
+  padding: 1.5rem;
   flex: 1;
   position: relative;
   z-index: 1;
 }
 
-/* Garantir l'opacité 100% de toutes les div de contenu dans l'admin */
+/* Opacité et fond propre des conteneurs admin */
 :deep(.content-card),
 :deep(.kpi-card),
 :deep(.collection-kpi-card),
@@ -469,7 +501,7 @@ const handleLogout = async () => {
   background-color: #FFFFFF !important;
 }
 
-/* Responsive */
+/* Responsive Mobile & Tablet */
 @media (max-width: 991.98px) {
   .admin-sidebar {
     transform: translateX(-100%);
@@ -484,17 +516,17 @@ const handleLogout = async () => {
   }
 
   .admin-topbar {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .admin-content-view {
-    padding: 1rem;
+    padding: 0.85rem 0.75rem;
   }
 
   .sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(11, 11, 11, 0.5);
+    background: rgba(11, 11, 11, 0.4);
     z-index: 1030;
   }
 }
