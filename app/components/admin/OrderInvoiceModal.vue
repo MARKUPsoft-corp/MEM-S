@@ -365,17 +365,11 @@ const getStatusIconClass = (status?: string) => {
   }
 }
 
-// Téléchargement du PDF avec police et mise en page 100% identiques à l'aperçu
+// Téléchargement du PDF 100% vectoriel (texte sélectionnable et copiable, police Montserrat)
 const handleDownloadPdf = async () => {
   try {
     generatingPdf.value = true
-    const sheet = document.getElementById('mems-invoice-sheet')
-    const filename = `Facture-${props.order?.orderNumber || 'MEMS'}.pdf`
-    if (sheet) {
-      await downloadInvoiceFromElement(sheet, filename)
-    } else {
-      await downloadInvoicePdf(props.order, storeSettings.value || undefined)
-    }
+    await downloadInvoicePdf(props.order, storeSettings.value || undefined)
   } catch (err) {
     console.error('[InvoiceModal] Erreur génération PDF:', err)
     alert('Une erreur est survenue lors de la génération du PDF.')
@@ -384,16 +378,11 @@ const handleDownloadPdf = async () => {
   }
 }
 
-// Aperçu PDF dans un nouvel onglet avec rendu identique à l'aperçu
+// Aperçu PDF 100% vectoriel dans un nouvel onglet
 const handleOpenPdf = async () => {
   try {
     generatingPdf.value = true
-    const sheet = document.getElementById('mems-invoice-sheet')
-    if (sheet) {
-      await openInvoiceFromElement(sheet)
-    } else {
-      await openInvoicePdfInNewTab(props.order, storeSettings.value || undefined)
-    }
+    await openInvoicePdfInNewTab(props.order, storeSettings.value || undefined)
   } catch (err) {
     console.error('[InvoiceModal] Erreur ouverture PDF:', err)
     alert('Une erreur est survenue lors de l\'ouverture du PDF.')

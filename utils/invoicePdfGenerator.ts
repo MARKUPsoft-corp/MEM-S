@@ -77,6 +77,51 @@ export const loadLogoBase64 = async (src: string = '/images/LOGO.png'): Promise<
   })
 }
 
+// Cache mémoire des polices Montserrat en base64
+let cachedMontserratFonts: { regular: string; bold: string } | null = null
+
+export const loadMontserratFonts = async (): Promise<{ regular: string; bold: string } | null> => {
+  if (cachedMontserratFonts) {
+    return cachedMontserratFonts
+  }
+
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  try {
+    const [regRes, boldRes] = await Promise.all([
+      fetch('/fonts/Montserrat-Regular.ttf'),
+      fetch('/fonts/Montserrat-Bold.ttf')
+    ])
+
+    if (!regRes.ok || !boldRes.ok) {
+      return null
+    }
+
+    const [regBlob, boldBlob] = await Promise.all([regRes.blob(), boldRes.blob()])
+
+    const blobToBase64 = (blob: Blob): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const res = reader.result as string
+          resolve(res.includes(',') ? res.split(',')[1] : res)
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      })
+    }
+
+    const [regular, bold] = await Promise.all([blobToBase64(regBlob), blobToBase64(boldBlob)])
+    cachedMontserratFonts = { regular, bold }
+    return cachedMontserratFonts
+  } catch (err) {
+    console.warn('[Invoice] Impossible de charger les fichiers TTF Montserrat:', err)
+    return null
+  }
+}
+
 // Formatage de prix en FCFA
 const formatFcfa = (val: number | undefined | null) => {
   return `${(val || 0).toLocaleString('fr-FR')} FCFA`
@@ -100,99 +145,21 @@ const formatLongDate = (isoStr?: string) => {
 // Libellé de statut
 const getStatusLabel = (status?: string) => {
   switch (status) {
-    case 'confirmed': return 'COMMANDE CONFIRMÉE'
+    case 'confirmed': return 'CONFIRMÉE'
     case 'shipped': return 'EXPÉDIÉE'
     case 'delivered': return 'LIVRÉE'
     case 'cancelled': return 'ANNULÉE'
-    default: return 'EN ATTENTE DE TRAITEMENT'
+    default: return 'EN ATTENTE'
   }
 }
 
 /**
- * Génère un document PDF ultra-haute résolution (300 DPI) directement
- * à partir de l'élément HTML de la facture (#mems-invoice-sheet).
- * Cela garantit une correspondance stricte 100% identique entre l'aperçu à l'écran
- * (police Montserrat, disposition exacte, colonnes, bordures or, badges, sceau) et le fichier PDF final.
- */
-export const generatePdfFromHtml = async (element: HTMLElement): Promise<jsPDF> => {
-  if (typeof window === 'undefined') {
-    throw new Error('generatePdfFromHtml can only be executed in a browser environment')
-  }
-
-  // S'assurer que les polices web (Montserrat) sont prêtes
-  if (document.fonts) {
-    await document.fonts.ready
-  }
-
-  const html2canvas = (await import('html2canvas')).default
-
-  // Capture ultra-haute résolution (scale: 2.5 pour ~300 DPI)
-  const canvas = await html2canvas(element, {
-    scale: 2.5,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#FFFFFF',
-    logging: false
-  })
-
-  const imgData = canvas.toDataURL('image/png')
-
-  // Format standard A4 portrait : 210 x 297 mm
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-    compress: true
-  })
-
-  const pdfWidth = 210
-  const pdfHeight = 297
-
-  const canvasWidth = canvas.width
-  const canvasHeight = canvas.height
-  const canvasRatio = canvasHeight / canvasWidth
-  const renderedHeight = pdfWidth * canvasRatio
-
-  if (renderedHeight <= pdfHeight) {
-    // Si la hauteur rentre sur la page A4, centrage vertical propre
-    const offsetY = (pdfHeight - renderedHeight) / 2
-    pdf.addImage(imgData, 'PNG', 0, Math.max(0, offsetY), pdfWidth, renderedHeight, undefined, 'FAST')
-  } else {
-    // Ajustement proportionnel pour tenir sur une seule page A4
-    const scaleFactor = pdfHeight / renderedHeight
-    const fittedWidth = pdfWidth * scaleFactor
-    const fittedHeight = pdfHeight
-    const offsetX = (pdfWidth - fittedWidth) / 2
-    pdf.addImage(imgData, 'PNG', Math.max(0, offsetX), 0, fittedWidth, fittedHeight, undefined, 'FAST')
-  }
-
-  return pdf
-}
-
-/**
- * Télécharge la facture PDF directement à partir du rendu HTML de la modale
- * (Garantit police Montserrat et mise en page 100% identique à l'aperçu)
- */
-export const downloadInvoiceFromElement = async (
-  element: HTMLElement,
-  filename: string = 'Facture-MEMS.pdf'
-) => {
-  const pdf = await generatePdfFromHtml(element)
-  pdf.save(filename)
-}
-
-/**
- * Ouvre la facture PDF générée depuis le rendu HTML dans un nouvel onglet
- */
-export const openInvoiceFromElement = async (element: HTMLElement) => {
-  const pdf = await generatePdfFromHtml(element)
-  const blob = pdf.output('blob')
-  const url = URL.createObjectURL(blob)
-  window.open(url, '_blank')
-}
-
-/**
- * Construit l'instance vectorielle jsPDF de secours pour une commande MEM'S
+ * Construit le document PDF 100% vectoriel pur pour une commande MEM'S :
+ * - Tous les textes sont vectoriels, sélectionnables et copiables
+ * - Police réelle Montserrat intégrée
+ * - Disposition et typographie rigoureusement identiques à l'aperçu de la modale
+ * - Logo officiel MEM'S, bordures or, encadrés, tableau autoTable et sceau officiel
+ * - "Yaoundé" partout sans aucune mention de Douala
  */
 export const buildInvoicePdfDocument = async (
   order: OrderData,
@@ -206,14 +173,32 @@ export const buildInvoicePdfDocument = async (
     compress: true
   })
 
+  // Chargement et enregistrement des polices Montserrat natives
+  let fontName = 'helvetica'
+  try {
+    const fonts = await loadMontserratFonts()
+    if (fonts) {
+      doc.addFileToVFS('Montserrat-Regular.ttf', fonts.regular)
+      doc.addFont('Montserrat-Regular.ttf', 'Montserrat', 'normal')
+
+      doc.addFileToVFS('Montserrat-Bold.ttf', fonts.bold)
+      doc.addFont('Montserrat-Bold.ttf', 'Montserrat', 'bold')
+
+      fontName = 'Montserrat'
+    }
+  } catch (err) {
+    console.warn('[Invoice] Utilisation de la police de secours:', err)
+  }
+
   // Palette Charte Graphique MEM'S
   const COLOR_BLACK = [11, 11, 11] as [number, number, number]       // #0B0B0B
   const COLOR_GOLD = [201, 164, 108] as [number, number, number]     // #C9A46C
   const COLOR_IVORY = [245, 242, 236] as [number, number, number]    // #F5F2EC
   const COLOR_CREAM = [250, 248, 245] as [number, number, number]    // #FAF8F5
   const COLOR_BORDER = [229, 224, 216] as [number, number, number]   // #E5E0D8
-  const COLOR_MUTED = [120, 120, 120] as [number, number, number]    // #787878
-  const COLOR_CHARCOAL = [42, 42, 42] as [number, number, number]   // #2A2A2A
+  const COLOR_MUTED = [119, 119, 119] as [number, number, number]    // #777777
+  const COLOR_CHARCOAL = [68, 68, 68] as [number, number, number]   // #444444
+  const COLOR_GREEN = [15, 81, 50] as [number, number, number]       // #0F5132
 
   const pageWidth = 210
   const pageHeight = 297
@@ -229,86 +214,96 @@ export const buildInvoicePdfDocument = async (
   doc.setLineWidth(0.15)
   doc.rect(8, 8, pageWidth - 16, pageHeight - 16)
 
-  // 2. EN-TÊTE : Logo MEM'S & Titre de la Maison
-  let curY = 14
+  // 2. EN-TÊTE : Logo officiel MEM'S & Identité de marque
+  let curY = 13
 
-  // Charger le logo officiel
+  // Logo officiel MEM'S (sur la gauche)
   try {
     const logoBase64 = await loadLogoBase64('/images/LOGO.png')
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', marginX, curY, 24, 24, undefined, 'FAST')
+      doc.addImage(logoBase64, 'PNG', marginX, curY, 20, 20, undefined, 'FAST')
     }
   } catch (err) {
     console.warn('[Invoice] Erreur affichage logo:', err)
   }
 
-  // Marque & Sous-titre à droite du logo
-  const brandX = marginX + 27
+  // Marque et coordonnées (à droite du logo)
+  const brandX = marginX + 24
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(15)
   doc.setTextColor(...COLOR_BLACK)
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(16)
-  doc.text('MAISON MEM\'S', brandX, curY + 7)
+  doc.text('MAISON MEM\'S', brandX, curY + 6)
 
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(7.5)
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(6.2)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text('HAUTE COUTURE AFRICAINE & PRÊT-À-PORTER DE PRESTIGE', brandX, curY + 12)
+  doc.text('HAUTE COUTURE AFRICAINE & PRÊT-À-PORTER DE PRESTIGE', brandX, curY + 10.5)
 
-  doc.setFontSize(7)
+  doc.setFont(fontName, 'normal')
+  doc.setFontSize(6.8)
   doc.setTextColor(...COLOR_MUTED)
   const city = settings?.address && !settings.address.toLowerCase().includes('douala')
     ? settings.address
     : 'Yaoundé, République du Cameroun'
   const phone = settings?.contactPhone || settings?.whatsappNumber || '+237 6 96 96 26 62'
   const email = settings?.contactEmail || 'contact@mems-concept.com'
-  doc.text(`${city}  •  Tél / WhatsApp : ${phone}`, brandX, curY + 17)
-  doc.text(`Email : ${email}  •  Web : www.mems-couture.com`, brandX, curY + 21)
+  doc.text(`${city}  •  Tél / WhatsApp : ${phone}`, brandX, curY + 15)
+  doc.text(`Email : ${email}  •  Web : www.mems-couture.com`, brandX, curY + 19)
 
-  // Bloc Facture & Référence (Aligné à Droite)
-  const rightAlignX = pageWidth - marginX
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(13)
+  // Métadonnées Facture (Aligné à droite)
+  const rightX = pageWidth - marginX
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(15)
   doc.setTextColor(...COLOR_BLACK)
-  doc.text('FACTURE OFFICIELLE', rightAlignX, curY + 6, { align: 'right' })
+  doc.text('FACTURE', rightX, curY + 6, { align: 'right' })
 
-  // Badge Référence Facture
+  // Référence Facture
   const invoiceRef = order.orderNumber ? `FAC-${order.orderNumber}` : 'FAC-000000'
   doc.setFont('courier', 'bold')
-  doc.setFontSize(9.5)
+  doc.setFontSize(9)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text(invoiceRef, rightAlignX, curY + 11.5, { align: 'right' })
+  doc.text(invoiceRef, rightX, curY + 11, { align: 'right' })
 
   // Date d'émission
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(7.5)
-  doc.setTextColor(...COLOR_MUTED)
-  doc.text(`Émise le : ${formatLongDate(order.createdAt)}`, rightAlignX, curY + 16.5, { align: 'right' })
-
-  // Statut
-  const statusTxt = getStatusLabel(order.status)
-  doc.setFont('helvetica', 'bold')
+  doc.setFont(fontName, 'normal')
   doc.setFontSize(7)
-  if (order.status === 'confirmed' || order.status === 'delivered') {
-    doc.setTextColor(15, 81, 50) // vert sombre
-  } else {
-    doc.setTextColor(...COLOR_GOLD)
-  }
-  doc.text(`Statut : ${statusTxt}`, rightAlignX, curY + 21, { align: 'right' })
+  doc.setTextColor(...COLOR_MUTED)
+  doc.text(`Émise le : ${formatLongDate(order.createdAt)}`, rightX, curY + 15.5, { align: 'right' })
 
-  // Ligne de séparation or brossé double
-  curY += 27
+  // Statut sous forme de badge pill
+  const statusLabel = getStatusLabel(order.status)
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(6.5)
+
+  const pillTextWidth = doc.getTextWidth(statusLabel) + 6
+  const pillHeight = 4.8
+  const pillX = rightX - pillTextWidth
+  const pillY = curY + 17.5
+
+  if (order.status === 'confirmed' || order.status === 'delivered') {
+    doc.setFillColor(209, 231, 221) // #D1E7DD
+    doc.setTextColor(15, 81, 50)
+  } else {
+    doc.setFillColor(255, 243, 205) // #FFF3CD
+    doc.setTextColor(133, 100, 4)
+  }
+  doc.roundedRect(pillX, pillY, pillTextWidth, pillHeight, 2, 2, 'F')
+  doc.text(statusLabel, pillX + (pillTextWidth / 2), pillY + 3.4, { align: 'center' })
+
+  // Double ligne de séparation dorée
+  curY += 26
   doc.setDrawColor(...COLOR_GOLD)
-  doc.setLineWidth(0.6)
-  doc.line(marginX, curY, pageWidth - marginX, curY)
+  doc.setLineWidth(0.5)
+  doc.line(marginX, curY, rightX, curY)
 
   doc.setDrawColor(...COLOR_BORDER)
-  doc.setLineWidth(0.2)
-  doc.line(marginX, curY + 1.2, pageWidth - marginX, curY + 1.2)
+  doc.setLineWidth(0.15)
+  doc.line(marginX, curY + 1, rightX, curY + 1)
 
   // 3. BLOCS COORDONNÉES : ÉMETTEUR & CLIENT
-  curY += 6
+  curY += 5
   const boxWidth = (contentWidth - 6) / 2
-  const boxHeight = 31
+  const boxHeight = 29
 
   // Bloc Émetteur (Gauche)
   doc.setFillColor(...COLOR_CREAM)
@@ -316,26 +311,28 @@ export const buildInvoicePdfDocument = async (
   doc.setLineWidth(0.2)
   doc.roundedRect(marginX, curY, boxWidth, boxHeight, 1.5, 1.5, 'FD')
 
+  // Bandeau vertical or
   doc.setFillColor(...COLOR_GOLD)
-  doc.rect(marginX, curY, 2, boxHeight, 'F')
+  doc.rect(marginX, curY, 1.2, boxHeight, 'F')
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7.5)
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(6.5)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text('ÉMETTEUR / MAISON DE COUTURE', marginX + 5, curY + 5)
+  doc.text('ÉMETTEUR / MAISON DE COUTURE', marginX + 4.5, curY + 5)
 
-  doc.setFont('helvetica', 'bold')
+  doc.setFont(fontName, 'bold')
   doc.setFontSize(8.5)
   doc.setTextColor(...COLOR_BLACK)
-  doc.text(settings?.storeName || 'Maison MEM\'S', marginX + 5, curY + 10)
+  doc.text(settings?.storeName || 'Maison MEM\'S', marginX + 4.5, curY + 10)
 
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(7.5)
+  doc.setFont(fontName, 'normal')
+  doc.setFontSize(7)
   doc.setTextColor(...COLOR_CHARCOAL)
-  doc.text(`Siège : ${city}`, marginX + 5, curY + 15)
-  doc.text(`Service Ventes : ${phone}`, marginX + 5, curY + 19.5)
-  doc.text(`RCCM : RC/YAO/2024/B/1842  •  NUI : M032412895412`, marginX + 5, curY + 24)
-  doc.text(`Boutique en ligne officielle`, marginX + 5, curY + 28.5)
+  doc.text(`${city}`, marginX + 4.5, curY + 15)
+  doc.text(`${phone}`, marginX + 4.5, curY + 19.5)
+  doc.setFontSize(6)
+  doc.setTextColor(...COLOR_MUTED)
+  doc.text(`RCCM : RC/YAO/2024/B/1842  •  NUI : M032412895412`, marginX + 4.5, curY + 24.5)
 
   // Bloc Client / Facturé à (Droite)
   const clientX = marginX + boxWidth + 6
@@ -344,37 +341,38 @@ export const buildInvoicePdfDocument = async (
   doc.setLineWidth(0.2)
   doc.roundedRect(clientX, curY, boxWidth, boxHeight, 1.5, 1.5, 'FD')
 
+  // Bandeau vertical noir
   doc.setFillColor(...COLOR_BLACK)
-  doc.rect(clientX, curY, 2, boxHeight, 'F')
+  doc.rect(clientX, curY, 1.2, boxHeight, 'F')
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7.5)
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(6.5)
   doc.setTextColor(...COLOR_BLACK)
-  doc.text('FACTURÉ À / DESTINATAIRE', clientX + 5, curY + 5)
+  doc.text('FACTURÉ À / DESTINATAIRE', clientX + 4.5, curY + 5)
 
   const customerName = order.customer?.name || 'Client Particulier'
-  doc.setFont('helvetica', 'bold')
+  doc.setFont(fontName, 'bold')
   doc.setFontSize(8.5)
   doc.setTextColor(...COLOR_BLACK)
-  doc.text(customerName.toUpperCase(), clientX + 5, curY + 10)
+  doc.text(customerName.toUpperCase(), clientX + 4.5, curY + 10)
 
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(7.5)
+  doc.setFont(fontName, 'normal')
+  doc.setFontSize(7)
   doc.setTextColor(...COLOR_CHARCOAL)
-  const custPhone = order.customer?.phone ? `Tél / WhatsApp : ${order.customer.phone}` : 'Tél : Non renseigné'
-  doc.text(custPhone, clientX + 5, curY + 15)
+  const custPhone = order.customer?.phone || 'Téléphone non renseigné'
+  doc.text(custPhone, clientX + 4.5, curY + 15)
 
-  const custEmail = order.customer?.email ? `Email : ${order.customer.email}` : ''
+  const custEmail = order.customer?.email || ''
   if (custEmail) {
-    doc.text(custEmail, clientX + 5, curY + 19.5)
+    doc.text(custEmail, clientX + 4.5, curY + 19.5)
   }
 
   const custAddress = [order.customer?.address, order.customer?.city, 'Cameroun']
     .filter(Boolean)
     .join(', ')
-  doc.text(`Livraison : ${custAddress}`, clientX + 5, custEmail ? curY + 24 : curY + 19.5)
+  doc.text(custAddress, clientX + 4.5, custEmail ? curY + 24 : curY + 19.5)
 
-  // 4. TABLEAU DES ARTICLES
+  // 4. TABLEAU VECTORIEL DES ARTICLES (via autoTable)
   curY += boxHeight + 6
 
   const tableRows = (order.items || []).map((item, idx) => {
@@ -392,7 +390,7 @@ export const buildInvoicePdfDocument = async (
     return [
       String(idx + 1).padStart(2, '0'),
       item.name || 'Article Haute Couture',
-      variantDesc || 'Standard / Sur Mesure',
+      variantDesc || 'Standard / Sur mesure',
       String(qty),
       formatFcfa(unitPrice),
       formatFcfa(lineTotal)
@@ -405,13 +403,13 @@ export const buildInvoicePdfDocument = async (
 
   autoTable(doc, {
     startY: curY,
-    head: [['N°', 'DÉSIGNATION DE L\'ARTICLE', 'OPTIONS / DÉTAILS', 'QTÉ', 'PRIX UNIT.', 'TOTAL']],
+    head: [['N°', 'DÉSIGNATION DE L\'ARTICLE', 'OPTION / TAILLE', 'QTÉ', 'PRIX UNIT.', 'TOTAL']],
     body: tableRows,
     theme: 'plain',
     margin: { left: marginX, right: marginX },
     styles: {
-      font: 'helvetica',
-      fontSize: 8,
+      font: fontName,
+      fontSize: 7.5,
       cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 },
       textColor: COLOR_BLACK,
       lineColor: COLOR_BORDER,
@@ -422,17 +420,17 @@ export const buildInvoicePdfDocument = async (
       fillColor: COLOR_BLACK,
       textColor: COLOR_IVORY,
       fontStyle: 'bold',
-      fontSize: 7.5,
+      fontSize: 7,
       halign: 'left',
       cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 }
     },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center', textColor: COLOR_MUTED },
       1: { cellWidth: 'auto', fontStyle: 'bold' },
-      2: { cellWidth: 38, textColor: COLOR_CHARCOAL, fontSize: 7.5 },
+      2: { cellWidth: 42, textColor: COLOR_MUTED, fontSize: 7 },
       3: { cellWidth: 14, halign: 'center', fontStyle: 'bold' },
-      4: { cellWidth: 28, halign: 'right', textColor: COLOR_CHARCOAL },
-      5: { cellWidth: 32, halign: 'right', fontStyle: 'bold', textColor: COLOR_BLACK }
+      4: { cellWidth: 32, halign: 'right', textColor: COLOR_CHARCOAL },
+      5: { cellWidth: 35, halign: 'right', fontStyle: 'bold', textColor: COLOR_BLACK }
     },
     alternateRowStyles: {
       fillColor: COLOR_CREAM
@@ -441,165 +439,187 @@ export const buildInvoicePdfDocument = async (
 
   let tableEndY = (doc as any).lastAutoTable?.finalY || (curY + 40)
 
-  // 5. BLOC RÉCAPITULATIF FINANCIER
+  // 5. RÉCAPITULATIF FINANCIER & ARRÊTÉ DE COMPTE
   curY = tableEndY + 5
 
-  if (curY > pageHeight - 75) {
+  if (curY > pageHeight - 80) {
     doc.addPage()
     curY = 20
   }
 
-  const totalsBoxWidth = 80
+  const totalsBoxWidth = 82
   const totalsBoxX = pageWidth - marginX - totalsBoxWidth
+  const leftBoxWidth = contentWidth - totalsBoxWidth - 6
 
+  // Boîte Arrêté de compte (Gauche)
   doc.setFillColor(...COLOR_CREAM)
   doc.setDrawColor(...COLOR_BORDER)
-  doc.setLineWidth(0.3)
-  doc.roundedRect(totalsBoxX, curY, totalsBoxWidth, 38, 2, 2, 'FD')
-
-  let totY = curY + 6.5
-
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
-  doc.setTextColor(...COLOR_MUTED)
-  doc.text('Sous-total brut :', totalsBoxX + 5, totY)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(...COLOR_BLACK)
-  const subtotalVal = order.subtotal || order.total || 0
-  doc.text(formatFcfa(subtotalVal), totalsBoxX + totalsBoxWidth - 5, totY, { align: 'right' })
-
-  totY += 6.5
-  doc.setFont('helvetica', 'normal')
-  doc.setTextColor(...COLOR_MUTED)
-  doc.text('Frais de livraison :', totalsBoxX + 5, totY)
-  doc.setFont('helvetica', 'bold')
-  doc.setTextColor(15, 81, 50)
-  doc.text('OFFERTE (0 FCFA)', totalsBoxX + totalsBoxWidth - 5, totY, { align: 'right' })
-
-  totY += 4
-  doc.setDrawColor(...COLOR_BORDER)
   doc.setLineWidth(0.2)
-  doc.line(totalsBoxX + 4, totY, totalsBoxX + totalsBoxWidth - 4, totY)
+  doc.roundedRect(marginX, curY, leftBoxWidth, 34, 1.5, 1.5, 'FD')
 
-  totY += 7
-  doc.setFillColor(...COLOR_BLACK)
-  doc.roundedRect(totalsBoxX + 3, totY - 4.5, totalsBoxWidth - 6, 12, 1.5, 1.5, 'F')
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(8.5)
-  doc.setTextColor(...COLOR_GOLD)
-  doc.text('TOTAL NET TTC :', totalsBoxX + 6, totY + 2.5)
-
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(10)
-  doc.setTextColor(255, 255, 255)
-  doc.text(formatFcfa(order.total), totalsBoxX + totalsBoxWidth - 6, totY + 2.5, { align: 'right' })
-
-  // Bloc Arrêté de compte à gauche
-  const leftNotesWidth = totalsBoxX - marginX - 6
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7.5)
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(6.8)
   doc.setTextColor(...COLOR_BLACK)
-  doc.text('ARRÊTÉ DE COMPTE :', marginX, curY + 6)
+  doc.text('ARRÊTÉ DE COMPTE :', marginX + 4.5, curY + 5)
 
-  doc.setFont('helvetica', 'italic')
-  doc.setFontSize(7.5)
+  doc.setFont(fontName, 'normal')
+  doc.setFontSize(7)
   doc.setTextColor(...COLOR_CHARCOAL)
-  doc.text(`La présente facture est arrêtée à la somme nette de :`, marginX, curY + 11)
-  doc.setFont('helvetica', 'bold')
+  doc.text('La présente facture est arrêtée à la somme nette de :', marginX + 4.5, curY + 10)
+
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(9.5)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text(`${formatFcfa(order.total)} TTC`, marginX, curY + 16)
+  doc.text(`${formatFcfa(order.total)} TTC`, marginX + 4.5, curY + 16)
 
   if (order.notes) {
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(7)
-    doc.setTextColor(...COLOR_MUTED)
-    doc.text('Note client :', marginX, curY + 22)
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...COLOR_BLACK)
-    const splitNotes = doc.splitTextToSize(order.notes, leftNotesWidth)
-    doc.text(splitNotes, marginX, curY + 26.5)
+    doc.setFillColor(255, 255, 255)
+    doc.roundedRect(marginX + 4.5, curY + 19, leftBoxWidth - 9, 11, 1, 1, 'F')
+    doc.setDrawColor(...COLOR_GOLD)
+    doc.setLineWidth(0.5)
+    doc.line(marginX + 4.5, curY + 19, marginX + 4.5, curY + 30)
+
+    doc.setFont(fontName, 'bold')
+    doc.setFontSize(5.8)
+    doc.setTextColor(...COLOR_GOLD)
+    doc.text('Note / Instruction client :', marginX + 6.5, curY + 22.5)
+
+    doc.setFont(fontName, 'normal')
+    doc.setFontSize(6.5)
+    doc.setTextColor(...COLOR_CHARCOAL)
+    const splitNotes = doc.splitTextToSize(order.notes, leftBoxWidth - 14)
+    doc.text(splitNotes, marginX + 6.5, curY + 26.5)
   }
 
-  // 6. SCEAU OFFICIEL DORÉ & SIGNATURE
-  curY += 46
-  if (curY > pageHeight - 45) {
+  // Boîte Totaux Financiers (Droite)
+  doc.setFillColor(...COLOR_CREAM)
+  doc.setDrawColor(...COLOR_BORDER)
+  doc.setLineWidth(0.2)
+  doc.roundedRect(totalsBoxX, curY, totalsBoxWidth, 34, 1.5, 1.5, 'FD')
+
+  let totY = curY + 6
+  doc.setFont(fontName, 'normal')
+  doc.setFontSize(7.5)
+  doc.setTextColor(...COLOR_MUTED)
+  doc.text('Sous-total brut :', totalsBoxX + 4.5, totY)
+  doc.setFont(fontName, 'bold')
+  doc.setTextColor(...COLOR_BLACK)
+  const subtotalVal = order.subtotal || order.total || 0
+  doc.text(formatFcfa(subtotalVal), totalsBoxX + totalsBoxWidth - 4.5, totY, { align: 'right' })
+
+  totY += 6
+  doc.setFont(fontName, 'normal')
+  doc.setTextColor(...COLOR_MUTED)
+  doc.text('Frais d\'expédition :', totalsBoxX + 4.5, totY)
+  doc.setFont(fontName, 'bold')
+  doc.setTextColor(...COLOR_GREEN)
+  doc.text('Offerte (0 FCFA)', totalsBoxX + totalsBoxWidth - 4.5, totY, { align: 'right' })
+
+  // Total Net TTC en noir avec accent doré
+  totY += 4
+  const netBoxY = totY
+  doc.setFillColor(...COLOR_BLACK)
+  doc.roundedRect(totalsBoxX + 3, netBoxY, totalsBoxWidth - 6, 12, 1.5, 1.5, 'F')
+
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(7.5)
+  doc.setTextColor(...COLOR_GOLD)
+  doc.text('TOTAL NET TTC', totalsBoxX + 6.5, netBoxY + 7)
+
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(9.5)
+  doc.setTextColor(255, 255, 255)
+  doc.text(formatFcfa(order.total), totalsBoxX + totalsBoxWidth - 6.5, netBoxY + 7, { align: 'right' })
+
+  // 6. SCEAU D'AUTHENTICITÉ & SIGNATURE OFFICIELLE
+  curY += 42
+  if (curY > pageHeight - 48) {
     doc.addPage()
     curY = 20
   }
 
-  // Sceau sans "Douala Cameroun", juste "MAISON MEM'S" et "CERTIFIÉ"
-  const sealCenterX = marginX + 32
+  // Sceau circulaire doré (sans mention de Douala Cameroun)
+  const sealCenterX = marginX + 18
   const sealCenterY = curY + 10
+  const sealRadius = 10
 
+  // Cercle extérieur or
   doc.setDrawColor(...COLOR_GOLD)
   doc.setLineWidth(0.6)
-  doc.circle(sealCenterX, sealCenterY, 11)
+  doc.circle(sealCenterX, sealCenterY, sealRadius)
 
+  // Cercle pointillé intérieur or
   doc.setLineWidth(0.2)
-  doc.circle(sealCenterX, sealCenterY, 9.5)
+  doc.circle(sealCenterX, sealCenterY, sealRadius - 1.5)
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(5.5)
+  // Texte dans le sceau : MAISON MEM'S ★ CERTIFIÉ
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(4.8)
   doc.setTextColor(...COLOR_GOLD)
   doc.text('MAISON MEM\'S', sealCenterX, sealCenterY - 2.5, { align: 'center' })
-  doc.setFontSize(5)
-  doc.text('★', sealCenterX, sealCenterY + 0.8, { align: 'center' })
   doc.setFontSize(5.5)
+  doc.text('★', sealCenterX, sealCenterY + 0.8, { align: 'center' })
+  doc.setFontSize(4.8)
   doc.text('CERTIFIÉ', sealCenterX, sealCenterY + 4, { align: 'center' })
 
-  // Signature
-  const sigX = marginX + 50
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7.5)
-  doc.setTextColor(...COLOR_BLACK)
-  doc.text('POUR LA DIRECTION / MAISON MEM\'S', sigX, curY + 4)
-
-  doc.setFont('helvetica', 'italic')
+  // Titre Direction et signature
+  const sigX = marginX + 34
+  doc.setFont(fontName, 'bold')
   doc.setFontSize(7)
-  doc.setTextColor(...COLOR_MUTED)
-  doc.text('Signature & Cachet Officiels Numérisés', sigX, curY + 8)
+  doc.setTextColor(...COLOR_BLACK)
+  doc.text('POUR LA DIRECTION / MAISON MEM\'S', sigX, curY + 4.5)
 
-  doc.setFont('courier', 'bolditalic')
-  doc.setFontSize(9)
+  doc.setFont(fontName, 'normal')
+  doc.setFontSize(6.2)
+  doc.setTextColor(...COLOR_MUTED)
+  doc.text('Service Facturation & Confection', sigX, curY + 8.5)
+
+  doc.setFont('times', 'bolditalic')
+  doc.setFontSize(10)
   doc.setTextColor(...COLOR_GOLD)
   doc.text('Maison Mem\'s Haute Couture', sigX, curY + 15)
 
-  // Message de remerciement et politique d'échange
-  const policyX = pageWidth - marginX
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(7.5)
+  // Gratitude & Conditions sur la droite
+  doc.setFont(fontName, 'bold')
+  doc.setFontSize(7)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text('MERCI POUR VOTRE CONFIANCE', policyX, curY + 4, { align: 'right' })
+  doc.text('MERCI POUR VOTRE CONFIANCE', rightX, curY + 4.5, { align: 'right' })
 
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(6.8)
+  doc.setFont(fontName, 'normal')
+  doc.setFontSize(6)
   doc.setTextColor(...COLOR_MUTED)
-  doc.text('Chaque création MEM\'S est confectionnée avec soin et passion.', policyX, curY + 8.5, { align: 'right' })
-  doc.text('Échange possible sous 7 jours ouvrés sur présentation de cette facture.', policyX, curY + 12.5, { align: 'right' })
-  doc.text('Articles non portés, dans leur housse ou packaging d\'origine.', policyX, curY + 16.5, { align: 'right' })
+  doc.text('Chaque création MEM\'S est façonnée selon les règles de l\'art.', rightX, curY + 8.5, { align: 'right' })
+  doc.text('Échange possible sous 7 jours ouvrés sur présentation de cette facture.', rightX, curY + 12, { align: 'right' })
+  doc.text('Articles neufs, non portés, avec étiquettes et emballage d\'origine.', rightX, curY + 15.5, { align: 'right' })
 
-  // 7. PIED DE PAGE RÉGLEMENTAIRE
+  // 7. PIED DE PAGE LÉGAL (en bas de page)
   const footerY = pageHeight - 11
   doc.setDrawColor(...COLOR_GOLD)
-  doc.setLineWidth(0.4)
-  doc.line(marginX, footerY - 4, pageWidth - marginX, footerY - 4)
+  doc.setLineWidth(0.35)
+  doc.line(marginX, footerY - 4, rightX, footerY - 4)
 
-  doc.setFont('helvetica', 'normal')
-  doc.setFontSize(6.5)
+  doc.setFont(fontName, 'normal')
+  doc.setFontSize(6)
   doc.setTextColor(...COLOR_MUTED)
   doc.text(
-    `Maison MEM'S - Yaoundé, Cameroun  •  WhatsApp Service Client : ${phone}  •  contact@mems-concept.com`,
+    `Maison MEM'S • Haute Couture Africaine & Confection de Prestige • ${city}`,
     pageWidth / 2,
     footerY,
     { align: 'center' }
   )
 
-  doc.setFontSize(5.8)
   doc.text(
-    'Société enregistrée au RCCM de Yaoundé  •  Facture originale générée par le système officiel de vente MEM\'S',
+    `WhatsApp Service Client : ${phone}  •  Email : ${email}`,
     pageWidth / 2,
     footerY + 3.2,
+    { align: 'center' }
+  )
+
+  doc.setFontSize(5.5)
+  doc.text(
+    'Société enregistrée au RCCM de Yaoundé  •  Document officiel généré par le système informatique de vente MEM\'S',
+    pageWidth / 2,
+    footerY + 6.2,
     { align: 'center' }
   )
 
@@ -607,7 +627,7 @@ export const buildInvoicePdfDocument = async (
 }
 
 /**
- * Télécharge directement la facture PDF
+ * Télécharge la facture PDF 100% vectorielle (texte sélectionnable/copiable, police Montserrat, layout identique)
  */
 export const downloadInvoicePdf = async (
   order: OrderData,
@@ -619,7 +639,7 @@ export const downloadInvoicePdf = async (
 }
 
 /**
- * Ouvre la facture PDF dans un nouvel onglet
+ * Ouvre la facture PDF vectorielle dans un nouvel onglet
  */
 export const openInvoicePdfInNewTab = async (
   order: OrderData,
