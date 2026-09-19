@@ -34,18 +34,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import ProductCard from './ProductCard.vue'
-import { useProducts } from '../../composables/useProducts'
-import type { Product } from '../../types/product'
+import { useProductsStore } from '../../stores/products'
 
-const { fetchFeaturedProducts } = useProducts()
-
-// Type étendu pour les produits avec badge et categoryGroup
-interface ExtendedProduct extends Product {
-    badge?: { type: string; text: string }
-    categoryGroup?: string
-}
+const productsStore = useProductsStore()
 
 // Categories de filtrage
 const categories = [
@@ -57,8 +50,6 @@ const categories = [
 ]
 
 const activeCategory = ref('all')
-const featuredProducts = ref<ExtendedProduct[]>([])
-const loading = ref(false)
 
 // Mapper les catégories aux collections
 const getCategoryGroup = (categorySlug: string) => {
@@ -77,23 +68,16 @@ const getCategoryGroup = (categorySlug: string) => {
     return 'all'
 }
 
-// Charger les produits en vedette
-onMounted(async () => {
-    try {
-        loading.value = true
-        const products = await fetchFeaturedProducts()
-        // Ajouter le badge et categoryGroup
-        featuredProducts.value = products.map(product => ({
+// Produits en vedette — réactifs en temps réel via le store Pinia
+const featuredProducts = computed(() => {
+    return productsStore.products
+        .filter(p => p.is_featured)
+        .map(product => ({
             ...product,
-            images: product.images?.map((img: any) => img.image) || [],
+            images: product.images?.map((img: any) => typeof img === 'object' ? (img.image || img.url) : img) || [],
             badge: { type: 'featured', text: 'VEDETTE' },
-            categoryGroup: getCategoryGroup(product.category.slug)
+            categoryGroup: getCategoryGroup(product.category?.slug || '')
         }))
-    } catch (error) {
-        console.error('Erreur lors du chargement des produits vedettes:', error)
-    } finally {
-        loading.value = false
-    }
 })
 
 // Filtrage des produits par catégorie
@@ -113,6 +97,7 @@ const selectCategory = (categoryId: string) => {
     activeCategory.value = categoryId
 }
 </script>
+
 
 <style scoped>
 .featured-products-section {

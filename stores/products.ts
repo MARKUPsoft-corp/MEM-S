@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import type { Product, Category, Collection, ProductFilter } from '../types/product'
 import { FirestoreProductsService } from '../services/firestoreProducts'
-import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_COLLECTIONS } from '../data/productsData'
+import { INITIAL_CATEGORIES, INITIAL_COLLECTIONS } from '../data/productsData'
 
 interface PaginatedResponse {
   count: number
@@ -12,7 +12,9 @@ interface PaginatedResponse {
 
 export const useProductsStore = defineStore('products', {
   state: () => ({
-    products: [...INITIAL_PRODUCTS] as Product[],
+    // Ne pas initialiser avec INITIAL_PRODUCTS — Firestore est la source unique de vérité.
+    // Le localStorage hydrate immédiatement via initRealtimeSync au démarrage.
+    products: [] as Product[],
     categories: [...INITIAL_CATEGORIES] as Category[],
     collections: [...INITIAL_COLLECTIONS] as Collection[],
     filters: {
@@ -23,7 +25,8 @@ export const useProductsStore = defineStore('products', {
       search: undefined,
     } as ProductFilter,
     loading: false,
-    totalCount: INITIAL_PRODUCTS.length,
+    totalCount: 0,
+    realtimeActive: false,
   }),
 
   getters: {
@@ -34,11 +37,35 @@ export const useProductsStore = defineStore('products', {
 
   actions: {
     /**
-     * Récupération ultra-rapide des produits
+     * Initialise le listener temps réel Firestore (onSnapshot).
+     * Appelé une seule fois via le plugin products-realtime.client.ts.
+     * Retourne la fonction de cleanup (unsubscribe).
+     */
+    initRealtimeSync(): () => void {
+      if (this.realtimeActive) {
+        // Déjà actif — juste retourner un noop
+        return () => {}
+      }
+
+      this.realtimeActive = true
+
+      const cleanup = FirestoreProductsService.initRealtimeSubscription(
+        (products: Product[]) => {
+          this.products = products
+          this.totalCount = products.length
+          this.loading = false
+        }
+      )
+
+      return cleanup
+    },
+
+    /**
+     * Récupération ultra-rapide des produits (compatible avec l'ancien code)
+     * En mode temps réel, le store est déjà à jour — ce fetch est un fallback.
      */
     async fetchProducts(params?: Record<string, any>) {
       try {
-        // N'activer le loader que si la liste est complètement vide
         if (this.products.length === 0) {
           this.loading = true
         }
@@ -76,10 +103,14 @@ export const useProductsStore = defineStore('products', {
     },
 
     /**
-     * Récupération des produits en vedette
+     * Récupération des produits en vedette (lecture depuis le store réactif)
      */
     async fetchFeaturedProducts() {
       try {
+        // Si le store temps réel est actif, filtrer directement
+        if (this.realtimeActive && this.products.length > 0) {
+          return this.products.filter(p => p.is_featured)
+        }
         const response = await FirestoreProductsService.getProducts({ is_featured: true })
         return response.results
       } catch (error) {
@@ -89,10 +120,14 @@ export const useProductsStore = defineStore('products', {
     },
 
     /**
-     * Récupération des nouveautés
+     * Récupération des nouveautés (lecture depuis le store réactif)
      */
     async fetchNewArrivals() {
       try {
+        // Si le store temps réel est actif, filtrer directement
+        if (this.realtimeActive && this.products.length > 0) {
+          return this.products.filter(p => p.is_new)
+        }
         const response = await FirestoreProductsService.getProducts({ is_new: true })
         return response.results
       } catch (error) {

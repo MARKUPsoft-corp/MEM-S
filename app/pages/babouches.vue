@@ -73,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { useProducts } from '../../composables/useProducts'
+import { useProductsStore } from '../../stores/products'
 import CuirPreview from '../components/babouches/CuirPreview.vue'
 import BrodesPreview from '../components/babouches/BrodesPreview.vue'
 import CategoryOverlay from '../components/babouches/CategoryOverlay.vue'
@@ -81,9 +81,29 @@ import FilterButton from '../components/FilterButton.vue'
 import FilterPopup from '../components/FilterPopup.vue'
 import { ContentService, DEFAULT_PAGE_BANNERS } from '~~/services/contentService'
 
-// Charger les produits depuis l'API
-const { fetchProducts } = useProducts()
-const allProducts = ref<any[]>([])
+// Store temps réel — mis à jour instantanément depuis Firestore
+const productsStore = useProductsStore()
+
+// Produits de la collection babouches, réactifs en temps réel
+const allProducts = computed(() => {
+  return productsStore.products
+    .filter(p => ['babouches-cuir', 'babouches-brodees'].includes(p.category?.slug || ''))
+    .map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
+      originalPrice: product.discount_price ? parseFloat(product.price) : null,
+      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
+      images: product.images?.map((img: any) => typeof img === 'object' ? (img.image || img.url) : img) || [],
+      badge: product.is_featured
+        ? { type: 'featured', text: 'VEDETTE' }
+        : product.is_new
+        ? { type: 'new', text: 'NOUVEAU' }
+        : null,
+      category: product.category
+    }))
+})
 
 const bannerUrl = ref(DEFAULT_PAGE_BANNERS.babouches)
 const heroBannerStyle = computed(() => ({
@@ -127,32 +147,8 @@ const route = useRoute()
 const cuirProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'babouches-cuir'))
 const brodesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'babouches-brodees'))
 
-async function loadProducts() {
-  try {
-    const response = await fetchProducts({ collection: 'babouches' })
-    const apiProducts = response.results || []
-    allProducts.value = apiProducts.map((product: any) => ({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
-      originalPrice: product.discount_price ? parseFloat(product.price) : null,
-      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
-      images: product.images?.map((img: any) => img.image) || [],
-      badge: product.is_featured 
-        ? { type: 'featured', text: 'VEDETTE' }
-        : product.is_new 
-        ? { type: 'new', text: 'NOUVEAU' }
-        : null,
-      category: product.category
-    }))
-  } catch (error) {
-    console.error('Error loading babouches products:', error)
-    allProducts.value = []
-  }
-}
 
-// Charger les produits et la bannière au montage
+// Charger la bannière et sync URL au montage
 onMounted(async () => {
   try {
     const banners = await ContentService.getPageBanners()
@@ -160,10 +156,10 @@ onMounted(async () => {
   } catch (e) {
     console.warn('[BabouchesPage] Banner error:', e)
   }
-
   checkUrlCategory()
-  await loadProducts()
 })
+
+
 
 function openCuirOverlay() {
   activeOverlayCategory.value = 'cuir'

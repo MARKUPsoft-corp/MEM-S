@@ -217,6 +217,7 @@ import { ref, computed, onMounted } from 'vue'
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { useFirebase } from '../../../../composables/useFirebase'
 import { FirestoreProductsService } from '../../../../services/firestoreProducts'
+import { useProductsStore } from '../../../../stores/products'
 import type { Product, Category } from '../../../../types/product'
 
 definePageMeta({
@@ -225,10 +226,13 @@ definePageMeta({
 })
 
 const { db } = useFirebase()
+const productsStore = useProductsStore()
 
-const products = ref<Product[]>([])
+// Lecture réactive depuis le store temps réel — se met à jour automatiquement
+const products = computed(() => productsStore.products)
+const loading = computed(() => productsStore.loading && productsStore.products.length === 0)
+
 const categories = ref<Category[]>([])
-const loading = ref(true)
 
 const searchQuery = ref('')
 const selectedCollection = ref('')
@@ -335,19 +339,12 @@ const confirmDelete = async (product: Product) => {
 
 onMounted(async () => {
   try {
-    loading.value = true
-    const [prodRes, catRes] = await Promise.all([
-      FirestoreProductsService.getProducts(),
-      FirestoreProductsService.getCategories()
-    ])
-    products.value = prodRes.results || []
-    categories.value = catRes || []
+    categories.value = await FirestoreProductsService.getCategories()
   } catch (err) {
-    console.warn('[Admin Products] Erreur chargement:', err)
-  } finally {
-    loading.value = false
+    console.warn('[Admin Products] Erreur chargement catégories:', err)
   }
 })
+
 </script>
 
 <style scoped>

@@ -73,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { useProducts } from '../../composables/useProducts'
+import { useProductsStore } from '../../stores/products'
 import ChemisesPreview from '../components/lins/ChemisesPreview.vue'
 import PantalonsPreview from '../components/lins/PantalonsPreview.vue'
 import CategoryOverlay from '../components/lins/CategoryOverlay.vue'
@@ -81,13 +81,34 @@ import FilterButton from '../components/FilterButton.vue'
 import FilterPopup from '../components/FilterPopup.vue'
 import { ContentService, DEFAULT_PAGE_BANNERS } from '~~/services/contentService'
 
-// Charger les produits depuis l'API
-const { fetchProducts } = useProducts()
-const allProducts = ref<any[]>([])
+// Store temps réel — mis à jour instantanément depuis Firestore
+const productsStore = useProductsStore()
+
+// Produits de la collection lins, réactifs en temps réel
+const allProducts = computed(() => {
+  return productsStore.products
+    .filter(p => ['chemises-lin', 'pantalons-lin'].includes(p.category?.slug || ''))
+    .map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
+      originalPrice: product.discount_price ? parseFloat(product.price) : null,
+      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
+      images: product.images?.map((img: any) => typeof img === 'object' ? (img.image || img.url) : img) || [],
+      badge: product.is_featured
+        ? { type: 'featured', text: 'VEDETTE' }
+        : product.is_new
+        ? { type: 'new', text: 'NOUVEAU' }
+        : null,
+      category: product.category
+    }))
+})
 
 const bannerUrl = ref(DEFAULT_PAGE_BANNERS.lins)
 const heroBannerStyle = computed(() => ({
     backgroundImage: `url(${bannerUrl.value})`
+
 }))
 
 const router = useRouter()
@@ -126,32 +147,8 @@ const route = useRoute()
 const chemisesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'chemises-lin'))
 const pantalonsProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'pantalons-lin'))
 
-async function loadProducts() {
-  try {
-    const response = await fetchProducts({ collection: 'lins' })
-    const apiProducts = response.results || []
-    allProducts.value = apiProducts.map((product: any) => ({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
-      originalPrice: product.discount_price ? parseFloat(product.price) : null,
-      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
-      images: product.images?.map((img: any) => img.image) || [],
-      badge: product.is_featured 
-        ? { type: 'featured', text: 'VEDETTE' }
-        : product.is_new 
-        ? { type: 'new', text: 'NOUVEAU' }
-        : null,
-      category: product.category
-    }))
-  } catch (error) {
-    console.error('Error loading lins products:', error)
-    allProducts.value = []
-  }
-}
 
-// Charger les produits et la bannière au montage
+// Charger la bannière et sync URL au montage
 onMounted(async () => {
   try {
     const banners = await ContentService.getPageBanners()
@@ -159,10 +156,10 @@ onMounted(async () => {
   } catch (e) {
     console.warn('[LinsPage] Banner error:', e)
   }
-
   checkUrlCategory()
-  await loadProducts()
 })
+
+
 
 function openChemisesOverlay() {
   activeOverlayCategory.value = 'chemises'

@@ -81,7 +81,6 @@
 </template>
 
 <script setup lang="ts">
-import { useProducts } from '../../composables/useProducts'
 import RobesPreview from '../components/women/RobesPreview.vue'
 import EnsemblesPreview from '../components/women/EnsemblesPreview.vue'
 import SacsPreview from '../components/women/SacsPreview.vue'
@@ -90,14 +89,38 @@ import FilterButton from '../components/FilterButton.vue'
 import FilterPopup from '../components/FilterPopup.vue'
 import { ContentService, DEFAULT_PAGE_BANNERS } from '~~/services/contentService'
 
-// Charger les produits depuis l'API
-const { fetchProducts } = useProducts()
-const allProducts = ref<any[]>([])
+import { useProductsStore } from '../../stores/products'
 
+// Store temps réel — mis à jour instantanément depuis Firestore
+const productsStore = useProductsStore()
+
+// Produits de la collection femmes, réactifs en temps réel
+const allProducts = computed(() => {
+  return productsStore.products
+    .filter(p => ['robes', 'ensembles', 'sacs'].includes(p.category?.slug || ''))
+    .map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
+      originalPrice: product.discount_price ? parseFloat(product.price) : null,
+      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
+      images: product.images?.map((img: any) => typeof img === 'object' ? (img.image || img.url) : img) || [],
+      badge: product.is_featured
+        ? { type: 'featured', text: 'VEDETTE' }
+        : product.is_new
+        ? { type: 'new', text: 'NOUVEAU' }
+        : null,
+      category: product.category
+    }))
+})
+
+// Charger les produits et la bannière au montage
 const bannerUrl = ref(DEFAULT_PAGE_BANNERS.women)
 const heroBannerStyle = computed(() => ({
     backgroundImage: `url(${bannerUrl.value})`
 }))
+
 
 const router = useRouter()
 const activeOverlayCategory = ref<string | null>(null)
@@ -135,32 +158,8 @@ const robesProducts = computed(() => allProducts.value.filter(p => p.category?.s
 const ensemblesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'ensembles'))
 const sacsProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'sacs'))
 
-async function loadProducts() {
-  try {
-    const response = await fetchProducts({ collection: 'women' })
-    const apiProducts = response.results || []
-    allProducts.value = apiProducts.map((product: any) => ({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      price: product.discount_price ? parseFloat(product.discount_price) : parseFloat(product.price),
-      originalPrice: product.discount_price ? parseFloat(product.price) : null,
-      discount_price: product.discount_price ? parseFloat(product.discount_price) : undefined,
-      images: product.images?.map((img: any) => img.image) || [],
-      badge: product.is_featured 
-        ? { type: 'featured', text: 'VEDETTE' }
-        : product.is_new 
-        ? { type: 'new', text: 'NOUVEAU' }
-        : null,
-      category: product.category
-    }))
-  } catch (error) {
-    console.error('Error loading women products:', error)
-    allProducts.value = []
-  }
-}
 
-// Charger les produits et la bannière au montage
+// Charger la bannière et sync URL au montage
 onMounted(async () => {
   try {
     const banners = await ContentService.getPageBanners()
@@ -168,10 +167,10 @@ onMounted(async () => {
   } catch (e) {
     console.warn('[WomenPage] Banner error:', e)
   }
-
   checkUrlCategory()
-  await loadProducts()
 })
+
+
 
 function openRobesOverlay() {
   activeOverlayCategory.value = 'robes'

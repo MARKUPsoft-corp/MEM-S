@@ -33,18 +33,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import ProductCard from './ProductCard.vue'
-import { useProducts } from '../../composables/useProducts'
-import type { Product } from '../../types/product'
+import { useProductsStore } from '../../stores/products'
 
-const { fetchNewArrivals } = useProducts()
-
-// Type étendu pour les produits avec badge et categoryGroup
-interface ExtendedProduct extends Product {
-    badge?: { type: string; text: string }
-    categoryGroup?: string
-}
+const productsStore = useProductsStore()
 
 // Categories de filtrage
 const categories = [
@@ -56,8 +49,6 @@ const categories = [
 ]
 
 const activeCategory = ref('all')
-const newProducts = ref<ExtendedProduct[]>([])
-const loading = ref(false)
 
 // Mapper les catégories aux collections
 const getCategoryGroup = (categorySlug: string) => {
@@ -76,23 +67,16 @@ const getCategoryGroup = (categorySlug: string) => {
     return 'all'
 }
 
-// Charger les nouveaux produits
-onMounted(async () => {
-    try {
-        loading.value = true
-        const products = await fetchNewArrivals()
-        // Ajouter le badge et categoryGroup
-        newProducts.value = products.map(product => ({
+// Nouveautés — réactives en temps réel via le store Pinia
+const newProducts = computed(() => {
+    return productsStore.products
+        .filter(p => p.is_new)
+        .map(product => ({
             ...product,
-            images: product.images?.map((img: any) => img.image) || [],
+            images: product.images?.map((img: any) => typeof img === 'object' ? (img.image || img.url) : img) || [],
             badge: { type: 'new', text: 'NOUVEAU' },
-            categoryGroup: getCategoryGroup(product.category.slug)
+            categoryGroup: getCategoryGroup(product.category?.slug || '')
         }))
-    } catch (error) {
-        console.error('Erreur lors du chargement des nouveaux produits:', error)
-    } finally {
-        loading.value = false
-    }
 })
 
 // Filtrage des produits par catégorie

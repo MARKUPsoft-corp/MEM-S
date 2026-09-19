@@ -7,20 +7,132 @@ import {
   limit,
   doc,
   getDoc,
+  onSnapshot,
+  type Unsubscribe,
   type DocumentData
 } from 'firebase/firestore'
 import type { Product, Category, Collection, ProductFilter } from '../types/product'
 import { INITIAL_COLLECTIONS, INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '../data/productsData'
 import { useFirebase } from '../composables/useFirebase'
 
+const STORAGE_KEY = 'mems_products_cache_v2'
+
 export class FirestoreProductsService {
-  // Cache en mémoire ultra-rapide pré-rempli avec les données locales
-  private static allProductsCache: Product[] = [...INITIAL_PRODUCTS]
+  // Cache en mémoire réactif, hydraté depuis localStorage si disponible
+  private static allProductsCache: Product[] = []
   private static collectionsCache: Collection[] | null = null
   private static categoriesCache: Category[] | null = null
   private static lastSyncTime: number = 0
   private static inFlightSync: Promise<Product[]> | null = null
-  private static readonly CACHE_TTL = 3 * 60 * 1000 // 3 minutes
+  private static readonly CACHE_TTL = 60 * 1000 // 1 minute (rafraîchissement périodique en plus du temps réel)
+
+  // Écouteur temps réel Firestore
+  private static unsubscribeSnapshot: Unsubscribe | null = null
+  private static subscribers: Set<(products: Product[]) => void> = new Set()
+  private static isInitialized: boolean = false
+  private static initPromise: Promise<Product[]> | null = null
+
+  /**
+   * Charge le cache initial depuis le stockage local (persistance après rechargement)
+   */
+  private static loadFromLocalStorage(): boolean {
+    if (typeof window === 'undefined') return false
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.allProductsCache = parsed.map(p => this.sanitizeProduct(p))
+          return true
+        }
+      }
+    } catch (e) {
+      console.warn('[Firestore] Impossible de lire localStorage:', e)
+    }
+    return false
+  }
+
+  /**
+   * Sauvegarde le cache en local pour affichage instantané au prochain rechargement
+   */
+  private static saveToLocalStorage(): void {
+    if (typeof window === 'undefined') return
+    try {
+      if (this.allProductsCache.length > 0) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.allProductsCache))
+      }
+    } catch (e) {
+      console.warn('[Firestore] Erreur écriture localStorage:', e)
+    }
+  }
+
+  /**
+   * Initialise et abonne l'application aux mises à jour TEMPS RÉEL Firestore (onSnapshot)
+   * Tout ajout, modification ou suppression dans Firestore est diffusé instantanément (< 50ms)
+   */
+  static initRealtimeSubscription(onUpdate?: (products: Product[]) => void): () => void {
+    if (onUpdate) {
+      this.subscribers.add(onUpdate)
+      // Si on a déjà des produits en cache, notifier immédiatement l'abonné
+      if (this.allProductsCache.length > 0) {
+        onUpdate(this.allProductsCache)
+      }
+    }
+
+    // Charger le cache local au tout premier appel si la mémoire est vide
+    if (this.allProductsCache.length === 0) {
+      const hasLocal = this.loadFromLocalStorage()
+      if (!hasLocal) {
+        this.allProductsCache = [...INITIAL_PRODUCTS]
+      }
+    }
+
+    // Démarrer l'écouteur Firestore si ce n'est pas déjà fait
+    if (!this.unsubscribeSnapshot && typeof window !== 'undefined') {
+      const { db } = useFirebase()
+      if (db) {
+        try {
+          const prodRef = collection(db, 'products')
+          this.unsubscribeSnapshot = onSnapshot(
+            prodRef,
+            (snapshot) => {
+              if (!snapshot.empty) {
+                const remoteProducts = snapshot.docs.map(d =>
+                  this.sanitizeProduct({ id: d.id as any, ...d.data() } as Product)
+                )
+
+                // Firestore est la source unique de vérité absolue (aucun écrasement par INITIAL_PRODUCTS)
+                this.allProductsCache = remoteProducts
+                this.isInitialized = true
+                this.lastSyncTime = Date.now()
+                this.saveToLocalStorage()
+
+                // Notifier tous les composants et stores connectés en temps réel
+                this.subscribers.forEach(cb => {
+                  try { cb(this.allProductsCache) } catch (err) { console.error('[Realtime Subscriber Error]:', err) }
+                })
+              } else if (!this.isInitialized) {
+                // Si la collection Firestore est vide, garder le fallback
+                this.allProductsCache = [...INITIAL_PRODUCTS]
+                this.isInitialized = true
+              }
+            },
+            (error) => {
+              console.warn('[Firestore] Erreur écouteur temps réel:', error)
+            }
+          )
+        } catch (err) {
+          console.warn('[Firestore] Échec initialisation listener:', err)
+        }
+      }
+    }
+
+    return () => {
+      if (onUpdate) {
+        this.subscribers.delete(onUpdate)
+      }
+    }
+  }
 
   /**
    * Récupère toutes les collections (avec mise en cache)
@@ -106,16 +218,21 @@ export class FirestoreProductsService {
   }
 
   /**
-   * Synchronisation en arrière-plan avec Firestore (Dedupliquée)
+   * Synchronisation explicite depuis Firestore (Dedupliquée et non destructive)
    */
-  private static async syncFromFirestore(): Promise<Product[]> {
+  static async syncFromFirestore(): Promise<Product[]> {
     if (this.inFlightSync) {
       return this.inFlightSync
     }
 
     this.inFlightSync = (async () => {
       const { db } = useFirebase()
-      if (!db) return this.allProductsCache
+      if (!db) {
+        if (this.allProductsCache.length === 0) {
+          this.loadFromLocalStorage() || (this.allProductsCache = [...INITIAL_PRODUCTS])
+        }
+        return this.allProductsCache
+      }
 
       try {
         const prodRef = collection(db, 'products')
@@ -126,18 +243,16 @@ export class FirestoreProductsService {
             this.sanitizeProduct({ id: doc.id as any, ...doc.data() } as Product)
           )
           if (remoteProducts.length > 0) {
-            // Fusion intelligente avec INITIAL_PRODUCTS : les produits Firestore écrasent/enrichissent
-            const merged = [...INITIAL_PRODUCTS]
-            for (const remote of remoteProducts) {
-              const idx = merged.findIndex(p => p.slug === remote.slug || String(p.id) === String(remote.id))
-              if (idx !== -1) {
-                merged[idx] = remote
-              } else {
-                merged.unshift(remote)
-              }
-            }
-            this.allProductsCache = merged
+            // Firestore est l'autorité absolue : remplace la mémoire pour éviter les produits fantômes
+            this.allProductsCache = remoteProducts
+            this.isInitialized = true
             this.lastSyncTime = Date.now()
+            this.saveToLocalStorage()
+
+            // Notifier tous les abonnés
+            this.subscribers.forEach(cb => {
+              try { cb(this.allProductsCache) } catch (err) { console.error('[Subscriber notify error]:', err) }
+            })
           }
         }
       } catch (error) {
@@ -153,8 +268,8 @@ export class FirestoreProductsService {
   }
 
   /**
-   * Récupère la liste des produits avec filtres
-   * RENVOIE LES RÉSULTATS EN 0 MILLISECONDE GRÂCE AU CACHE EN MÉMOIRE
+   * Récupère la liste des produits avec filtres.
+   * Assure que les vraies données Firestore sont chargées au premier appel.
    */
   static async getProducts(filters?: {
     category?: string
@@ -167,14 +282,23 @@ export class FirestoreProductsService {
     ordering?: string
     page?: number
   }): Promise<{ results: Product[]; count: number }> {
-    // Si le cache est vierge ou expiré (> 3 min), déclencher la synchronisation en tâche de fond
-    const now = Date.now()
-    if (now - this.lastSyncTime > this.CACHE_TTL && typeof window !== 'undefined') {
-      // Synchronisation asynchrone non-bloquante
+    // 1. Initialiser le listener temps réel si ce n'est pas fait
+    if (!this.unsubscribeSnapshot && typeof window !== 'undefined') {
+      this.initRealtimeSubscription()
+    }
+
+    // 2. Si non initialisé et cache vide, charger immédiatement depuis localStorage ou Firestore
+    if (this.allProductsCache.length === 0) {
+      const hadLocal = this.loadFromLocalStorage()
+      if (!hadLocal && typeof window !== 'undefined') {
+        await this.syncFromFirestore()
+      }
+    } else if (!this.isInitialized && typeof window !== 'undefined') {
+      // Sync en tâche de fond pour garantir la fraîcheur
       this.syncFromFirestore().catch(() => {})
     }
 
-    // Filtrer immédiatement la liste en mémoire
+    // 3. Filtrer immédiatement la liste en mémoire
     const results = this.filterProducts(this.allProductsCache, filters)
 
     return {
@@ -281,13 +405,22 @@ export class FirestoreProductsService {
 
   /**
    * Récupère un produit par son slug
-   * Interroge Firestore en priorité pour obtenir la dernière version sauvegardée (photos Cloudinary, description...)
+   * Utilise le cache temps réel en priorité, puis Firestore direct si non trouvé
    */
   static async getProductBySlug(slug: string): Promise<Product | null> {
+    // 1. Recherche dans le cache mémoire temps réel
+    if (this.allProductsCache.length === 0) {
+      this.loadFromLocalStorage()
+    }
+    const cached = this.allProductsCache.find(p => p.slug === slug)
+    if (cached) {
+      return this.sanitizeProduct(cached)
+    }
+
+    // 2. Interrogation directe de Firestore
     const { db } = useFirebase()
     if (db) {
       try {
-        // 1. Recherche directe par ID de document (slug)
         const docSnap = await getDoc(doc(db, 'products', slug))
         if (docSnap.exists()) {
           const prod = { id: docSnap.id as any, ...docSnap.data() } as Product
@@ -296,7 +429,6 @@ export class FirestoreProductsService {
           return sanitized
         }
 
-        // 2. Fallback query par champ 'slug' si jamais l'ID diffère
         const prodRef = collection(db, 'products')
         const q = query(prodRef, where('slug', '==', slug), limit(1))
         const snapshot = await getDocs(q)
@@ -312,19 +444,13 @@ export class FirestoreProductsService {
       }
     }
 
-    // 3. Fallback sur le cache mémoire local
-    const cached = this.allProductsCache.find(p => p.slug === slug)
-    if (cached) {
-      return this.sanitizeProduct(cached)
-    }
-
-    // 4. Fallback sur les données initiales
+    // 3. Fallback sur les données initiales
     const localProduct = INITIAL_PRODUCTS.find(p => p.slug === slug)
     return localProduct ? this.sanitizeProduct(localProduct) : null
   }
 
   /**
-   * Met à jour ou insère immédiatement un produit dans le cache local mémoire
+   * Met à jour ou insère immédiatement un produit dans le cache local (optimiste)
    */
   static updateLocalProduct(product: Product): void {
     const sanitized = this.sanitizeProduct(product)
@@ -334,17 +460,25 @@ export class FirestoreProductsService {
     } else {
       this.allProductsCache.unshift(sanitized)
     }
+    this.saveToLocalStorage()
+    this.subscribers.forEach(cb => {
+      try { cb(this.allProductsCache) } catch (err) { console.error('[Subscriber update error]:', err) }
+    })
   }
 
   /**
-   * Supprime un produit du cache local mémoire
+   * Supprime un produit du cache local (optimiste)
    */
   static removeLocalProduct(slug: string): void {
     this.allProductsCache = this.allProductsCache.filter(p => p.slug !== slug)
+    this.saveToLocalStorage()
+    this.subscribers.forEach(cb => {
+      try { cb(this.allProductsCache) } catch (err) { console.error('[Subscriber delete error]:', err) }
+    })
   }
 
   /**
-   * Invalide le cache après création, modification ou suppression d'un produit (Admin)
+   * Invalide le cache et force une re-synchronisation
    */
   static clearCache(): void {
     this.lastSyncTime = 0
