@@ -147,7 +147,7 @@
               v-model="settings.address"
               type="text"
               class="form-control admin-form-control"
-              placeholder="Douala, Cameroun"
+              placeholder="Yaoundé, Cameroun"
             />
           </div>
         </div>

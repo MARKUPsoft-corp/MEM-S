@@ -72,12 +72,12 @@
                     <h2 class="brand-name mb-0">MAISON MEM'S</h2>
                     <p class="brand-tagline mb-1">HAUTE COUTURE AFRICAINE & PRÊT-À-PORTER DE PRESTIGE</p>
                     <div class="brand-contact-info">
-                      <span>{{ storeSettings?.address || 'Douala, République du Cameroun' }}</span>
+                      <span>{{ storeAddress }}</span>
                       <span class="dot-separator">•</span>
-                      <span>Tél / WhatsApp : {{ storeSettings?.contactPhone || storeSettings?.whatsappNumber || '+237 6 96 96 26 62' }}</span>
+                      <span>Tél / WhatsApp : {{ storePhone }}</span>
                     </div>
                     <div class="brand-contact-info">
-                      <span>Email : {{ storeSettings?.contactEmail || 'contact@mems-concept.com' }}</span>
+                      <span>Email : {{ storeEmail }}</span>
                       <span class="dot-separator">•</span>
                       <span>Web : www.mems-couture.com</span>
                     </div>
@@ -113,9 +113,9 @@
                   <div class="party-box party-box-sender">
                     <div class="party-box-badge sender-badge">ÉMETTEUR / MAISON DE COUTURE</div>
                     <div class="party-name">{{ storeSettings?.storeName || 'Maison MEM\'S' }}</div>
-                    <div class="party-detail"><i class="bi bi-geo-alt-fill text-gold me-1"></i>{{ storeSettings?.address || 'Douala, République du Cameroun' }}</div>
-                    <div class="party-detail"><i class="bi bi-telephone-fill text-gold me-1"></i>{{ storeSettings?.contactPhone || storeSettings?.whatsappNumber || '+237 6 96 96 26 62' }}</div>
-                    <div class="party-detail party-legal mt-1">RCCM : RC/DLA/2024/B/1842 • NUI : M032412895412</div>
+                    <div class="party-detail"><i class="bi bi-geo-alt-fill text-gold me-1"></i>{{ storeAddress }}</div>
+                    <div class="party-detail"><i class="bi bi-telephone-fill text-gold me-1"></i>{{ storePhone }}</div>
+                    <div class="party-detail party-legal mt-1">RCCM : RC/YAO/2024/B/1842 • NUI : M032412895412</div>
                   </div>
                 </div>
 
@@ -210,9 +210,9 @@
                   <!-- Sceau vectoriel doré -->
                   <div class="luxury-seal-badge">
                     <div class="seal-inner-ring">
-                      <span class="seal-arc top">MAISON MEM'S</span>
-                      <span class="seal-stars">★  CERTIFIÉ  ★</span>
-                      <span class="seal-arc bottom">DOUALA • CAMEROUN</span>
+                      <span class="seal-brand">MAISON MEM'S</span>
+                      <span class="seal-star">★</span>
+                      <span class="seal-certified">CERTIFIÉ</span>
                     </div>
                   </div>
                   <div>
@@ -236,9 +236,9 @@
               <div class="invoice-footer-legal text-center mt-3 pt-2">
                 <div class="footer-gold-bar mb-1"></div>
                 <div class="legal-text">
-                  Maison MEM'S • Haute Couture Africaine & Confection de Prestige • Douala, République du Cameroun<br />
-                  WhatsApp Service Client : {{ storeSettings?.contactPhone || storeSettings?.whatsappNumber || '+237 6 96 96 26 62' }} • Email : {{ storeSettings?.contactEmail || 'contact@mems-concept.com' }}<br />
-                  Document officiel généré par le système informatique de vente MEM'S
+                  Maison MEM'S • Haute Couture Africaine & Confection de Prestige • Yaoundé, République du Cameroun<br />
+                  WhatsApp Service Client : {{ storePhone }} • Email : {{ storeEmail }}<br />
+                  Société enregistrée au RCCM de Yaoundé • Document officiel généré par le système informatique de vente MEM'S
                 </div>
               </div>
             </div>
@@ -253,6 +253,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { ContentService, type StoreSettings } from '~~/services/contentService'
 import {
+  downloadInvoiceFromElement,
+  openInvoiceFromElement,
   downloadInvoicePdf,
   openInvoicePdfInNewTab,
   type OrderData
@@ -268,6 +270,23 @@ defineEmits<{
 
 const storeSettings = ref<StoreSettings | null>(null)
 const generatingPdf = ref(false)
+
+// Coordonnées boutique normalisées (Yaoundé)
+const storeAddress = computed(() => {
+  const addr = storeSettings.value?.address
+  if (!addr || addr.toLowerCase().includes('douala')) {
+    return 'Yaoundé, République du Cameroun'
+  }
+  return addr
+})
+
+const storePhone = computed(() => {
+  return storeSettings.value?.contactPhone || storeSettings.value?.whatsappNumber || '+237 6 96 96 26 62'
+})
+
+const storeEmail = computed(() => {
+  return storeSettings.value?.contactEmail || 'contact@mems-concept.com'
+})
 
 // Référence facture
 const invoiceReference = computed(() => {
@@ -346,11 +365,17 @@ const getStatusIconClass = (status?: string) => {
   }
 }
 
-// Téléchargement du PDF vectoriel
+// Téléchargement du PDF avec police et mise en page 100% identiques à l'aperçu
 const handleDownloadPdf = async () => {
   try {
     generatingPdf.value = true
-    await downloadInvoicePdf(props.order, storeSettings.value || undefined)
+    const sheet = document.getElementById('mems-invoice-sheet')
+    const filename = `Facture-${props.order?.orderNumber || 'MEMS'}.pdf`
+    if (sheet) {
+      await downloadInvoiceFromElement(sheet, filename)
+    } else {
+      await downloadInvoicePdf(props.order, storeSettings.value || undefined)
+    }
   } catch (err) {
     console.error('[InvoiceModal] Erreur génération PDF:', err)
     alert('Une erreur est survenue lors de la génération du PDF.')
@@ -359,11 +384,16 @@ const handleDownloadPdf = async () => {
   }
 }
 
-// Aperçu PDF dans un nouvel onglet
+// Aperçu PDF dans un nouvel onglet avec rendu identique à l'aperçu
 const handleOpenPdf = async () => {
   try {
     generatingPdf.value = true
-    await openInvoicePdfInNewTab(props.order, storeSettings.value || undefined)
+    const sheet = document.getElementById('mems-invoice-sheet')
+    if (sheet) {
+      await openInvoiceFromElement(sheet)
+    } else {
+      await openInvoicePdfInNewTab(props.order, storeSettings.value || undefined)
+    }
   } catch (err) {
     console.error('[InvoiceModal] Erreur ouverture PDF:', err)
     alert('Une erreur est survenue lors de l\'ouverture du PDF.')
@@ -390,6 +420,8 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
 /* Backdrop & Conteneur */
 .invoice-modal-backdrop {
   position: fixed;
@@ -491,9 +523,9 @@ onMounted(async () => {
    ============================================================== */
 .invoice-a4-sheet {
   background: #FFFFFF;
-  width: 100%;
-  max-width: 800px;
-  min-height: 1050px;
+  width: 794px;
+  max-width: 100%;
+  min-height: 1123px;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -822,18 +854,29 @@ onMounted(async () => {
   padding: 2px;
 }
 
-.seal-arc {
-  font-size: 0.4375rem;
+.seal-brand {
+  font-size: 0.5rem;
   font-weight: 800;
   color: #C9A46C;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
-.seal-stars {
-  font-size: 0.4375rem;
+.seal-star {
+  font-size: 0.625rem;
   color: #C9A46C;
   margin: 1px 0;
-  font-weight: 700;
+  line-height: 1;
+}
+
+.seal-certified {
+  font-size: 0.5rem;
+  font-weight: 800;
+  color: #C9A46C;
+  letter-spacing: 0.6px;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
 .direction-title {

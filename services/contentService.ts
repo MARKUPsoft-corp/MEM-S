@@ -66,7 +66,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   storeName: "MEM'S Concept",
   contactEmail: 'contact@mems-concept.com',
   contactPhone: '+237 6 96 96 26 62',
-  address: 'Douala, Cameroun'
+  address: 'Yaoundé, Cameroun'
 }
 
 export class ContentService {

@@ -51,7 +51,6 @@ export const loadLogoBase64 = async (src: string = '/images/LOGO.png'): Promise<
     img.onload = () => {
       try {
         const canvas = document.createElement('canvas')
-        // Optimisation pour 300 DPI sans surcharger le fichier PDF (1000px max)
         const maxDim = 1000
         const scale = Math.min(maxDim / img.width, maxDim / img.height, 1)
         canvas.width = Math.round(img.width * scale)
@@ -110,7 +109,90 @@ const getStatusLabel = (status?: string) => {
 }
 
 /**
- * Construit l'instance vectorielle jsPDF pour une commande MEM'S
+ * Génère un document PDF ultra-haute résolution (300 DPI) directement
+ * à partir de l'élément HTML de la facture (#mems-invoice-sheet).
+ * Cela garantit une correspondance stricte 100% identique entre l'aperçu à l'écran
+ * (police Montserrat, disposition exacte, colonnes, bordures or, badges, sceau) et le fichier PDF final.
+ */
+export const generatePdfFromHtml = async (element: HTMLElement): Promise<jsPDF> => {
+  if (typeof window === 'undefined') {
+    throw new Error('generatePdfFromHtml can only be executed in a browser environment')
+  }
+
+  // S'assurer que les polices web (Montserrat) sont prêtes
+  if (document.fonts) {
+    await document.fonts.ready
+  }
+
+  const html2canvas = (await import('html2canvas')).default
+
+  // Capture ultra-haute résolution (scale: 2.5 pour ~300 DPI)
+  const canvas = await html2canvas(element, {
+    scale: 2.5,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#FFFFFF',
+    logging: false
+  })
+
+  const imgData = canvas.toDataURL('image/png')
+
+  // Format standard A4 portrait : 210 x 297 mm
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+    compress: true
+  })
+
+  const pdfWidth = 210
+  const pdfHeight = 297
+
+  const canvasWidth = canvas.width
+  const canvasHeight = canvas.height
+  const canvasRatio = canvasHeight / canvasWidth
+  const renderedHeight = pdfWidth * canvasRatio
+
+  if (renderedHeight <= pdfHeight) {
+    // Si la hauteur rentre sur la page A4, centrage vertical propre
+    const offsetY = (pdfHeight - renderedHeight) / 2
+    pdf.addImage(imgData, 'PNG', 0, Math.max(0, offsetY), pdfWidth, renderedHeight, undefined, 'FAST')
+  } else {
+    // Ajustement proportionnel pour tenir sur une seule page A4
+    const scaleFactor = pdfHeight / renderedHeight
+    const fittedWidth = pdfWidth * scaleFactor
+    const fittedHeight = pdfHeight
+    const offsetX = (pdfWidth - fittedWidth) / 2
+    pdf.addImage(imgData, 'PNG', Math.max(0, offsetX), 0, fittedWidth, fittedHeight, undefined, 'FAST')
+  }
+
+  return pdf
+}
+
+/**
+ * Télécharge la facture PDF directement à partir du rendu HTML de la modale
+ * (Garantit police Montserrat et mise en page 100% identique à l'aperçu)
+ */
+export const downloadInvoiceFromElement = async (
+  element: HTMLElement,
+  filename: string = 'Facture-MEMS.pdf'
+) => {
+  const pdf = await generatePdfFromHtml(element)
+  pdf.save(filename)
+}
+
+/**
+ * Ouvre la facture PDF générée depuis le rendu HTML dans un nouvel onglet
+ */
+export const openInvoiceFromElement = async (element: HTMLElement) => {
+  const pdf = await generatePdfFromHtml(element)
+  const blob = pdf.output('blob')
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+}
+
+/**
+ * Construit l'instance vectorielle jsPDF de secours pour une commande MEM'S
  */
 export const buildInvoicePdfDocument = async (
   order: OrderData,
@@ -154,7 +236,6 @@ export const buildInvoicePdfDocument = async (
   try {
     const logoBase64 = await loadLogoBase64('/images/LOGO.png')
     if (logoBase64) {
-      // Dimensions du logo : 24x24 mm
       doc.addImage(logoBase64, 'PNG', marginX, curY, 24, 24, undefined, 'FAST')
     }
   } catch (err) {
@@ -175,7 +256,9 @@ export const buildInvoicePdfDocument = async (
 
   doc.setFontSize(7)
   doc.setTextColor(...COLOR_MUTED)
-  const city = settings?.address || 'Douala, République du Cameroun'
+  const city = settings?.address && !settings.address.toLowerCase().includes('douala')
+    ? settings.address
+    : 'Yaoundé, République du Cameroun'
   const phone = settings?.contactPhone || settings?.whatsappNumber || '+237 6 96 96 26 62'
   const email = settings?.contactEmail || 'contact@mems-concept.com'
   doc.text(`${city}  •  Tél / WhatsApp : ${phone}`, brandX, curY + 17)
@@ -233,7 +316,6 @@ export const buildInvoicePdfDocument = async (
   doc.setLineWidth(0.2)
   doc.roundedRect(marginX, curY, boxWidth, boxHeight, 1.5, 1.5, 'FD')
 
-  // Petite étiquette dorée
   doc.setFillColor(...COLOR_GOLD)
   doc.rect(marginX, curY, 2, boxHeight, 'F')
 
@@ -252,7 +334,7 @@ export const buildInvoicePdfDocument = async (
   doc.setTextColor(...COLOR_CHARCOAL)
   doc.text(`Siège : ${city}`, marginX + 5, curY + 15)
   doc.text(`Service Ventes : ${phone}`, marginX + 5, curY + 19.5)
-  doc.text(`RCCM : RC/DLA/2024/B/1842  •  NUI : M032412895412`, marginX + 5, curY + 24)
+  doc.text(`RCCM : RC/YAO/2024/B/1842  •  NUI : M032412895412`, marginX + 5, curY + 24)
   doc.text(`Boutique en ligne officielle`, marginX + 5, curY + 28.5)
 
   // Bloc Client / Facturé à (Droite)
@@ -262,7 +344,6 @@ export const buildInvoicePdfDocument = async (
   doc.setLineWidth(0.2)
   doc.roundedRect(clientX, curY, boxWidth, boxHeight, 1.5, 1.5, 'FD')
 
-  // Petite étiquette noire
   doc.setFillColor(...COLOR_BLACK)
   doc.rect(clientX, curY, 2, boxHeight, 'F')
 
@@ -293,10 +374,9 @@ export const buildInvoicePdfDocument = async (
     .join(', ')
   doc.text(`Livraison : ${custAddress}`, clientX + 5, custEmail ? curY + 24 : curY + 19.5)
 
-  // 4. TABLEAU VECTORIEL DES ARTICLES (via autoTable)
+  // 4. TABLEAU DES ARTICLES
   curY += boxHeight + 6
 
-  // Préparation des lignes d'articles
   const tableRows = (order.items || []).map((item, idx) => {
     let variantDesc = ''
     if (typeof item.variant === 'string') {
@@ -319,7 +399,6 @@ export const buildInvoicePdfDocument = async (
     ]
   })
 
-  // S'il n'y a pas d'article spécifique
   if (tableRows.length === 0) {
     tableRows.push(['01', 'Commande personnalisée', 'Confection sur mesure', '1', formatFcfa(order.total), formatFcfa(order.total)])
   }
@@ -360,13 +439,11 @@ export const buildInvoicePdfDocument = async (
     }
   })
 
-  // Position Y après le tableau
   let tableEndY = (doc as any).lastAutoTable?.finalY || (curY + 40)
 
-  // 5. BLOC RÉCAPITULATIF FINANCIER & CACHET OFFICIEL
+  // 5. BLOC RÉCAPITULATIF FINANCIER
   curY = tableEndY + 5
 
-  // S'il reste peu de place sur la page pour le récapitulatif, on passe à une nouvelle page
   if (curY > pageHeight - 75) {
     doc.addPage()
     curY = 20
@@ -375,16 +452,13 @@ export const buildInvoicePdfDocument = async (
   const totalsBoxWidth = 80
   const totalsBoxX = pageWidth - marginX - totalsBoxWidth
 
-  // Fond du récapitulatif financier
   doc.setFillColor(...COLOR_CREAM)
   doc.setDrawColor(...COLOR_BORDER)
   doc.setLineWidth(0.3)
   doc.roundedRect(totalsBoxX, curY, totalsBoxWidth, 38, 2, 2, 'FD')
 
-  // Lignes du récapitulatif financier
   let totY = curY + 6.5
 
-  // Sous-total
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(...COLOR_MUTED)
@@ -394,22 +468,19 @@ export const buildInvoicePdfDocument = async (
   const subtotalVal = order.subtotal || order.total || 0
   doc.text(formatFcfa(subtotalVal), totalsBoxX + totalsBoxWidth - 5, totY, { align: 'right' })
 
-  // Livraison
   totY += 6.5
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...COLOR_MUTED)
   doc.text('Frais de livraison :', totalsBoxX + 5, totY)
   doc.setFont('helvetica', 'bold')
-  doc.setTextColor(15, 81, 50) // vert
+  doc.setTextColor(15, 81, 50)
   doc.text('OFFERTE (0 FCFA)', totalsBoxX + totalsBoxWidth - 5, totY, { align: 'right' })
 
-  // Séparation
   totY += 4
   doc.setDrawColor(...COLOR_BORDER)
   doc.setLineWidth(0.2)
   doc.line(totalsBoxX + 4, totY, totalsBoxX + totalsBoxWidth - 4, totY)
 
-  // TOTAL NET À PAYER (Mise en avant or / noir)
   totY += 7
   doc.setFillColor(...COLOR_BLACK)
   doc.roundedRect(totalsBoxX + 3, totY - 4.5, totalsBoxWidth - 6, 12, 1.5, 1.5, 'F')
@@ -424,7 +495,7 @@ export const buildInvoicePdfDocument = async (
   doc.setTextColor(255, 255, 255)
   doc.text(formatFcfa(order.total), totalsBoxX + totalsBoxWidth - 6, totY + 2.5, { align: 'right' })
 
-  // Bloc de gauche : Instructions et Arrêté de compte
+  // Bloc Arrêté de compte à gauche
   const leftNotesWidth = totalsBoxX - marginX - 6
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(7.5)
@@ -450,36 +521,34 @@ export const buildInvoicePdfDocument = async (
     doc.text(splitNotes, marginX, curY + 26.5)
   }
 
-  // 6. SCEAU VECTORIEL OFFICIEL DORÉ & SIGNATURE
+  // 6. SCEAU OFFICIEL DORÉ & SIGNATURE
   curY += 46
   if (curY > pageHeight - 45) {
     doc.addPage()
     curY = 20
   }
 
-  // Sceau doré circulaire vectoriel
+  // Sceau sans "Douala Cameroun", juste "MAISON MEM'S" et "CERTIFIÉ"
   const sealCenterX = marginX + 32
   const sealCenterY = curY + 10
 
-  // Cercle extérieur or
   doc.setDrawColor(...COLOR_GOLD)
   doc.setLineWidth(0.6)
   doc.circle(sealCenterX, sealCenterY, 11)
 
-  // Cercle pointillé or intérieur
   doc.setLineWidth(0.2)
   doc.circle(sealCenterX, sealCenterY, 9.5)
 
-  // Texte circulaire simplifié / centré dans le sceau
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(5.5)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text('MAISON MEM\'S', sealCenterX, sealCenterY - 3, { align: 'center' })
-  doc.setFontSize(4.5)
-  doc.text('★  AUTHENTIQUE  ★', sealCenterX, sealCenterY)
-  doc.text('DOUALA - CAMEROUN', sealCenterX, sealCenterY + 3.5, { align: 'center' })
+  doc.text('MAISON MEM\'S', sealCenterX, sealCenterY - 2.5, { align: 'center' })
+  doc.setFontSize(5)
+  doc.text('★', sealCenterX, sealCenterY + 0.8, { align: 'center' })
+  doc.setFontSize(5.5)
+  doc.text('CERTIFIÉ', sealCenterX, sealCenterY + 4, { align: 'center' })
 
-  // Signature / Cachet
+  // Signature
   const sigX = marginX + 50
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(7.5)
@@ -520,7 +589,7 @@ export const buildInvoicePdfDocument = async (
   doc.setFontSize(6.5)
   doc.setTextColor(...COLOR_MUTED)
   doc.text(
-    `Maison MEM'S - Douala, Cameroun  •  WhatsApp Service Client : ${phone}  •  contact@mems-concept.com`,
+    `Maison MEM'S - Yaoundé, Cameroun  •  WhatsApp Service Client : ${phone}  •  contact@mems-concept.com`,
     pageWidth / 2,
     footerY,
     { align: 'center' }
@@ -528,7 +597,7 @@ export const buildInvoicePdfDocument = async (
 
   doc.setFontSize(5.8)
   doc.text(
-    'Société enregistrée au RCCM de Douala  •  Facture originale générée par le système officiel de vente MEM\'S',
+    'Société enregistrée au RCCM de Yaoundé  •  Facture originale générée par le système officiel de vente MEM\'S',
     pageWidth / 2,
     footerY + 3.2,
     { align: 'center' }
