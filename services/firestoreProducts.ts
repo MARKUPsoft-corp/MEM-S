@@ -73,21 +73,23 @@ export class FirestoreProductsService {
   static initRealtimeSubscription(onUpdate?: (products: Product[]) => void): () => void {
     if (onUpdate) {
       this.subscribers.add(onUpdate)
-      // Si on a déjà des produits en cache, notifier immédiatement l'abonné
-      if (this.allProductsCache.length > 0) {
-        onUpdate(this.allProductsCache)
-      }
     }
 
-    // Charger le cache local au tout premier appel si la mémoire est vide
+    // 1. Charger le cache local d'abord (synchrone, 0ms)
     if (this.allProductsCache.length === 0) {
       const hasLocal = this.loadFromLocalStorage()
       if (!hasLocal) {
+        // Fallback : afficher les produits initiaux en attendant Firestore
         this.allProductsCache = [...INITIAL_PRODUCTS]
       }
     }
 
-    // Démarrer l'écouteur Firestore si ce n'est pas déjà fait
+    // 2. Notifier immédiatement le nouvel abonné avec ce qu'on a déjà (local ou INITIAL)
+    if (onUpdate && this.allProductsCache.length > 0) {
+      try { onUpdate(this.allProductsCache) } catch (e) {}
+    }
+
+    // 3. Démarrer l'écouteur Firestore si ce n'est pas déjà fait
     if (!this.unsubscribeSnapshot && typeof window !== 'undefined') {
       const { db } = useFirebase()
       if (db) {
@@ -115,6 +117,9 @@ export class FirestoreProductsService {
                 // Si la collection Firestore est vide, garder le fallback
                 this.allProductsCache = [...INITIAL_PRODUCTS]
                 this.isInitialized = true
+                this.subscribers.forEach(cb => {
+                  try { cb(this.allProductsCache) } catch (err) {}
+                })
               }
             },
             (error) => {
@@ -133,6 +138,7 @@ export class FirestoreProductsService {
       }
     }
   }
+
 
   /**
    * Récupère toutes les collections (avec mise en cache)

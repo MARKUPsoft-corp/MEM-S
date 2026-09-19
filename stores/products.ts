@@ -13,7 +13,7 @@ interface PaginatedResponse {
 export const useProductsStore = defineStore('products', {
   state: () => ({
     // Ne pas initialiser avec INITIAL_PRODUCTS — Firestore est la source unique de vérité.
-    // Le localStorage hydrate immédiatement via initRealtimeSync au démarrage.
+    // loading = true jusqu'à la réception du premier snapshot Firestore
     products: [] as Product[],
     categories: [...INITIAL_CATEGORIES] as Category[],
     collections: [...INITIAL_COLLECTIONS] as Collection[],
@@ -24,7 +24,7 @@ export const useProductsStore = defineStore('products', {
       is_new: undefined,
       search: undefined,
     } as ProductFilter,
-    loading: false,
+    loading: true,  // true jusqu'au premier snapshot Firestore
     totalCount: 0,
     realtimeActive: false,
   }),

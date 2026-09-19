@@ -306,7 +306,9 @@ const resetFilters = () => {
 
 const adjustStock = async (product: Product, delta: number) => {
   const newStock = Math.max(0, (product.stock || 0) + delta)
-  product.stock = newStock
+
+  // Mise à jour optimiste dans le cache local (le store se met à jour par le subscriber)
+  FirestoreProductsService.updateLocalProduct({ ...product, stock: newStock })
 
   if (db) {
     try {
@@ -314,9 +316,11 @@ const adjustStock = async (product: Product, delta: number) => {
         stock: newStock,
         updated_at: new Date().toISOString()
       })
-      FirestoreProductsService.clearCache()
+      // Pas besoin de clearCache — le onSnapshot Firestore rafraîchira automatiquement
     } catch (err) {
       console.warn('[Admin] Erreur mise à jour stock:', err)
+      // Rollback optimiste
+      FirestoreProductsService.updateLocalProduct(product)
     }
   }
 }
@@ -325,12 +329,13 @@ const confirmDelete = async (product: Product) => {
   const ok = confirm(`Êtes-vous sûr de vouloir supprimer définitivement "${product.name}" ?`)
   if (!ok) return
 
-  products.value = products.value.filter(p => p.slug !== product.slug)
+  // Suppression optimiste immédiate depuis le cache local
+  FirestoreProductsService.removeLocalProduct(product.slug)
 
   if (db) {
     try {
       await deleteDoc(doc(db, 'products', product.slug))
-      FirestoreProductsService.clearCache()
+      // onSnapshot confirme automatiquement la suppression
     } catch (err) {
       console.warn('[Admin] Erreur suppression Firestore:', err)
     }
@@ -343,7 +348,16 @@ onMounted(async () => {
   } catch (err) {
     console.warn('[Admin Products] Erreur chargement catégories:', err)
   }
+
+  // Fallback de sécurité : si le store est toujours vide après 3s, forcer un chargement
+  setTimeout(async () => {
+    if (productsStore.products.length === 0) {
+      console.warn('[Admin] Store vide après 3s, forçage du chargement...')
+      await productsStore.fetchProducts()
+    }
+  }, 3000)
 })
+
 
 </script>
 
