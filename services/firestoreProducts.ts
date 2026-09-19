@@ -126,7 +126,17 @@ export class FirestoreProductsService {
             this.sanitizeProduct({ id: doc.id as any, ...doc.data() } as Product)
           )
           if (remoteProducts.length > 0) {
-            this.allProductsCache = remoteProducts
+            // Fusion intelligente avec INITIAL_PRODUCTS : les produits Firestore écrasent/enrichissent
+            const merged = [...INITIAL_PRODUCTS]
+            for (const remote of remoteProducts) {
+              const idx = merged.findIndex(p => p.slug === remote.slug || String(p.id) === String(remote.id))
+              if (idx !== -1) {
+                merged[idx] = remote
+              } else {
+                merged.unshift(remote)
+              }
+            }
+            this.allProductsCache = merged
             this.lastSyncTime = Date.now()
           }
         }
@@ -270,37 +280,67 @@ export class FirestoreProductsService {
   }
 
   /**
-   * Récupère un produit par son slug (immédiat depuis le cache)
+   * Récupère un produit par son slug
+   * Interroge Firestore en priorité pour obtenir la dernière version sauvegardée (photos Cloudinary, description...)
    */
   static async getProductBySlug(slug: string): Promise<Product | null> {
+    const { db } = useFirebase()
+    if (db) {
+      try {
+        // 1. Recherche directe par ID de document (slug)
+        const docSnap = await getDoc(doc(db, 'products', slug))
+        if (docSnap.exists()) {
+          const prod = { id: docSnap.id as any, ...docSnap.data() } as Product
+          const sanitized = this.sanitizeProduct(prod)
+          this.updateLocalProduct(sanitized)
+          return sanitized
+        }
+
+        // 2. Fallback query par champ 'slug' si jamais l'ID diffère
+        const prodRef = collection(db, 'products')
+        const q = query(prodRef, where('slug', '==', slug), limit(1))
+        const snapshot = await getDocs(q)
+        if (!snapshot.empty) {
+          const docItem = snapshot.docs[0]
+          const prod = { id: docItem.id as any, ...docItem.data() } as Product
+          const sanitized = this.sanitizeProduct(prod)
+          this.updateLocalProduct(sanitized)
+          return sanitized
+        }
+      } catch (error) {
+        console.warn('[Firestore] getProductBySlug fallback vers cache:', error)
+      }
+    }
+
+    // 3. Fallback sur le cache mémoire local
     const cached = this.allProductsCache.find(p => p.slug === slug)
     if (cached) {
       return this.sanitizeProduct(cached)
     }
 
-    // Si pas trouvé dans le cache local, chercher dans Firestore
-    const { db } = useFirebase()
-    if (db) {
-      try {
-        const prodRef = collection(db, 'products')
-        const q = query(prodRef, where('slug', '==', slug), limit(1))
-        const snapshot = await getDocs(q)
-
-        if (!snapshot.empty) {
-          const doc = snapshot.docs[0]
-          const prod = { id: doc.id as any, ...doc.data() } as Product
-          const sanitized = this.sanitizeProduct(prod)
-          // Ajouter au cache
-          this.allProductsCache.push(sanitized)
-          return sanitized
-        }
-      } catch (error) {
-        console.warn('[Firestore] getProductBySlug fallback:', error)
-      }
-    }
-
+    // 4. Fallback sur les données initiales
     const localProduct = INITIAL_PRODUCTS.find(p => p.slug === slug)
     return localProduct ? this.sanitizeProduct(localProduct) : null
+  }
+
+  /**
+   * Met à jour ou insère immédiatement un produit dans le cache local mémoire
+   */
+  static updateLocalProduct(product: Product): void {
+    const sanitized = this.sanitizeProduct(product)
+    const idx = this.allProductsCache.findIndex(p => p.slug === sanitized.slug || String(p.id) === String(sanitized.id))
+    if (idx !== -1) {
+      this.allProductsCache[idx] = sanitized
+    } else {
+      this.allProductsCache.unshift(sanitized)
+    }
+  }
+
+  /**
+   * Supprime un produit du cache local mémoire
+   */
+  static removeLocalProduct(slug: string): void {
+    this.allProductsCache = this.allProductsCache.filter(p => p.slug !== slug)
   }
 
   /**

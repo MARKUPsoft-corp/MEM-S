@@ -170,6 +170,9 @@
         <slot />
       </main>
     </div>
+
+    <!-- Notifications Toast -->
+    <NotificationContainer />
   </div>
 </template>
 
@@ -178,6 +181,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import AfricanPatternBackground from '../components/AfricanPatternBackground.vue'
+import NotificationContainer from '../components/NotificationContainer.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -250,10 +250,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { doc, setDoc } from 'firebase/firestore'
+import { doc, setDoc, deleteDoc } from 'firebase/firestore'
 import { useFirebase } from '../../../composables/useFirebase'
+import { useNotification } from '../../../composables/useNotification'
 import { FirestoreProductsService } from '../../../services/firestoreProducts'
 import ImageUploader from './ImageUploader.vue'
 import type { Product, Category } from '../../../types/product'
@@ -265,6 +266,7 @@ const props = defineProps<{
 
 const router = useRouter()
 const { db } = useFirebase()
+const notify = useNotification()
 
 const categories = ref<Category[]>([])
 const selectedCategorySlug = ref('')
@@ -374,7 +376,19 @@ const handleSubmit = async () => {
 
   if (db) {
     try {
+      // Si on modifie un produit existant et que le slug a changé, supprimer l'ancien document Firestore
+      if (props.isEdit && props.initialProduct?.slug && props.initialProduct.slug !== cleanData.slug) {
+        try {
+          await deleteDoc(doc(db, 'products', props.initialProduct.slug))
+          FirestoreProductsService.removeLocalProduct(props.initialProduct.slug)
+        } catch (delErr) {
+          console.warn('[ProductForm] Suppression ancien slug Firestore:', delErr)
+        }
+      }
+
       await setDoc(doc(db, 'products', cleanData.slug), cleanData)
+      // Mettre à jour immédiatement le cache local
+      FirestoreProductsService.updateLocalProduct(cleanData)
       FirestoreProductsService.clearCache()
     } catch (err: any) {
       console.error('[ProductForm] Erreur sauvegarde Firestore:', err)
@@ -384,9 +398,40 @@ const handleSubmit = async () => {
     }
   }
 
+  notify.success(props.isEdit ? `« ${cleanData.name} » mis à jour avec succès !` : `« ${cleanData.name} » créé avec succès !`)
   submitting.value = false
   router.push('/admin/products')
 }
+
+const populateForm = (p: Product) => {
+  form.value = {
+    id: p.id as any,
+    name: p.name || '',
+    slug: p.slug || '',
+    description: p.description || '',
+    price: p.price || 0,
+    discount_price: p.discount_price,
+    stock: p.stock || 0,
+    is_new: Boolean(p.is_new),
+    is_featured: Boolean(p.is_featured),
+    images: Array.isArray(p.images) ? [...p.images] : [],
+    variants: Array.isArray(p.variants) ? [...p.variants] : []
+  }
+  if (p.category?.slug) {
+    selectedCategorySlug.value = p.category.slug
+  }
+}
+
+// Watcher réactif pour peupler automatiquement dès que le produit est disponible
+watch(
+  () => props.initialProduct,
+  (newVal) => {
+    if (newVal) {
+      populateForm(newVal)
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 onMounted(async () => {
   try {
@@ -394,24 +439,8 @@ onMounted(async () => {
     categories.value = catList || []
 
     if (props.initialProduct) {
-      const p = props.initialProduct
-      form.value = {
-        id: p.id as any,
-        name: p.name || '',
-        slug: p.slug || '',
-        description: p.description || '',
-        price: p.price || 0,
-        discount_price: p.discount_price,
-        stock: p.stock || 0,
-        is_new: Boolean(p.is_new),
-        is_featured: Boolean(p.is_featured),
-        images: Array.isArray(p.images) ? [...p.images] : [],
-        variants: Array.isArray(p.variants) ? [...p.variants] : []
-      }
-      if (p.category?.slug) {
-        selectedCategorySlug.value = p.category.slug
-      }
-    } else if (categories.value.length > 0) {
+      populateForm(props.initialProduct)
+    } else if (categories.value.length > 0 && !selectedCategorySlug.value) {
       selectedCategorySlug.value = categories.value[0].slug
     }
   } catch (err) {
