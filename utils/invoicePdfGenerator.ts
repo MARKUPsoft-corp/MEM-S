@@ -212,32 +212,33 @@ export const buildInvoicePdfDocument = async (
 
   doc.setDrawColor(...COLOR_BORDER)
   doc.setLineWidth(0.15)
-  doc.rect(8, 8, pageWidth - 16, pageHeight - 16)
+  doc.rect(8.5, 8.5, pageWidth - 17, pageHeight - 17)
 
-  // 2. EN-TÊTE : Logo officiel MEM'S & Identité de marque
-  let curY = 13
+  // 2. EN-TÊTE : Logo officiel MEM'S & Identité de marque (Logo agrandi et prestigieux)
+  let curY = 11.5
+  const logoSize = 28 // Agrandissement à 28x28 mm (présence imposante de marque)
 
   // Logo officiel MEM'S (sur la gauche)
   try {
     const logoBase64 = await loadLogoBase64('/images/LOGO.png')
     if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', marginX, curY, 20, 20, undefined, 'FAST')
+      doc.addImage(logoBase64, 'PNG', marginX, curY, logoSize, logoSize, undefined, 'FAST')
     }
   } catch (err) {
     console.warn('[Invoice] Erreur affichage logo:', err)
   }
 
-  // Marque et coordonnées (à droite du logo)
-  const brandX = marginX + 24
+  // Marque et coordonnées (à droite du logo agrandi)
+  const brandX = marginX + logoSize + 4 // 46 mm
   doc.setFont(fontName, 'bold')
-  doc.setFontSize(15)
+  doc.setFontSize(16)
   doc.setTextColor(...COLOR_BLACK)
-  doc.text('MAISON MEM\'S', brandX, curY + 6)
+  doc.text('MAISON MEM\'S', brandX, curY + 6.5)
 
   doc.setFont(fontName, 'bold')
   doc.setFontSize(6.2)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text('HAUTE COUTURE AFRICAINE & PRÊT-À-PORTER DE PRESTIGE', brandX, curY + 10.5)
+  doc.text('HAUTE COUTURE AFRICAINE & PRÊT-À-PORTER DE PRESTIGE', brandX, curY + 11.5)
 
   doc.setFont(fontName, 'normal')
   doc.setFontSize(6.8)
@@ -247,38 +248,38 @@ export const buildInvoicePdfDocument = async (
     : 'Yaoundé, République du Cameroun'
   const phone = settings?.contactPhone || settings?.whatsappNumber || '+237 6 96 96 26 62'
   const email = settings?.contactEmail || 'contact@mems-concept.com'
-  doc.text(`${city}  •  Tél / WhatsApp : ${phone}`, brandX, curY + 15)
-  doc.text(`Email : ${email}  •  Web : www.mems-couture.com`, brandX, curY + 19)
+  doc.text(`${city}  •  Tél / WhatsApp : ${phone}`, brandX, curY + 17)
+  doc.text(`Email : ${email}  •  Web : www.mems-couture.com`, brandX, curY + 21.5)
 
   // Métadonnées Facture (Aligné à droite)
   const rightX = pageWidth - marginX
   doc.setFont(fontName, 'bold')
-  doc.setFontSize(15)
+  doc.setFontSize(16)
   doc.setTextColor(...COLOR_BLACK)
-  doc.text('FACTURE', rightX, curY + 6, { align: 'right' })
+  doc.text('FACTURE', rightX, curY + 6.5, { align: 'right' })
 
   // Référence Facture
   const invoiceRef = order.orderNumber ? `FAC-${order.orderNumber}` : 'FAC-000000'
   doc.setFont('courier', 'bold')
-  doc.setFontSize(9)
+  doc.setFontSize(9.5)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text(invoiceRef, rightX, curY + 11, { align: 'right' })
+  doc.text(invoiceRef, rightX, curY + 12, { align: 'right' })
 
   // Date d'émission
   doc.setFont(fontName, 'normal')
   doc.setFontSize(7)
   doc.setTextColor(...COLOR_MUTED)
-  doc.text(`Émise le : ${formatLongDate(order.createdAt)}`, rightX, curY + 15.5, { align: 'right' })
+  doc.text(`Émise le : ${formatLongDate(order.createdAt)}`, rightX, curY + 17, { align: 'right' })
 
   // Statut sous forme de badge pill
   const statusLabel = getStatusLabel(order.status)
   doc.setFont(fontName, 'bold')
   doc.setFontSize(6.5)
 
-  const pillTextWidth = doc.getTextWidth(statusLabel) + 6
-  const pillHeight = 4.8
+  const pillTextWidth = doc.getTextWidth(statusLabel) + 7
+  const pillHeight = 5
   const pillX = rightX - pillTextWidth
-  const pillY = curY + 17.5
+  const pillY = curY + 19.5
 
   if (order.status === 'confirmed' || order.status === 'delivered') {
     doc.setFillColor(209, 231, 221) // #D1E7DD
@@ -288,10 +289,10 @@ export const buildInvoicePdfDocument = async (
     doc.setTextColor(133, 100, 4)
   }
   doc.roundedRect(pillX, pillY, pillTextWidth, pillHeight, 2, 2, 'F')
-  doc.text(statusLabel, pillX + (pillTextWidth / 2), pillY + 3.4, { align: 'center' })
+  doc.text(statusLabel, pillX + (pillTextWidth / 2), pillY + 3.5, { align: 'center' })
 
-  // Double ligne de séparation dorée
-  curY += 26
+  // Double ligne de séparation dorée sous l'en-tête
+  curY += logoSize + 4.5
   doc.setDrawColor(...COLOR_GOLD)
   doc.setLineWidth(0.5)
   doc.line(marginX, curY, rightX, curY)
@@ -531,16 +532,28 @@ export const buildInvoicePdfDocument = async (
   doc.setTextColor(255, 255, 255)
   doc.text(formatFcfa(order.total), totalsBoxX + totalsBoxWidth - 6.5, netBoxY + 7, { align: 'right' })
 
-  // 6. SCEAU D'AUTHENTICITÉ & SIGNATURE OFFICIELLE
-  curY += 42
-  if (curY > pageHeight - 48) {
+  // 6. BLOC DU BAS UNIFIÉ : SCEAU D'AUTHENTICITÉ, SIGNATURE, REMERCIEMENT & PIED DE PAGE LÉGAL
+  const totalsEndY = curY + 34
+  const bottomBlockHeight = 44
+
+  // Ancrage élégant en bas de l'encadré A4 pour les factures 1 page, ou enchaînement naturel si tableau plus long
+  let targetBottomY = Math.max(totalsEndY + 8, pageHeight - 16 - bottomBlockHeight)
+
+  // Si le contenu déborde de la page 1, basculer sur une page 2 et redessiner le double cadre
+  if (targetBottomY + bottomBlockHeight > pageHeight - 10) {
     doc.addPage()
-    curY = 20
+    doc.setDrawColor(...COLOR_GOLD)
+    doc.setLineWidth(0.4)
+    doc.rect(7, 7, pageWidth - 14, pageHeight - 14)
+    doc.setDrawColor(...COLOR_BORDER)
+    doc.setLineWidth(0.15)
+    doc.rect(8.5, 8.5, pageWidth - 17, pageHeight - 17)
+    targetBottomY = pageHeight - 16 - bottomBlockHeight
   }
 
-  // Sceau circulaire doré (sans mention de Douala Cameroun)
+  // A. Sceau circulaire doré (sans mention de Douala, épuré officiel)
   const sealCenterX = marginX + 18
-  const sealCenterY = curY + 10
+  const sealCenterY = targetBottomY + 11
   const sealRadius = 10
 
   // Cercle extérieur or
@@ -562,56 +575,58 @@ export const buildInvoicePdfDocument = async (
   doc.setFontSize(4.8)
   doc.text('CERTIFIÉ', sealCenterX, sealCenterY + 4, { align: 'center' })
 
-  // Titre Direction et signature
+  // B. Titre Direction et Signature Calligraphique
   const sigX = marginX + 34
   doc.setFont(fontName, 'bold')
   doc.setFontSize(7)
   doc.setTextColor(...COLOR_BLACK)
-  doc.text('POUR LA DIRECTION / MAISON MEM\'S', sigX, curY + 4.5)
+  doc.text('POUR LA DIRECTION / MAISON MEM\'S', sigX, targetBottomY + 4.5)
 
   doc.setFont(fontName, 'normal')
   doc.setFontSize(6.2)
   doc.setTextColor(...COLOR_MUTED)
-  doc.text('Service Facturation & Confection', sigX, curY + 8.5)
+  doc.text('Service Facturation & Confection', sigX, targetBottomY + 8.5)
 
   doc.setFont('times', 'bolditalic')
-  doc.setFontSize(10)
+  doc.setFontSize(10.5)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text('Maison Mem\'s Haute Couture', sigX, curY + 15)
+  doc.text('Maison Mem\'s Haute Couture', sigX, targetBottomY + 15.5)
 
-  // Gratitude & Conditions sur la droite
+  // C. Gratitude & Conditions sur la droite
   doc.setFont(fontName, 'bold')
   doc.setFontSize(7)
   doc.setTextColor(...COLOR_GOLD)
-  doc.text('MERCI POUR VOTRE CONFIANCE', rightX, curY + 4.5, { align: 'right' })
+  doc.text('MERCI POUR VOTRE CONFIANCE', rightX, targetBottomY + 4.5, { align: 'right' })
 
   doc.setFont(fontName, 'normal')
   doc.setFontSize(6)
   doc.setTextColor(...COLOR_MUTED)
-  doc.text('Chaque création MEM\'S est façonnée selon les règles de l\'art.', rightX, curY + 8.5, { align: 'right' })
-  doc.text('Échange possible sous 7 jours ouvrés sur présentation de cette facture.', rightX, curY + 12, { align: 'right' })
-  doc.text('Articles neufs, non portés, avec étiquettes et emballage d\'origine.', rightX, curY + 15.5, { align: 'right' })
+  doc.text('Chaque création MEM\'S est façonnée selon les règles de l\'art.', rightX, targetBottomY + 8.5, { align: 'right' })
+  doc.text('Échange possible sous 7 jours ouvrés sur présentation de cette facture.', rightX, targetBottomY + 12, { align: 'right' })
+  doc.text('Articles neufs, non portés, avec étiquettes et emballage d\'origine.', rightX, targetBottomY + 15.5, { align: 'right' })
 
-  // 7. PIED DE PAGE LÉGAL (en bas de page)
-  const footerY = pageHeight - 11
+  // D. Filet de séparation or
+  const separatorY = targetBottomY + 26
   doc.setDrawColor(...COLOR_GOLD)
   doc.setLineWidth(0.35)
-  doc.line(marginX, footerY - 4, rightX, footerY - 4)
+  doc.line(marginX, separatorY, rightX, separatorY)
 
+  // E. Pied de page légal et réglementaire (3 lignes parfaitement centrées, strictement dans l'encadré)
   doc.setFont(fontName, 'normal')
-  doc.setFontSize(6)
+  doc.setFontSize(6.2)
   doc.setTextColor(...COLOR_MUTED)
   doc.text(
     `Maison MEM'S • Haute Couture Africaine & Confection de Prestige • ${city}`,
     pageWidth / 2,
-    footerY,
+    separatorY + 4.2,
     { align: 'center' }
   )
 
+  doc.setFontSize(6)
   doc.text(
     `WhatsApp Service Client : ${phone}  •  Email : ${email}`,
     pageWidth / 2,
-    footerY + 3.2,
+    separatorY + 7.5,
     { align: 'center' }
   )
 
@@ -619,7 +634,7 @@ export const buildInvoicePdfDocument = async (
   doc.text(
     'Société enregistrée au RCCM de Yaoundé  •  Document officiel généré par le système informatique de vente MEM\'S',
     pageWidth / 2,
-    footerY + 6.2,
+    separatorY + 10.7,
     { align: 'center' }
   )
 

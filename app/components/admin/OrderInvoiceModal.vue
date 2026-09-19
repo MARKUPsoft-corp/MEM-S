@@ -58,8 +58,10 @@
           <div id="mems-invoice-sheet" class="invoice-a4-sheet">
             <!-- Double Cadre Décoratif Haute Couture -->
             <div class="invoice-inner-frame">
-              <!-- 1. EN-TÊTE : Logo officiel & Identité de marque -->
-              <div class="invoice-header d-flex justify-content-between align-items-start pb-3">
+              <!-- SECTION DU HAUT : En-tête, Coordonnées, Tableau & Totaux -->
+              <div class="invoice-top-section">
+                <!-- 1. EN-TÊTE : Logo officiel & Identité de marque -->
+                <div class="invoice-header d-flex justify-content-between align-items-start pb-3">
                 <div class="d-flex align-items-center gap-3">
                   <div class="brand-logo-container">
                     <img
@@ -203,44 +205,50 @@
                   </div>
                 </div>
               </div>
+              </div>
+              <!-- Fin SECTION DU HAUT -->
 
-              <!-- 5. SCEAU D'AUTHENTICITÉ & SIGNATURE OFFICIELLE -->
-              <div class="row g-3 align-items-center pt-2 mb-3">
-                <div class="col-6 d-flex align-items-center gap-3">
-                  <!-- Sceau vectoriel doré -->
-                  <div class="luxury-seal-badge">
-                    <div class="seal-inner-ring">
-                      <span class="seal-brand">MAISON MEM'S</span>
-                      <span class="seal-star">★</span>
-                      <span class="seal-certified">CERTIFIÉ</span>
+              <!-- SECTION DU BAS : Sceau, Signature, Remerciement & Pied de page légal -->
+              <div class="invoice-bottom-section">
+                <!-- 5. SCEAU D'AUTHENTICITÉ & SIGNATURE OFFICIELLE -->
+                <div class="row g-3 align-items-center pt-2 mb-3">
+                  <div class="col-6 d-flex align-items-center gap-3">
+                    <!-- Sceau vectoriel doré -->
+                    <div class="luxury-seal-badge">
+                      <div class="seal-inner-ring">
+                        <span class="seal-brand">MAISON MEM'S</span>
+                        <span class="seal-star">★</span>
+                        <span class="seal-certified">CERTIFIÉ</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="direction-title">POUR LA DIRECTION / MAISON MEM'S</div>
+                      <div class="direction-sub text-muted">Service Facturation & Confection</div>
+                      <div class="signature-calligraphy">Maison Mem's Haute Couture</div>
                     </div>
                   </div>
-                  <div>
-                    <div class="direction-title">POUR LA DIRECTION / MAISON MEM'S</div>
-                    <div class="direction-sub text-muted">Service Facturation & Confection</div>
-                    <div class="signature-calligraphy">Maison Mem's Haute Couture</div>
+
+                  <div class="col-6 text-end">
+                    <div class="gratitude-title text-gold">MERCI POUR VOTRE CONFIANCE</div>
+                    <div class="gratitude-sub text-muted">
+                      Chaque création MEM'S est façonnée selon les règles de l'art.<br />
+                      Échange possible sous 7 jours ouvrés sur présentation de cette facture.<br />
+                      Articles neufs, non portés, avec étiquettes et emballage d'origine.
+                    </div>
                   </div>
                 </div>
 
-                <div class="col-6 text-end">
-                  <div class="gratitude-title text-gold">MERCI POUR VOTRE CONFIANCE</div>
-                  <div class="gratitude-sub text-muted">
-                    Chaque création MEM'S est façonnée selon les règles de l'art.<br />
-                    Échange possible sous 7 jours ouvrés sur présentation de cette facture.<br />
-                    Articles neufs, non portés, avec étiquettes et emballage d'origine.
+                <!-- 6. PIED DE PAGE LÉGAL -->
+                <div class="invoice-footer-legal text-center mt-3 pt-2">
+                  <div class="footer-gold-bar mb-1"></div>
+                  <div class="legal-text">
+                    Maison MEM'S • Haute Couture Africaine & Confection de Prestige • Yaoundé, République du Cameroun<br />
+                    WhatsApp Service Client : {{ storePhone }} • Email : {{ storeEmail }}<br />
+                    Société enregistrée au RCCM de Yaoundé • Document officiel généré par le système informatique de vente MEM'S
                   </div>
                 </div>
               </div>
-
-              <!-- 6. PIED DE PAGE LÉGAL -->
-              <div class="invoice-footer-legal text-center mt-3 pt-2">
-                <div class="footer-gold-bar mb-1"></div>
-                <div class="legal-text">
-                  Maison MEM'S • Haute Couture Africaine & Confection de Prestige • Yaoundé, République du Cameroun<br />
-                  WhatsApp Service Client : {{ storePhone }} • Email : {{ storeEmail }}<br />
-                  Société enregistrée au RCCM de Yaoundé • Document officiel généré par le système informatique de vente MEM'S
-                </div>
-              </div>
+              <!-- Fin SECTION DU BAS -->
             </div>
           </div>
         </div>
@@ -529,12 +537,27 @@ onMounted(async () => {
   background: #FFFFFF;
   outline: 1px solid #E5E0D8;
   outline-offset: -5px;
+  min-height: calc(1123px - 48px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.invoice-top-section {
+  width: 100%;
+}
+
+.invoice-bottom-section {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 1.5rem;
 }
 
 /* En-tête */
 .brand-logo-container {
-  width: 72px;
-  height: 72px;
+  width: 96px;
+  height: 96px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -548,14 +571,14 @@ onMounted(async () => {
 }
 
 .brand-name {
-  font-size: 1.4rem;
+  font-size: 1.55rem;
   font-weight: 800;
   letter-spacing: 1.5px;
   color: #0B0B0B;
 }
 
 .brand-tagline {
-  font-size: 0.625rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: #C9A46C;
   letter-spacing: 0.8px;
