@@ -108,14 +108,23 @@
           </div>
 
           <!-- Modal Footer -->
-          <div class="modal-footer">
-            <button @click="$emit('close')" class="btn-cancel">
-              Annuler
-            </button>
-            <button @click="sendToWhatsApp" class="btn-whatsapp">
-              <i class="bi bi-whatsapp"></i>
-              Commander sur WhatsApp
-            </button>
+          <div class="modal-footer flex-column">
+            <div class="d-flex justify-content-end gap-2 w-100">
+              <button @click="$emit('close')" class="btn-cancel" :disabled="isSubmitting">
+                Annuler
+              </button>
+              <button @click="sendToWhatsApp" class="btn-whatsapp" :disabled="isSubmitting">
+                <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                <i v-else class="bi bi-whatsapp"></i>
+                {{ isSubmitting ? 'Ouverture de WhatsApp...' : 'Commander sur WhatsApp' }}
+              </button>
+            </div>
+            <div v-if="manualWhatsAppUrl" class="manual-whatsapp-help mt-2 w-100 text-center">
+              <span class="text-muted small">WhatsApp ne s'est pas ouvert ? </span>
+              <a :href="manualWhatsAppUrl" target="_blank" class="text-success fw-bold small text-decoration-underline">
+                Cliquez ici pour ouvrir WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -146,6 +155,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
+import { ref, onMounted } from 'vue'
 import { doc, setDoc } from 'firebase/firestore'
 import { useFirebase } from '../../composables/useFirebase'
 import { useCartStore } from '../../stores/cart'
@@ -153,23 +163,52 @@ import { useCartStore } from '../../stores/cart'
 const config = useRuntimeConfig()
 const customMessage = ref('')
 const isSubmitting = ref(false)
+const preloadedWhatsAppNumber = ref(config.public.whatsappNumber || '237696962662')
+const manualWhatsAppUrl = ref('')
+
+onMounted(async () => {
+  try {
+    const settings = await ContentService.getStoreSettings()
+    if (settings?.whatsappNumber) {
+      preloadedWhatsAppNumber.value = settings.whatsappNumber.replace(/[^0-9]/g, '')
+    }
+  } catch (e) {
+    console.warn('[OrderSummaryModal] Erreur pré-chargement paramètres:', e)
+  }
+})
 
 const formatPrice = (price: number) => {
   return price.toLocaleString('fr-FR')
 }
 
 const sendToWhatsApp = async () => {
+  if (isSubmitting.value) return
   isSubmitting.value = true
-  const config = useRuntimeConfig()
-  let whatsappNumber = config.public.whatsappNumber || '237696962662'
-  try {
-    const settings = await ContentService.getStoreSettings()
-    if (settings?.whatsappNumber) {
-      whatsappNumber = settings.whatsappNumber.replace(/[^0-9]/g, '')
+
+  // Détection robuste Mobile & iOS (inclut iPadOS qui s'identifie avec MacIntel)
+  const isIOS = process.client && (
+    /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
+  const isMobile = process.client && (
+    isIOS ||
+    /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  )
+
+  // Sur Desktop Safari / Chrome : pré-ouvrir un onglet de manière synchrone pendant le geste utilisateur
+  // pour contourner le blocage strict des popups par Safari après les requêtes asynchrones
+  let desktopTab: Window | null = null
+  if (!isMobile && process.client) {
+    try {
+      desktopTab = window.open('about:blank', '_blank')
+    } catch (e) {
+      console.warn('[WhatsApp] Erreur pré-ouverture onglet desktop:', e)
     }
-  } catch (err) {
-    console.warn('[OrderSummaryModal] Fallback numéro WhatsApp:', err)
   }
+
+  let whatsappNumber = preloadedWhatsAppNumber.value || config.public.whatsappNumber || '237696962662'
+  whatsappNumber = whatsappNumber.replace(/[^0-9]/g, '')
+
   const orderNumber = `MEM-${Date.now().toString().slice(-6)}`
 
   // 1. Enregistrer la commande dans Firestore
@@ -178,13 +217,13 @@ const sendToWhatsApp = async () => {
     try {
       const orderData = JSON.parse(JSON.stringify({
         orderNumber,
-        userId: props.user.uid || props.user.id || 'anonymous',
+        userId: props.user?.uid || props.user?.id || 'anonymous',
         customer: {
-          name: `${props.user.first_name || ''} ${props.user.last_name || ''}`.trim(),
-          email: props.user.email || '',
-          phone: props.user.phone || '',
-          address: props.user.address || '',
-          city: props.user.city || ''
+          name: `${props.user?.first_name || ''} ${props.user?.last_name || ''}`.trim(),
+          email: props.user?.email || '',
+          phone: props.user?.phone || '',
+          address: props.user?.address || '',
+          city: props.user?.city || ''
         },
         items: props.items.map(item => ({
           id: item.id,
@@ -204,17 +243,17 @@ const sendToWhatsApp = async () => {
       console.warn('[Orders] Erreur enregistrement Firestore:', err)
     }
   }
-  
+
   // 2. Construire le message WhatsApp avec le numéro de commande
   let message = `🛍️ *NOUVELLE COMMANDE - MEM'S*\n`
   message += `📋 *Réf Commande :* ${orderNumber}\n\n`
   
   // Informations client
   message += `👤 *Client:*\n`
-  message += `Nom: ${props.user.first_name || ''} ${props.user.last_name || ''}\n`
-  message += `Email: ${props.user.email}\n`
-  if (props.user.phone) message += `Téléphone: ${props.user.phone}\n`
-  if (props.user.address) message += `Adresse: ${props.user.address}\n`
+  message += `Nom: ${props.user?.first_name || ''} ${props.user?.last_name || ''}\n`
+  message += `Email: ${props.user?.email || ''}\n`
+  if (props.user?.phone) message += `Téléphone: ${props.user.phone}\n`
+  if (props.user?.address) message += `Adresse: ${props.user.address}\n`
   message += `\n`
   
   // Articles commandés
@@ -240,35 +279,48 @@ const sendToWhatsApp = async () => {
   if (customMessage.value.trim()) {
     message += `\n📝 *Message:*\n${customMessage.value.trim()}\n`
   }
-  
+
   // Encoder le message
   const encodedMessage = encodeURIComponent(message)
-  
-  // Détecter si mobile ou desktop
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  
-  // Construire l'URL WhatsApp
-  let whatsappUrl = ''
-  if (isMobile) {
-    whatsappUrl = `whatsapp://send?phone=${whatsappNumber}&text=${encodedMessage}`
-  } else {
-    whatsappUrl = `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`
-  }
-  
+
+  // URL universelle WhatsApp : https://api.whatsapp.com/send est le lien universel officiel reconnu par iOS Universal Links
+  // Sur Safari iOS, Apple intercepte automatiquement ce lien pour ouvrir l'application WhatsApp native
+  const universalUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`
+  const webUrl = `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`
+  const targetUrl = isMobile ? universalUrl : webUrl
+
+  manualWhatsAppUrl.value = universalUrl
+
   // Vider le panier si demandé (ex: commande passée depuis la page panier)
   if (props.clearCartOnOrder) {
-    const cartStore = useCartStore()
-    await cartStore.clear()
+    try {
+      const cartStore = useCartStore()
+      await cartStore.clear()
+    } catch (e) {
+      console.warn('[Cart] Erreur vidage panier:', e)
+    }
   }
 
-  // Ouvrir WhatsApp
-  window.open(whatsappUrl, '_blank')
+  // 3. Ouvrir WhatsApp
+  if (isMobile) {
+    // Sur mobile (Safari iOS / Android) :
+    // window.location.href ne déclenche pas le bloqueur de popups de Safari et ouvre WhatsApp nativement
+    window.location.href = universalUrl
+  } else {
+    // Sur desktop : rediriger l'onglet pré-ouvert ou naviguer
+    if (desktopTab && !desktopTab.closed) {
+      desktopTab.location.href = targetUrl
+    } else {
+      window.location.href = targetUrl
+    }
+  }
+
   isSubmitting.value = false
-  
-  // Fermer la modale après un court délai
+
+  // Fermer la modale après un délai suffisant
   setTimeout(() => {
     emit('close')
-  }, 500)
+  }, 1500)
 }
 </script>
 
@@ -750,5 +802,12 @@ const sendToWhatsApp = async () => {
     padding-top: 0.75rem;
     margin-top: 0.25rem;
   }
+}
+
+.manual-whatsapp-help {
+  padding: 0.6rem 0.8rem;
+  background: rgba(37, 211, 102, 0.08);
+  border-radius: 6px;
+  border: 1px dashed rgba(37, 211, 102, 0.35);
 }
 </style>

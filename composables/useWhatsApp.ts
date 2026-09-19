@@ -38,10 +38,17 @@ export const useWhatsApp = () => {
   const sendOrderToWhatsApp = (order: Order) => {
     const message = formatOrderMessage(order)
     const encodedMessage = encodeURIComponent(message)
-    const whatsappUrl = `https://wa.me/${config.public.whatsappNumber}?text=${encodedMessage}`
+    const whatsappNumber = String(config.public.whatsappNumber || '237696962662').replace(/[^0-9]/g, '')
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`
     
     if (process.client) {
-      window.open(whatsappUrl, '_blank')
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+      if (isMobile) {
+        window.location.href = whatsappUrl
+      } else {
+        window.open(whatsappUrl, '_blank')
+      }
     }
   }
 
