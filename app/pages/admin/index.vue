@@ -149,6 +149,13 @@
                   </td>
                   <td class="text-end">
                     <div class="d-inline-flex align-items-center gap-1">
+                      <button
+                        class="btn-invoice-icon"
+                        title="Facture & Reçu PDF"
+                        @click="openDashboardInvoice(order)"
+                      >
+                        <i class="bi bi-file-earmark-pdf"></i>
+                      </button>
                       <a
                         v-if="order.customer?.phone"
                         :href="getWhatsAppUrl(order)"
@@ -245,6 +252,13 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Facture A4 Vectorielle PDF Luxe -->
+  <OrderInvoiceModal
+    v-if="dashboardInvoiceOrder"
+    :order="dashboardInvoiceOrder"
+    @close="dashboardInvoiceOrder = null"
+  />
 </template>
 
 <script setup lang="ts">
@@ -253,6 +267,7 @@ import { collection, getDocs, doc, deleteDoc, query, orderBy, limit } from 'fire
 import { useFirebase } from '../../../composables/useFirebase'
 import { FirestoreProductsService } from '../../../services/firestoreProducts'
 import type { Product } from '../../../types/product'
+import OrderInvoiceModal from '~~/app/components/admin/OrderInvoiceModal.vue'
 
 definePageMeta({
   layout: 'admin',
@@ -271,6 +286,11 @@ const recentOrders = ref<any[]>([])
 const lowStockProducts = ref<Product[]>([])
 const loadingOrders = ref(true)
 const deletingOrderId = ref<string | null>(null)
+const dashboardInvoiceOrder = ref<any | null>(null)
+
+const openDashboardInvoice = (order: any) => {
+  dashboardInvoiceOrder.value = order
+}
 
 const formatPrice = (price: number) => {
   return (price || 0).toLocaleString('fr-FR')
@@ -643,6 +663,27 @@ onMounted(async () => {
   font-weight: 500;
   padding: 2px 7px;
   border-radius: 20px;
+}
+
+.btn-invoice-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(201, 164, 108, 0.12);
+  color: #C9A46C;
+  border: 1px solid rgba(201, 164, 108, 0.3);
+  font-size: 0.8125rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-invoice-icon:hover {
+  background: #C9A46C;
+  color: #0B0B0B;
 }
 
 .btn-whatsapp-icon {

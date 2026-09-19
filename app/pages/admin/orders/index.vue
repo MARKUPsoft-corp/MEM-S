@@ -244,6 +244,13 @@
                   >
                     <i class="bi bi-eye"></i>
                   </button>
+                  <button
+                    class="btn btn-outline-dark"
+                    title="Facture & Reçu PDF"
+                    @click="openInvoiceModal(order)"
+                  >
+                    <i class="bi bi-file-earmark-pdf"></i>
+                  </button>
                   <a
                     v-if="order.customer?.phone"
                     :href="getWhatsAppUrl(order)"
@@ -457,8 +464,9 @@
               </button>
             </div>
             <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-dark" @click="printReceipt">
-                <i class="bi bi-printer me-1"></i> Imprimer Reçu
+              <button class="btn btn-sm btn-mems-gold d-inline-flex align-items-center gap-1" @click="openInvoiceModal(selectedOrder)">
+                <i class="bi bi-file-earmark-pdf-fill"></i>
+                <span>Facture PDF</span>
               </button>
               <a
                 v-if="selectedOrder.customer?.phone"
@@ -473,6 +481,13 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Modal Facture A4 Vectorielle PDF Luxe -->
+    <OrderInvoiceModal
+      v-if="invoiceOrder"
+      :order="invoiceOrder"
+      @close="closeInvoiceModal"
+    />
   </div>
 </template>
 
@@ -480,6 +495,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore'
 import { useFirebase } from '~~/composables/useFirebase'
+import OrderInvoiceModal from '~~/app/components/admin/OrderInvoiceModal.vue'
 
 definePageMeta({
   layout: 'admin',
@@ -499,6 +515,7 @@ const currentPage = ref(1)
 const itemsPerPage = 12
 
 const selectedOrder = ref<any | null>(null)
+const invoiceOrder = ref<any | null>(null)
 
 // Formatage du prix
 const formatPrice = (price: number) => {
@@ -712,6 +729,15 @@ const closeOrderModal = () => {
   selectedOrder.value = null
 }
 
+// Modal Facture
+const openInvoiceModal = (order: any) => {
+  invoiceOrder.value = order
+}
+
+const closeInvoiceModal = () => {
+  invoiceOrder.value = null
+}
+
 // Lien WhatsApp interactif vers le client
 const getWhatsAppUrl = (order: any) => {
   const phone = order.customer?.phone?.replace(/\D/g, '') || ''
@@ -725,9 +751,11 @@ const getWhatsAppUrl = (order: any) => {
   return `https://wa.me/${phone}?text=${message}`
 }
 
-// Impression du reçu
+// Impression ou consultation de la facture
 const printReceipt = () => {
-  window.print()
+  if (selectedOrder.value) {
+    openInvoiceModal(selectedOrder.value)
+  }
 }
 
 onMounted(() => {
@@ -1131,5 +1159,18 @@ onMounted(() => {
   padding: 1rem 1.5rem;
   border-top: 1px solid #E5E0D8;
   background: #FAF8F5;
+}
+
+.btn-mems-gold {
+  background: #C9A46C;
+  color: #0B0B0B;
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-mems-gold:hover {
+  background: #d4af6a;
+  color: #000;
 }
 </style>
