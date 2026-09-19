@@ -148,15 +148,26 @@
                     </span>
                   </td>
                   <td class="text-end">
-                    <a
-                      v-if="order.customer?.phone"
-                      :href="getWhatsAppUrl(order)"
-                      target="_blank"
-                      class="btn-whatsapp-icon"
-                      title="Contacter sur WhatsApp"
-                    >
-                      <i class="bi bi-whatsapp"></i>
-                    </a>
+                    <div class="d-inline-flex align-items-center gap-1">
+                      <a
+                        v-if="order.customer?.phone"
+                        :href="getWhatsAppUrl(order)"
+                        target="_blank"
+                        class="btn-whatsapp-icon"
+                        title="Contacter sur WhatsApp"
+                      >
+                        <i class="bi bi-whatsapp"></i>
+                      </a>
+                      <button
+                        class="btn-delete-icon"
+                        title="Supprimer la commande"
+                        :disabled="deletingOrderId === order.orderNumber"
+                        @click="deleteRecentOrder(order)"
+                      >
+                        <span v-if="deletingOrderId === order.orderNumber" class="spinner-border spinner-border-sm" style="width: 10px; height: 10px;"></span>
+                        <i v-else class="bi bi-trash"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -238,7 +249,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore'
+import { collection, getDocs, doc, deleteDoc, query, orderBy, limit } from 'firebase/firestore'
 import { useFirebase } from '../../../composables/useFirebase'
 import { FirestoreProductsService } from '../../../services/firestoreProducts'
 import type { Product } from '../../../types/product'
@@ -259,6 +270,7 @@ const lowStockCount = ref(0)
 const recentOrders = ref<any[]>([])
 const lowStockProducts = ref<Product[]>([])
 const loadingOrders = ref(true)
+const deletingOrderId = ref<string | null>(null)
 
 const formatPrice = (price: number) => {
   return (price || 0).toLocaleString('fr-FR')
@@ -328,6 +340,32 @@ const getWhatsAppUrl = (order: any) => {
     `Bonjour ${order.customer?.name || ''}, suite à votre commande ${order.orderNumber} sur MEM'S d'un montant de ${formatPrice(order.total)} FCFA, nous vous contactons pour finaliser la livraison.`
   )
   return `https://wa.me/${phone}?text=${text}`
+}
+
+const deleteRecentOrder = async (order: any) => {
+  if (!order || !order.orderNumber) return
+  const refNum = order.orderNumber
+  const ok = confirm(`Êtes-vous sûr de vouloir supprimer définitivement la commande "${refNum}" ?\nCette action est irréversible.`)
+  if (!ok) return
+
+  deletingOrderId.value = refNum
+  try {
+    if (db) {
+      await deleteDoc(doc(db, 'orders', refNum))
+    }
+    recentOrders.value = recentOrders.value.filter(o => o.orderNumber !== refNum)
+    totalSales.value = Math.max(0, totalSales.value - (order.total || 0))
+    if (order.status === 'pending') {
+      pendingOrdersCount.value = Math.max(0, pendingOrdersCount.value - 1)
+    } else if (order.status === 'confirmed' || order.status === 'delivered') {
+      completedOrdersCount.value = Math.max(0, completedOrdersCount.value - 1)
+    }
+  } catch (err: any) {
+    console.error('[Dashboard] Erreur suppression commande:', err)
+    alert(`Erreur lors de la suppression de la commande : ${err.message}`)
+  } finally {
+    deletingOrderId.value = null
+  }
 }
 
 onMounted(async () => {
@@ -625,6 +663,31 @@ onMounted(async () => {
 .btn-whatsapp-icon:hover {
   background: #25D366;
   color: #FFFFFF;
+}
+
+.btn-delete-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF5F5;
+  color: #DC3545;
+  border: 1px solid #FFEBEB;
+  font-size: 0.75rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-delete-icon:hover:not(:disabled) {
+  background: #DC3545;
+  color: #FFFFFF;
+}
+
+.btn-delete-icon:disabled {
+  opacity: 0.6;
 }
 
 /* Quick Actions */

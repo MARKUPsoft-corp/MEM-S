@@ -14,6 +14,12 @@
       </div>
     </div>
 
+    <!-- Alert toast succès / suppression -->
+    <div v-if="feedbackMsg" class="alert alert-success d-flex align-items-center justify-content-between mb-3 py-2 px-3 small">
+      <span><i class="bi bi-check-circle-fill me-2"></i>{{ feedbackMsg }}</span>
+      <button type="button" class="btn-close btn-sm" @click="feedbackMsg = ''"></button>
+    </div>
+
     <!-- KPIs Commandes -->
     <div class="row g-3 mb-4">
       <div class="col-sm-6 col-lg-3">
@@ -162,7 +168,7 @@
               <th>Articles</th>
               <th>Total</th>
               <th style="width: 170px;">Statut</th>
-              <th class="text-end" style="width: 130px;">Actions</th>
+              <th class="text-end" style="width: 140px;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -247,6 +253,15 @@
                   >
                     <i class="bi bi-whatsapp"></i>
                   </a>
+                  <button
+                    class="btn btn-outline-danger"
+                    title="Supprimer la commande"
+                    :disabled="deletingId === order.orderNumber"
+                    @click="confirmDeleteOrder(order)"
+                  >
+                    <span v-if="deletingId === order.orderNumber" class="spinner-border spinner-border-sm" style="width: 12px; height: 12px;"></span>
+                    <i v-else class="bi bi-trash"></i>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -426,19 +441,30 @@
           </div>
 
           <!-- Footer du Modal -->
-          <div class="modal-footer-luxury d-flex justify-content-between align-items-center">
-            <button class="btn btn-outline-secondary" @click="closeOrderModal">
-              Fermer
-            </button>
+          <div class="modal-footer-luxury d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div class="d-flex gap-2">
-              <button class="btn btn-outline-dark" @click="printReceipt">
+              <button class="btn btn-sm btn-outline-secondary" @click="closeOrderModal">
+                Fermer
+              </button>
+              <button
+                class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
+                :disabled="deletingId === selectedOrder.orderNumber"
+                @click="confirmDeleteOrder(selectedOrder)"
+              >
+                <span v-if="deletingId === selectedOrder.orderNumber" class="spinner-border spinner-border-sm me-1" style="width: 12px; height: 12px;"></span>
+                <i v-else class="bi bi-trash me-1"></i>
+                Supprimer la commande
+              </button>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-dark" @click="printReceipt">
                 <i class="bi bi-printer me-1"></i> Imprimer Reçu
               </button>
               <a
                 v-if="selectedOrder.customer?.phone"
                 :href="getWhatsAppUrl(selectedOrder)"
                 target="_blank"
-                class="btn btn-success"
+                class="btn btn-sm btn-success"
               >
                 <i class="bi bi-whatsapp me-1"></i> Contacter Client WhatsApp
               </a>
@@ -452,7 +478,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { collection, getDocs, doc, updateDoc, query, orderBy } from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore'
 import { useFirebase } from '~~/composables/useFirebase'
 
 definePageMeta({
@@ -464,6 +490,8 @@ const { db } = useFirebase()
 
 const orders = ref<any[]>([])
 const loading = ref(true)
+const deletingId = ref<string | null>(null)
+const feedbackMsg = ref<string>('')
 const searchQuery = ref('')
 const statusFilter = ref<string>('all')
 const sortBy = ref<string>('recent')
@@ -638,6 +666,40 @@ const updateOrderStatus = async (order: any, newStatus: string) => {
     }
   } catch (err: any) {
     alert(`Erreur de mise à jour du statut : ${err.message}`)
+  }
+}
+
+// Suppression d'une commande
+const confirmDeleteOrder = async (order: any) => {
+  if (!order || !order.orderNumber) return
+  const refNum = order.orderNumber
+  const ok = confirm(`Êtes-vous sûr de vouloir supprimer définitivement la commande "${refNum}" ?\nCette action est irréversible et supprimera la commande de la base de données.`)
+  if (!ok) return
+
+  deletingId.value = refNum
+  try {
+    if (db) {
+      await deleteDoc(doc(db, 'orders', refNum))
+    }
+    // Retirer de la liste locale
+    orders.value = orders.value.filter(o => o.orderNumber !== refNum)
+
+    // Si le modal affichait cette commande, le fermer
+    if (selectedOrder.value && selectedOrder.value.orderNumber === refNum) {
+      selectedOrder.value = null
+    }
+
+    feedbackMsg.value = `La commande "${refNum}" a été supprimée avec succès.`
+    setTimeout(() => {
+      if (feedbackMsg.value.includes(refNum)) {
+        feedbackMsg.value = ''
+      }
+    }, 4000)
+  } catch (err: any) {
+    console.error('[Orders] Erreur suppression commande:', err)
+    alert(`Erreur lors de la suppression de la commande : ${err.message}`)
+  } finally {
+    deletingId.value = null
   }
 }
 
