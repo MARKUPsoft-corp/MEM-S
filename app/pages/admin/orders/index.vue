@@ -56,35 +56,42 @@
             :class="{ active: statusFilter === 'all' }"
             @click="statusFilter = 'all'"
           >
-            Toutes <span class="pill-badge">{{ orders.length }}</span>
+            <i class="bi bi-inbox me-1"></i> Toutes <span class="pill-badge">{{ orders.length }}</span>
           </button>
           <button
             class="status-pill-btn"
             :class="{ active: statusFilter === 'pending' }"
             @click="statusFilter = 'pending'"
           >
-            En attente <span class="pill-badge pill-badge-warning">{{ pendingCount }}</span>
+            <i class="bi bi-clock-history me-1 text-warning"></i> En attente <span class="pill-badge pill-badge-warning">{{ pendingCount }}</span>
           </button>
           <button
             class="status-pill-btn"
             :class="{ active: statusFilter === 'confirmed' }"
             @click="statusFilter = 'confirmed'"
           >
-            Confirmées <span class="pill-badge pill-badge-primary">{{ confirmedCount }}</span>
+            <i class="bi bi-check-circle-fill me-1 text-primary"></i> Confirmées <span class="pill-badge pill-badge-primary">{{ confirmedCount }}</span>
+          </button>
+          <button
+            class="status-pill-btn"
+            :class="{ active: statusFilter === 'shipped' }"
+            @click="statusFilter = 'shipped'"
+          >
+            <i class="bi bi-truck me-1 text-info"></i> Expédiées <span class="pill-badge pill-badge-info">{{ shippedCount }}</span>
           </button>
           <button
             class="status-pill-btn"
             :class="{ active: statusFilter === 'delivered' }"
             @click="statusFilter = 'delivered'"
           >
-            Livrées <span class="pill-badge pill-badge-success">{{ deliveredCount }}</span>
+            <i class="bi bi-check2-all me-1 text-success"></i> Livrées <span class="pill-badge pill-badge-success">{{ deliveredCount }}</span>
           </button>
           <button
             class="status-pill-btn"
             :class="{ active: statusFilter === 'cancelled' }"
             @click="statusFilter = 'cancelled'"
           >
-            Annulées <span class="pill-badge pill-badge-secondary">{{ cancelledCount }}</span>
+            <i class="bi bi-x-circle-fill me-1 text-secondary"></i> Annulées <span class="pill-badge pill-badge-secondary">{{ cancelledCount }}</span>
           </button>
         </div>
 
@@ -204,18 +211,21 @@
 
               <!-- Statut & Sélecteur rapide -->
               <td>
-                <select
-                  :value="order.status || 'pending'"
-                  class="form-select form-select-sm status-select"
-                  :class="`status-${order.status || 'pending'}`"
-                  @change="updateOrderStatus(order, ($event.target as HTMLSelectElement).value)"
-                >
-                  <option value="pending">⏳ En attente</option>
-                  <option value="confirmed">✅ Confirmée</option>
-                  <option value="shipped">🚚 Expédiée</option>
-                  <option value="delivered">🎉 Livrée</option>
-                  <option value="cancelled">❌ Annulée</option>
-                </select>
+                <div class="d-flex align-items-center gap-2">
+                  <i :class="getStatusIconClass(order.status || 'pending')"></i>
+                  <select
+                    :value="order.status || 'pending'"
+                    class="form-select form-select-sm status-select"
+                    :class="`status-${order.status || 'pending'}`"
+                    @change="updateOrderStatus(order, ($event.target as HTMLSelectElement).value)"
+                  >
+                    <option value="pending">En attente</option>
+                    <option value="confirmed">Confirmée</option>
+                    <option value="shipped">Expédiée</option>
+                    <option value="delivered">Livrée</option>
+                    <option value="cancelled">Annulée</option>
+                  </select>
+                </div>
               </td>
 
               <!-- Actions -->
@@ -377,39 +387,39 @@
               <h5 class="section-subtitle"><i class="bi bi-gear me-2 text-gold"></i>Mettre à jour le statut</h5>
               <div class="d-flex flex-wrap gap-2">
                 <button
-                  class="btn btn-sm"
+                  class="btn btn-sm d-inline-flex align-items-center gap-1"
                   :class="selectedOrder.status === 'pending' ? 'btn-warning' : 'btn-outline-warning'"
                   @click="updateOrderStatus(selectedOrder, 'pending')"
                 >
-                  ⏳ En attente
+                  <i class="bi bi-clock-history"></i> En attente
                 </button>
                 <button
-                  class="btn btn-sm"
+                  class="btn btn-sm d-inline-flex align-items-center gap-1"
                   :class="selectedOrder.status === 'confirmed' ? 'btn-primary' : 'btn-outline-primary'"
                   @click="updateOrderStatus(selectedOrder, 'confirmed')"
                 >
-                  ✅ Confirmée
+                  <i class="bi bi-check-circle-fill"></i> Confirmée
                 </button>
                 <button
-                  class="btn btn-sm"
+                  class="btn btn-sm d-inline-flex align-items-center gap-1"
                   :class="selectedOrder.status === 'shipped' ? 'btn-info text-white' : 'btn-outline-info'"
                   @click="updateOrderStatus(selectedOrder, 'shipped')"
                 >
-                  🚚 Expédiée
+                  <i class="bi bi-truck"></i> Expédiée
                 </button>
                 <button
-                  class="btn btn-sm"
+                  class="btn btn-sm d-inline-flex align-items-center gap-1"
                   :class="selectedOrder.status === 'delivered' ? 'btn-success' : 'btn-outline-success'"
                   @click="updateOrderStatus(selectedOrder, 'delivered')"
                 >
-                  🎉 Livrée
+                  <i class="bi bi-check2-all"></i> Livrée
                 </button>
                 <button
-                  class="btn btn-sm"
+                  class="btn btn-sm d-inline-flex align-items-center gap-1"
                   :class="selectedOrder.status === 'cancelled' ? 'btn-secondary' : 'btn-outline-secondary'"
                   @click="updateOrderStatus(selectedOrder, 'cancelled')"
                 >
-                  ❌ Annulée
+                  <i class="bi bi-x-circle-fill"></i> Annulée
                 </button>
               </div>
             </div>
@@ -517,9 +527,20 @@ const getStatusBadgeClass = (status: string) => {
   }
 }
 
+const getStatusIconClass = (status: string) => {
+  switch (status) {
+    case 'confirmed': return 'bi bi-check-circle-fill text-primary'
+    case 'shipped': return 'bi bi-truck text-info'
+    case 'delivered': return 'bi bi-check2-all text-success'
+    case 'cancelled': return 'bi bi-x-circle-fill text-secondary'
+    default: return 'bi bi-clock-history text-warning'
+  }
+}
+
 // KPIs
 const pendingCount = computed(() => orders.value.filter(o => !o.status || o.status === 'pending').length)
 const confirmedCount = computed(() => orders.value.filter(o => o.status === 'confirmed').length)
+const shippedCount = computed(() => orders.value.filter(o => o.status === 'shipped').length)
 const deliveredCount = computed(() => orders.value.filter(o => o.status === 'delivered').length)
 const cancelledCount = computed(() => orders.value.filter(o => o.status === 'cancelled').length)
 

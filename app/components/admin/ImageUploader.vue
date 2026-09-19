@@ -84,7 +84,7 @@
           <i class="bi bi-gear-fill me-1"></i>Comment activer l'upload dans Cloudinary en 30 secondes :
         </strong>
         <ol class="mb-1 ps-3 small text-muted">
-          <li>Dans votre console Cloudinary, cliquez sur la roue crantée <strong>⚙️ Settings</strong> (en bas à gauche).</li>
+          <li>Dans votre console Cloudinary, cliquez sur la roue crantée <strong><i class="bi bi-gear-fill me-1"></i>Settings</strong> (en bas à gauche).</li>
           <li>Cliquez sur l'onglet <strong>Upload</strong>.</li>
           <li>Faites défiler jusqu'à la section <strong>Upload presets</strong> et cliquez sur <strong>Add upload preset</strong>.</li>
           <li>Nommez le preset : <code>mems_unsigned</code>.</li>
@@ -109,7 +109,7 @@
 
         <!-- Badge Principale -->
         <span v-if="isPrimary(img, index)" class="badge-primary-label">
-          ★ Principale
+          <i class="bi bi-star-fill me-1"></i> Principale
         </span>
 
         <!-- Actions overlay -->

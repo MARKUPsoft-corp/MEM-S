@@ -84,7 +84,9 @@
         <div class="content-card">
           <div class="card-header-clean d-flex align-items-center justify-content-between">
             <h4 class="card-clean-title mb-0">Dernières Commandes</h4>
-            <NuxtLink to="/admin/orders" class="btn-link-gold">Voir tout →</NuxtLink>
+            <NuxtLink to="/admin/orders" class="btn-link-gold d-inline-flex align-items-center gap-1">
+              Voir tout <i class="bi bi-arrow-right"></i>
+            </NuxtLink>
           </div>
 
           <div v-if="loadingOrders" class="text-center py-5">
@@ -125,7 +127,8 @@
                     <span class="fw-semibold">{{ formatPrice(order.total) }} FCFA</span>
                   </td>
                   <td>
-                    <span :class="getStatusBadgeClass(order.status)">
+                    <span :class="getStatusBadgeClass(order.status)" class="d-inline-flex align-items-center gap-1">
+                      <i :class="getStatusIconClass(order.status)"></i>
                       {{ getStatusLabel(order.status) }}
                     </span>
                   </td>
@@ -207,7 +210,10 @@
                   <small class="text-muted d-block">{{ prod.category?.name }}</small>
                 </div>
               </div>
-              <span class="badge bg-danger">{{ prod.stock }} restants</span>
+              <span class="badge bg-danger d-inline-flex align-items-center gap-1">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                {{ prod.stock }} restants
+              </span>
             </div>
           </div>
         </div>
@@ -265,6 +271,19 @@ const getStatusBadgeClass = (status: string) => {
       return 'badge bg-secondary'
     default:
       return 'badge bg-warning text-dark'
+  }
+}
+
+const getStatusIconClass = (status: string) => {
+  switch (status) {
+    case 'confirmed':
+      return 'bi bi-check-circle-fill'
+    case 'delivered':
+      return 'bi bi-check2-all'
+    case 'cancelled':
+      return 'bi bi-x-circle-fill'
+    default:
+      return 'bi bi-clock-history'
   }
 }
 

@@ -283,7 +283,8 @@
                       <span class="fw-bold">{{ formatPrice(ord.total) }} FCFA</span>
                     </td>
                     <td>
-                      <span :class="getStatusBadgeClass(ord.status)">
+                      <span :class="getStatusBadgeClass(ord.status)" class="d-inline-flex align-items-center gap-1">
+                        <i :class="getStatusIconClass(ord.status)"></i>
                         {{ getStatusLabel(ord.status) }}
                       </span>
                     </td>
@@ -376,6 +377,16 @@ const getStatusBadgeClass = (status: string) => {
     case 'delivered': return 'badge bg-success'
     case 'cancelled': return 'badge bg-secondary'
     default: return 'badge bg-warning text-dark'
+  }
+}
+
+const getStatusIconClass = (status: string) => {
+  switch (status) {
+    case 'confirmed': return 'bi bi-check-circle-fill'
+    case 'shipped': return 'bi bi-truck'
+    case 'delivered': return 'bi bi-check2-all'
+    case 'cancelled': return 'bi bi-x-circle-fill'
+    default: return 'bi bi-clock-history'
   }
 }
 

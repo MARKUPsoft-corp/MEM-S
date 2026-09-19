@@ -495,7 +495,7 @@ const confirmDelete = async (cat: Category) => {
   const prodCount = getProductCountForCategory(cat.slug)
   let confirmMsg = `Êtes-vous sûr de vouloir supprimer la catégorie "${cat.name}" ?`
   if (prodCount > 0) {
-    confirmMsg += `\n⚠️ Attention : ${prodCount} produit(s) sont actuellement rattachés à cette catégorie !`
+    confirmMsg += `\nAttention : ${prodCount} produit(s) sont actuellement rattachés à cette catégorie !`
   }
 
   if (!confirm(confirmMsg)) return

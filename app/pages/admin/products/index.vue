@@ -128,14 +128,14 @@
                       :disabled="product.stock <= 0"
                       @click="adjustStock(product, -1)"
                     >
-                      -
+                      <i class="bi bi-dash"></i>
                     </button>
                     <button
                       class="btn btn-light border py-0 px-2"
                       title="Augmenter stock"
                       @click="adjustStock(product, 1)"
                     >
-                      +
+                      <i class="bi bi-plus"></i>
                     </button>
                   </div>
                 </div>
@@ -144,8 +144,12 @@
               <!-- Badges Vedette / Nouveau -->
               <td>
                 <div class="d-flex gap-1 flex-wrap">
-                  <span v-if="product.is_featured" class="badge-tag badge-gold">Vedette</span>
-                  <span v-if="product.is_new" class="badge-tag badge-terracotta">Nouveau</span>
+                  <span v-if="product.is_featured" class="badge-tag badge-gold">
+                    <i class="bi bi-star-fill me-1"></i>Vedette
+                  </span>
+                  <span v-if="product.is_new" class="badge-tag badge-terracotta">
+                    <i class="bi bi-sparkles me-1"></i>Nouveau
+                  </span>
                   <span v-if="!product.is_featured && !product.is_new" class="text-muted small">-</span>
                 </div>
               </td>
