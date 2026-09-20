@@ -7,10 +7,11 @@
         <p class="text-muted mb-0">{{ filteredProducts.length }} produit(s) répertorié(s)</p>
       </div>
       <div>
-        <NuxtLink to="/admin/products/create" class="btn btn-mems-gold">
+        <NuxtLink :to="{ path: '/admin/products/create', query: route.query }" class="btn btn-mems-gold">
           <i class="bi bi-plus-lg me-1"></i> Nouveau Produit
         </NuxtLink>
       </div>
+
     </div>
 
     <!-- Barre de filtres & Recherche -->
@@ -169,12 +170,13 @@
                     <i class="bi bi-eye"></i>
                   </NuxtLink>
                   <NuxtLink
-                    :to="`/admin/products/${product.slug}`"
+                    :to="{ path: `/admin/products/${product.slug}`, query: route.query }"
                     class="btn btn-sm btn-outline-dark"
                     title="Modifier la fiche"
                   >
                     <i class="bi bi-pencil"></i>
                   </NuxtLink>
+
                   <button
                     class="btn btn-sm btn-outline-danger"
                     title="Supprimer ce produit"
@@ -216,7 +218,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { useFirebase } from '../../../../composables/useFirebase'
 import { FirestoreProductsService } from '../../../../services/firestoreProducts'
@@ -228,6 +231,8 @@ definePageMeta({
   middleware: 'admin'
 })
 
+const route = useRoute()
+const router = useRouter()
 const { db } = useFirebase()
 const productsStore = useProductsStore()
 
@@ -237,11 +242,24 @@ const loading = computed(() => productsStore.loading && productsStore.products.l
 
 const categories = ref<Category[]>([])
 
-const searchQuery = ref('')
-const selectedCollection = ref('')
-const selectedCategory = ref('')
-const currentPage = ref(1)
+// Initialisation depuis l'URL (pour revenir exactement où on était)
+const searchQuery = ref((route.query.search as string) || '')
+const selectedCollection = ref((route.query.collection as string) || '')
+const selectedCategory = ref((route.query.category as string) || '')
+const currentPage = ref(parseInt(route.query.page as string) || 1)
 const itemsPerPage = 12
+
+// Synchroniser automatiquement l'URL avec les filtres sélectionnés
+watch([searchQuery, selectedCollection, selectedCategory, currentPage], () => {
+  const query: Record<string, string | number> = {}
+  if (searchQuery.value) query.search = searchQuery.value
+  if (selectedCollection.value) query.collection = selectedCollection.value
+  if (selectedCategory.value) query.category = selectedCategory.value
+  if (currentPage.value > 1) query.page = currentPage.value
+
+  router.replace({ query })
+})
+
 
 const formatPrice = (price: number) => {
   return (price || 0).toLocaleString('fr-FR')

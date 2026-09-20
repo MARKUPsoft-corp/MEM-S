@@ -1,9 +1,10 @@
 <template>
   <div class="admin-product-edit-page">
     <div class="mb-3">
-      <NuxtLink to="/admin/products" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-1" style="font-size: 0.75rem;">
+      <NuxtLink :to="{ path: '/admin/products', query: route.query }" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-1" style="font-size: 0.75rem;">
         <i class="bi bi-arrow-left"></i> Retour à la liste des produits
       </NuxtLink>
+
       <h1 class="page-title">Modifier le Produit</h1>
       <p class="text-muted page-subtitle mb-0" v-if="product">Édition de « {{ product.name }} »</p>
     </div>

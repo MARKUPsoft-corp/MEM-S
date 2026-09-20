@@ -1,7 +1,7 @@
 <template>
   <div class="admin-product-create-page">
     <div class="mb-3">
-      <NuxtLink to="/admin/products" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-1" style="font-size: 0.75rem;">
+      <NuxtLink :to="{ path: '/admin/products', query: route.query }" class="text-muted text-decoration-none small d-inline-flex align-items-center gap-1 mb-1" style="font-size: 0.75rem;">
         <i class="bi bi-arrow-left"></i> Retour à la liste des produits
       </NuxtLink>
       <h1 class="page-title">Ajouter un Nouveau Produit</h1>
@@ -13,13 +13,17 @@
 </template>
 
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
 import ProductForm from '../../../components/admin/ProductForm.vue'
 
 definePageMeta({
   layout: 'admin',
   middleware: 'admin'
 })
+
+const route = useRoute()
 </script>
+
 
 <style scoped>
 .page-title {

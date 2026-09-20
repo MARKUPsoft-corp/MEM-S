@@ -259,18 +259,19 @@
             <span v-if="submitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
             {{ isEdit ? 'Mettre à jour le produit' : 'Créer le produit' }}
           </button>
-          <NuxtLink to="/admin/products" class="btn btn-outline-secondary">
+          <NuxtLink :to="{ path: '/admin/products', query: route.query }" class="btn btn-outline-secondary">
             Annuler
           </NuxtLink>
         </div>
       </div>
     </div>
   </form>
+
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { doc, setDoc, deleteDoc } from 'firebase/firestore'
 import { useFirebase } from '../../../composables/useFirebase'
 import { useNotification } from '../../../composables/useNotification'
@@ -284,8 +285,10 @@ const props = defineProps<{
   isEdit?: boolean
 }>()
 
+const route = useRoute()
 const router = useRouter()
 const { db } = useFirebase()
+
 const notify = useNotification()
 const productsStore = useProductsStore()
 
@@ -330,10 +333,9 @@ const slugify = (text: string) => {
 }
 
 const onNameChange = () => {
-  if (!props.isEdit) {
-    form.value.slug = slugify(form.value.name)
-  }
+  form.value.slug = slugify(form.value.name)
 }
+
 
 const onCategorySelect = () => {
   // Optionnel: logiques dérivées
@@ -434,8 +436,9 @@ const handleSubmit = async () => {
 
   notify.success(props.isEdit ? `« ${cleanData.name} » mis à jour avec succès !` : `« ${cleanData.name} » créé avec succès !`)
   submitting.value = false
-  router.push('/admin/products')
+  router.push({ path: '/admin/products', query: route.query })
 }
+
 
 
 const populateForm = (p: Product) => {
