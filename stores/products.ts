@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia'
 import type { Product, Category, Collection, ProductFilter } from '../types/product'
 import { FirestoreProductsService } from '../services/firestoreProducts'
-import { INITIAL_CATEGORIES, INITIAL_COLLECTIONS, INITIAL_PRODUCTS } from '../data/productsData'
-
+import { INITIAL_CATEGORIES, INITIAL_COLLECTIONS } from '../data/productsData'
 
 interface PaginatedResponse {
   count: number
@@ -13,9 +12,8 @@ interface PaginatedResponse {
 
 export const useProductsStore = defineStore('products', {
   state: () => ({
-    // Initialisation immédiate avec INITIAL_PRODUCTS : affichage instantané en 0 ms sans spinner
-    // Les données Firestore mettront à jour ce catalogue en temps réel dès réception
-    products: [...INITIAL_PRODUCTS] as Product[],
+    // Uniquement les VRAIS produits provenant de Firebase Firestore
+    products: [] as Product[],
     categories: [...INITIAL_CATEGORIES] as Category[],
     collections: [...INITIAL_COLLECTIONS] as Collection[],
     filters: {
@@ -25,11 +23,10 @@ export const useProductsStore = defineStore('products', {
       is_new: undefined,
       search: undefined,
     } as ProductFilter,
-    loading: false,  // Pas de spinner bloquant
-    totalCount: INITIAL_PRODUCTS.length,
+    loading: true,  // true tant que les vrais produits Firestore ne sont pas arrivés
+    totalCount: 0,
     realtimeActive: false,
   }),
-
 
   getters: {
     filteredProducts: (state) => {
@@ -39,17 +36,21 @@ export const useProductsStore = defineStore('products', {
 
   actions: {
     /**
-     * Initialise le listener temps réel Firestore (onSnapshot).
-     * Appelé une seule fois via le plugin products-realtime.client.ts.
-     * Retourne la fonction de cleanup (unsubscribe).
+     * Initialise la synchronisation temps réel des vrais produits Firestore.
      */
     initRealtimeSync(): () => void {
       if (this.realtimeActive) {
-        // Déjà actif — juste retourner un noop
         return () => {}
       }
 
       this.realtimeActive = true
+
+      // Timeout de sécurité : si Firestore prend plus de 3 secondes, masquer le spinner
+      setTimeout(() => {
+        if (this.loading) {
+          this.loading = false
+        }
+      }, 3500)
 
       const cleanup = FirestoreProductsService.initRealtimeSubscription(
         (products: Product[]) => {
@@ -61,6 +62,7 @@ export const useProductsStore = defineStore('products', {
 
       return cleanup
     },
+
 
     /**
      * Met à jour immédiatement un produit dans le store Pinia (réactivité Vue 3 instantanée)

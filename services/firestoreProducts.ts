@@ -12,19 +12,19 @@ import {
   type DocumentData
 } from 'firebase/firestore'
 import type { Product, Category, Collection, ProductFilter } from '../types/product'
-import { INITIAL_COLLECTIONS, INITIAL_CATEGORIES, INITIAL_PRODUCTS } from '../data/productsData'
+import { INITIAL_COLLECTIONS, INITIAL_CATEGORIES } from '../data/productsData'
 import { useFirebase } from '../composables/useFirebase'
 
 const STORAGE_KEY = 'mems_products_cache_v2'
 
 export class FirestoreProductsService {
-  // Cache en mémoire réactif, hydraté depuis localStorage si disponible
+  // Cache en mémoire réactif des VRAIS produits Firestore
   private static allProductsCache: Product[] = []
   private static collectionsCache: Collection[] | null = null
   private static categoriesCache: Category[] | null = null
   private static lastSyncTime: number = 0
   private static inFlightSync: Promise<Product[]> | null = null
-  private static readonly CACHE_TTL = 60 * 1000 // 1 minute (rafraîchissement périodique en plus du temps réel)
+  private static readonly CACHE_TTL = 60 * 1000 // 1 minute
 
   // Écouteur temps réel Firestore
   private static unsubscribeSnapshot: Unsubscribe | null = null
@@ -68,28 +68,40 @@ export class FirestoreProductsService {
 
   /**
    * Initialise et abonne l'application aux mises à jour TEMPS RÉEL Firestore (onSnapshot)
-   * Tout ajout, modification ou suppression dans Firestore est diffusé instantanément (< 50ms)
+   * Charge UNIQUEMENT les vrais produits de Firestore
    */
   static initRealtimeSubscription(onUpdate?: (products: Product[]) => void): () => void {
     if (onUpdate) {
       this.subscribers.add(onUpdate)
     }
 
-    // 1. Charger le cache local d'abord (synchrone, 0ms)
+    // 1. Charger les vrais produits depuis le cache local (synchrone, 0ms) s'ils existent
     if (this.allProductsCache.length === 0) {
-      const hasLocal = this.loadFromLocalStorage()
-      if (!hasLocal) {
-        // Fallback : afficher les produits initiaux en attendant Firestore
-        this.allProductsCache = [...INITIAL_PRODUCTS]
-      }
+      this.loadFromLocalStorage()
     }
 
-    // 2. Notifier immédiatement le nouvel abonné avec ce qu'on a déjà (local ou INITIAL)
+    // 2. Si le cache local contient des vrais produits, notifier immédiatement pour affichage 0ms
     if (onUpdate && this.allProductsCache.length > 0) {
       try { onUpdate([...this.allProductsCache]) } catch (e) {}
     }
 
-    // 3. Démarrer l'écouteur Firestore si ce n'est pas déjà fait
+    // 3. Charger immédiatement les vrais documents Firestore via getDocs (rapide et direct)
+    if (typeof window !== 'undefined') {
+      this.fetchRealProducts().then(realProducts => {
+        if (realProducts && realProducts.length > 0) {
+          this.allProductsCache = realProducts
+          this.isInitialized = true
+          this.saveToLocalStorage()
+          this.subscribers.forEach(cb => {
+            try { cb([...this.allProductsCache]) } catch (err) {}
+          })
+        }
+      }).catch(err => {
+        console.warn('[Firestore] Erreur fetchRealProducts direct:', err)
+      })
+    }
+
+    // 4. Démarrer l'écouteur temps réel Firestore onSnapshot
     if (!this.unsubscribeSnapshot && typeof window !== 'undefined') {
       const { db } = useFirebase()
       if (db) {
@@ -103,35 +115,40 @@ export class FirestoreProductsService {
                   this.sanitizeProduct({ id: d.id as any, ...d.data() } as Product)
                 )
 
-                // Firestore est la source unique de vérité absolue (aucun écrasement par INITIAL_PRODUCTS)
+                // Firestore est la source unique de vérité absolue
                 this.allProductsCache = remoteProducts
                 this.isInitialized = true
                 this.lastSyncTime = Date.now()
                 this.saveToLocalStorage()
 
-                // Notifier tous les composants et stores connectés en temps réel avec une nouvelle référence
+                // Notifier tous les composants et stores connectés en temps réel
                 this.subscribers.forEach(cb => {
                   try { cb([...this.allProductsCache]) } catch (err) { console.error('[Realtime Subscriber Error]:', err) }
                 })
               } else if (!this.isInitialized) {
-                // Si la collection Firestore est vide, garder le fallback
-                this.allProductsCache = [...INITIAL_PRODUCTS]
+                this.allProductsCache = []
                 this.isInitialized = true
                 this.subscribers.forEach(cb => {
-                  try { cb([...this.allProductsCache]) } catch (err) {}
+                  try { cb([]) } catch (err) {}
                 })
               }
             },
             (error) => {
               console.warn('[Firestore] Erreur écouteur temps réel:', error)
+              // Même en cas d'erreur de snapshot, couper le spinner
+              this.subscribers.forEach(cb => {
+                try { cb([...this.allProductsCache]) } catch (err) {}
+              })
             }
           )
         } catch (err) {
           console.warn('[Firestore] Échec initialisation listener:', err)
+          this.subscribers.forEach(cb => {
+            try { cb([...this.allProductsCache]) } catch (e) {}
+          })
         }
       }
     }
-
 
     return () => {
       if (onUpdate) {
@@ -139,6 +156,28 @@ export class FirestoreProductsService {
       }
     }
   }
+
+  /**
+   * Récupère directement les vrais documents de Firestore sans passer par le listener
+   */
+  static async fetchRealProducts(): Promise<Product[]> {
+    const { db } = useFirebase()
+    if (!db) return this.allProductsCache
+
+    try {
+      const prodRef = collection(db, 'products')
+      const snap = await getDocs(prodRef)
+      if (!snap.empty) {
+        return snap.docs.map(d =>
+          this.sanitizeProduct({ id: d.id as any, ...d.data() } as Product)
+        )
+      }
+    } catch (err) {
+      console.warn('[Firestore] Erreur lecture directe getDocs:', err)
+    }
+    return this.allProductsCache
+  }
+
 
 
   /**
@@ -236,10 +275,11 @@ export class FirestoreProductsService {
       const { db } = useFirebase()
       if (!db) {
         if (this.allProductsCache.length === 0) {
-          this.loadFromLocalStorage() || (this.allProductsCache = [...INITIAL_PRODUCTS])
+          this.loadFromLocalStorage()
         }
         return this.allProductsCache
       }
+
 
       try {
         const prodRef = collection(db, 'products')
@@ -467,10 +507,10 @@ export class FirestoreProductsService {
       }
     }
 
-    // 4. Fallback sur les données initiales
-    const localProduct = INITIAL_PRODUCTS.find(p => p.slug === slug)
-    return localProduct ? this.sanitizeProduct(localProduct) : null
+    // 4. Si non trouvé dans Firestore ni en cache
+    return null
   }
+
 
   /**
    * Met à jour ou insère immédiatement un produit dans le cache local (optimiste)
