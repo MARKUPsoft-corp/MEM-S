@@ -168,9 +168,13 @@ export class FirestoreProductsService {
       const prodRef = collection(db, 'products')
       const snap = await getDocs(prodRef)
       if (!snap.empty) {
-        return snap.docs.map(d =>
+        const prods = snap.docs.map(d =>
           this.sanitizeProduct({ id: d.id as any, ...d.data() } as Product)
         )
+        this.allProductsCache = prods
+        this.isInitialized = true
+        this.saveToLocalStorage()
+        return prods
       }
     } catch (err) {
       console.warn('[Firestore] Erreur lecture directe getDocs:', err)

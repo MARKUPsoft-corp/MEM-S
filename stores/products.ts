@@ -40,6 +40,15 @@ export const useProductsStore = defineStore('products', {
      */
     initRealtimeSync(): () => void {
       if (this.realtimeActive) {
+        if (this.products.length === 0) {
+          FirestoreProductsService.fetchRealProducts().then(prods => {
+            if (prods && prods.length > 0) {
+              this.products = [...prods]
+              this.totalCount = prods.length
+              this.loading = false
+            }
+          })
+        }
         return () => {}
       }
 

@@ -56,30 +56,38 @@
 
                     <!-- Products Grid -->
                     <main class="products-main">
-                        <!-- Boubou Preview -->
-                        <div id="boubous">
-                            <BoubouPreview :products="boubouProducts" @view-all="openBoubouOverlay" />
+                        <div v-if="productsStore.loading && allProducts.length === 0" class="text-center py-5">
+                            <div class="spinner-border" style="color: #c9a46c;" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Chargement des produits...</p>
                         </div>
+                        <template v-else>
+                            <!-- Boubou Preview -->
+                            <div id="boubous">
+                                <BoubouPreview :products="boubouProducts" @view-all="openBoubouOverlay" />
+                            </div>
 
-                        <!-- Gandoura Preview -->
-                        <div id="gandouras">
-                            <GandouraPreview :products="gandouraProducts" @view-all="openGandouraOverlay" />
-                        </div>
+                            <!-- Gandoura Preview -->
+                            <div id="gandouras">
+                                <GandouraPreview :products="gandouraProducts" @view-all="openGandouraOverlay" />
+                            </div>
 
-                        <!-- Costumes Preview -->
-                        <div id="costumes">
-                            <CostumesPreview :products="costumesProducts" @view-all="openCostumesOverlay" />
-                        </div>
+                            <!-- Costumes Preview -->
+                            <div id="costumes">
+                                <CostumesPreview :products="costumesProducts" @view-all="openCostumesOverlay" />
+                            </div>
 
-                        <!-- Chemise Preview -->
-                        <div id="chemises">
-                            <ChemisePreview :products="chemiseProducts" @view-all="openChemiseOverlay" />
-                        </div>
+                            <!-- Chemise Preview -->
+                            <div id="chemises">
+                                <ChemisePreview :products="chemiseProducts" @view-all="openChemiseOverlay" />
+                            </div>
 
-                        <!-- Pantalon Preview -->
-                        <div id="pantalons">
-                            <PantalonPreview :products="pantalonProducts" @view-all="openPantalonOverlay" />
-                        </div>
+                            <!-- Pantalon Preview -->
+                            <div id="pantalons">
+                                <PantalonPreview :products="pantalonProducts" @view-all="openPantalonOverlay" />
+                            </div>
+                        </template>
                     </main>
                 </div>
             </div>
@@ -159,11 +167,17 @@ const activeMobileCategory = ref('')
 // Get route for URL parameters
 const route = useRoute()
 
+const getCategorySlug = (p: any) => {
+  if (!p) return ''
+  if (typeof p.category === 'string') return p.category.toLowerCase().trim()
+  return (p.category?.slug || '').toLowerCase().trim()
+}
+
 // Produits de la collection hommes, réactifs en temps réel
 const allProducts = computed(() => {
   return productsStore.products
     .filter(p => {
-      const catSlug = p.category?.slug || ''
+      const catSlug = getCategorySlug(p)
       return ['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(catSlug)
     })
     .map((product: any) => ({
@@ -184,11 +198,11 @@ const allProducts = computed(() => {
 })
 
 // Produits groupés par catégorie
-const boubouProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'boubous'))
-const gandouraProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'gandouras'))
-const costumesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'costumes'))
-const chemiseProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'chemises'))
-const pantalonProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'pantalons'))
+const boubouProducts = computed(() => allProducts.value.filter(p => getCategorySlug(p) === 'boubous'))
+const gandouraProducts = computed(() => allProducts.value.filter(p => getCategorySlug(p) === 'gandouras'))
+const costumesProducts = computed(() => allProducts.value.filter(p => getCategorySlug(p) === 'costumes'))
+const chemiseProducts = computed(() => allProducts.value.filter(p => getCategorySlug(p) === 'chemises'))
+const pantalonProducts = computed(() => allProducts.value.filter(p => getCategorySlug(p) === 'pantalons'))
 
 
 // Open overlay functions
@@ -252,6 +266,12 @@ function checkUrlCategory() {
 }
 
 onMounted(async () => {
+    // Initialiser la synchronisation temps réel et charger les vrais produits
+    productsStore.initRealtimeSync()
+    if (productsStore.products.length === 0) {
+        await productsStore.fetchProducts()
+    }
+
     try {
         const banners = await ContentService.getPageBanners()
         if (banners?.men) bannerUrl.value = banners.men

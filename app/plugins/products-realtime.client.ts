@@ -8,7 +8,7 @@
  *   - Le store Pinia reste toujours synchronisé avec Firestore
  *   - Pas de désynchronisation entre admin et boutique
  */
-import { useProductsStore } from '../stores/products'
+import { useProductsStore } from '~~/stores/products'
 
 export default defineNuxtPlugin(() => {
   const productsStore = useProductsStore()

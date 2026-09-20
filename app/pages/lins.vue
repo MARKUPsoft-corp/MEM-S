@@ -43,13 +43,21 @@
 
           <!-- Products Grid -->
           <main class="products-main">
-            <div id="chemises">
-              <ChemisesPreview :products="chemisesProducts" @view-all="openChemisesOverlay" />
+            <div v-if="productsStore.loading && allProducts.length === 0" class="text-center py-5">
+              <div class="spinner-border" style="color: #c9a46c;" role="status">
+                <span class="visually-hidden">Chargement...</span>
+              </div>
+              <p class="mt-3 text-muted">Chargement des produits...</p>
             </div>
+            <template v-else>
+              <div id="chemises">
+                <ChemisesPreview :products="chemisesProducts" @view-all="openChemisesOverlay" />
+              </div>
 
-            <div id="pantalons">
-              <PantalonsPreview :products="pantalonsProducts" @view-all="openPantalonsOverlay" />
-            </div>
+              <div id="pantalons">
+                <PantalonsPreview :products="pantalonsProducts" @view-all="openPantalonsOverlay" />
+              </div>
+            </template>
           </main>
         </div>
       </div>
@@ -84,10 +92,16 @@ import { ContentService, DEFAULT_PAGE_BANNERS } from '~~/services/contentService
 // Store temps réel — mis à jour instantanément depuis Firestore
 const productsStore = useProductsStore()
 
+const getCategorySlug = (p: any) => {
+  if (!p) return ''
+  if (typeof p.category === 'string') return p.category.toLowerCase().trim()
+  return (p.category?.slug || '').toLowerCase().trim()
+}
+
 // Produits de la collection lins, réactifs en temps réel
 const allProducts = computed(() => {
   return productsStore.products
-    .filter(p => ['chemises-lin', 'pantalons-lin'].includes(p.category?.slug || ''))
+    .filter(p => ['chemises-lin', 'pantalons-lin'].includes(getCategorySlug(p)))
     .map((product: any) => ({
       id: product.id,
       name: product.name,
@@ -130,7 +144,7 @@ const overlayOpen = computed(() => !!activeOverlayCategory.value)
 const overlayProducts = computed(() => {
   if (!activeOverlayCategory.value) return []
   const targetSlug = categoryConfig[activeOverlayCategory.value]?.slug || activeOverlayCategory.value
-  return allProducts.value.filter(p => p.category?.slug === targetSlug)
+  return allProducts.value.filter(p => getCategorySlug(p) === targetSlug)
 })
 
 const filterPopupOpen = ref(false)
@@ -144,12 +158,17 @@ const filterCategories = [
 const route = useRoute()
 
 // Produits groupés par catégorie
-const chemisesProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'chemises-lin'))
-const pantalonsProducts = computed(() => allProducts.value.filter(p => p.category?.slug === 'pantalons-lin'))
+const chemisesProducts = computed(() => allProducts.value.filter(p => getCategorySlug(p) === 'chemises-lin'))
+const pantalonsProducts = computed(() => allProducts.value.filter(p => getCategorySlug(p) === 'pantalons-lin'))
 
 
 // Charger la bannière et sync URL au montage
 onMounted(async () => {
+  productsStore.initRealtimeSync()
+  if (productsStore.products.length === 0) {
+    await productsStore.fetchProducts()
+  }
+
   try {
     const banners = await ContentService.getPageBanners()
     if (banners?.lins) bannerUrl.value = banners.lins
