@@ -51,7 +51,7 @@ export const useProductsStore = defineStore('products', {
 
       const cleanup = FirestoreProductsService.initRealtimeSubscription(
         (products: Product[]) => {
-          this.products = products
+          this.products = [...products]
           this.totalCount = products.length
           this.loading = false
         }
@@ -59,6 +59,30 @@ export const useProductsStore = defineStore('products', {
 
       return cleanup
     },
+
+    /**
+     * Met à jour immédiatement un produit dans le store Pinia (réactivité Vue 3 instantanée)
+     */
+    updateProduct(product: Product) {
+      const next = [...this.products]
+      const idx = next.findIndex(p => p.slug === product.slug || String(p.id) === String(product.id))
+      if (idx !== -1) {
+        next[idx] = { ...product }
+      } else {
+        next.unshift({ ...product })
+      }
+      this.products = next
+      this.totalCount = next.length
+    },
+
+    /**
+     * Supprime immédiatement un produit du store Pinia
+     */
+    removeProduct(slug: string) {
+      this.products = this.products.filter(p => p.slug !== slug)
+      this.totalCount = this.products.length
+    },
+
 
     /**
      * Récupération ultra-rapide des produits (compatible avec l'ancien code)

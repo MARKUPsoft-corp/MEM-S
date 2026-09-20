@@ -86,7 +86,7 @@ export class FirestoreProductsService {
 
     // 2. Notifier immédiatement le nouvel abonné avec ce qu'on a déjà (local ou INITIAL)
     if (onUpdate && this.allProductsCache.length > 0) {
-      try { onUpdate(this.allProductsCache) } catch (e) {}
+      try { onUpdate([...this.allProductsCache]) } catch (e) {}
     }
 
     // 3. Démarrer l'écouteur Firestore si ce n'est pas déjà fait
@@ -109,16 +109,16 @@ export class FirestoreProductsService {
                 this.lastSyncTime = Date.now()
                 this.saveToLocalStorage()
 
-                // Notifier tous les composants et stores connectés en temps réel
+                // Notifier tous les composants et stores connectés en temps réel avec une nouvelle référence
                 this.subscribers.forEach(cb => {
-                  try { cb(this.allProductsCache) } catch (err) { console.error('[Realtime Subscriber Error]:', err) }
+                  try { cb([...this.allProductsCache]) } catch (err) { console.error('[Realtime Subscriber Error]:', err) }
                 })
               } else if (!this.isInitialized) {
                 // Si la collection Firestore est vide, garder le fallback
                 this.allProductsCache = [...INITIAL_PRODUCTS]
                 this.isInitialized = true
                 this.subscribers.forEach(cb => {
-                  try { cb(this.allProductsCache) } catch (err) {}
+                  try { cb([...this.allProductsCache]) } catch (err) {}
                 })
               }
             },
@@ -131,6 +131,7 @@ export class FirestoreProductsService {
         }
       }
     }
+
 
     return () => {
       if (onUpdate) {
@@ -413,8 +414,25 @@ export class FirestoreProductsService {
    * Récupère un produit par son slug
    * Utilise le cache temps réel en priorité, puis Firestore direct si non trouvé
    */
-  static async getProductBySlug(slug: string): Promise<Product | null> {
-    // 1. Recherche dans le cache mémoire temps réel
+  static async getProductBySlug(slug: string, forceRemote: boolean = false): Promise<Product | null> {
+    const { db } = useFirebase()
+
+    // 1. Si forceRemote demandé et db disponible, interroger Firestore en premier
+    if (forceRemote && db) {
+      try {
+        const docSnap = await getDoc(doc(db, 'products', slug))
+        if (docSnap.exists()) {
+          const prod = { id: docSnap.id as any, ...docSnap.data() } as Product
+          const sanitized = this.sanitizeProduct(prod)
+          this.updateLocalProduct(sanitized)
+          return sanitized
+        }
+      } catch (error) {
+        console.warn('[Firestore] forceRemote fallback vers cache:', error)
+      }
+    }
+
+    // 2. Recherche dans le cache mémoire temps réel
     if (this.allProductsCache.length === 0) {
       this.loadFromLocalStorage()
     }
@@ -423,8 +441,7 @@ export class FirestoreProductsService {
       return this.sanitizeProduct(cached)
     }
 
-    // 2. Interrogation directe de Firestore
-    const { db } = useFirebase()
+    // 3. Interrogation directe de Firestore si non trouvé dans le cache
     if (db) {
       try {
         const docSnap = await getDoc(doc(db, 'products', slug))
@@ -450,7 +467,7 @@ export class FirestoreProductsService {
       }
     }
 
-    // 3. Fallback sur les données initiales
+    // 4. Fallback sur les données initiales
     const localProduct = INITIAL_PRODUCTS.find(p => p.slug === slug)
     return localProduct ? this.sanitizeProduct(localProduct) : null
   }
@@ -460,15 +477,17 @@ export class FirestoreProductsService {
    */
   static updateLocalProduct(product: Product): void {
     const sanitized = this.sanitizeProduct(product)
-    const idx = this.allProductsCache.findIndex(p => p.slug === sanitized.slug || String(p.id) === String(sanitized.id))
+    const nextList = [...this.allProductsCache]
+    const idx = nextList.findIndex(p => p.slug === sanitized.slug || String(p.id) === String(sanitized.id))
     if (idx !== -1) {
-      this.allProductsCache[idx] = sanitized
+      nextList[idx] = { ...sanitized }
     } else {
-      this.allProductsCache.unshift(sanitized)
+      nextList.unshift({ ...sanitized })
     }
+    this.allProductsCache = nextList
     this.saveToLocalStorage()
     this.subscribers.forEach(cb => {
-      try { cb(this.allProductsCache) } catch (err) { console.error('[Subscriber update error]:', err) }
+      try { cb([...this.allProductsCache]) } catch (err) { console.error('[Subscriber update error]:', err) }
     })
   }
 
@@ -479,9 +498,10 @@ export class FirestoreProductsService {
     this.allProductsCache = this.allProductsCache.filter(p => p.slug !== slug)
     this.saveToLocalStorage()
     this.subscribers.forEach(cb => {
-      try { cb(this.allProductsCache) } catch (err) { console.error('[Subscriber delete error]:', err) }
+      try { cb([...this.allProductsCache]) } catch (err) { console.error('[Subscriber delete error]:', err) }
     })
   }
+
 
   /**
    * Invalide le cache et force une re-synchronisation

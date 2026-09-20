@@ -107,12 +107,15 @@
               <!-- Prix -->
               <td>
                 <div class="d-flex flex-column">
-                  <span class="fw-bold text-dark">{{ formatPrice(product.discount_price || product.price) }} FCFA</span>
-                  <span v-if="product.discount_price" class="text-muted text-decoration-line-through small">
-                    {{ formatPrice(product.price) }} FCFA
+                  <span class="fw-bold text-dark">{{ formatPrice(product.price) }} FCFA</span>
+                  <span v-if="product.discount_price && Number(product.discount_price) > 0" class="mt-1">
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.72rem;">
+                      <i class="bi bi-tag-fill me-1"></i>Promo : {{ formatPrice(product.discount_price) }} FCFA
+                    </span>
                   </span>
                 </div>
               </td>
+
 
               <!-- Stock -->
               <td>
@@ -306,9 +309,11 @@ const resetFilters = () => {
 
 const adjustStock = async (product: Product, delta: number) => {
   const newStock = Math.max(0, (product.stock || 0) + delta)
+  const updatedProduct = { ...product, stock: newStock }
 
-  // Mise à jour optimiste dans le cache local (le store se met à jour par le subscriber)
-  FirestoreProductsService.updateLocalProduct({ ...product, stock: newStock })
+  // Mise à jour optimiste immédiate dans le store Pinia (réactivité Vue 3) et le cache service
+  productsStore.updateProduct(updatedProduct)
+  FirestoreProductsService.updateLocalProduct(updatedProduct)
 
   if (db) {
     try {
@@ -316,10 +321,10 @@ const adjustStock = async (product: Product, delta: number) => {
         stock: newStock,
         updated_at: new Date().toISOString()
       })
-      // Pas besoin de clearCache — le onSnapshot Firestore rafraîchira automatiquement
     } catch (err) {
       console.warn('[Admin] Erreur mise à jour stock:', err)
       // Rollback optimiste
+      productsStore.updateProduct(product)
       FirestoreProductsService.updateLocalProduct(product)
     }
   }
@@ -329,18 +334,19 @@ const confirmDelete = async (product: Product) => {
   const ok = confirm(`Êtes-vous sûr de vouloir supprimer définitivement "${product.name}" ?`)
   if (!ok) return
 
-  // Suppression optimiste immédiate depuis le cache local
+  // Suppression optimiste immédiate du store et du cache
+  productsStore.removeProduct(product.slug)
   FirestoreProductsService.removeLocalProduct(product.slug)
 
   if (db) {
     try {
       await deleteDoc(doc(db, 'products', product.slug))
-      // onSnapshot confirme automatiquement la suppression
     } catch (err) {
       console.warn('[Admin] Erreur suppression Firestore:', err)
     }
   }
 }
+
 
 onMounted(async () => {
   try {

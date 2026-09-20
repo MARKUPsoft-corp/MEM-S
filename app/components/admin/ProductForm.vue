@@ -155,53 +155,72 @@
           </div>
         </div>
 
-        <!-- Tarification & Stock -->
-        <div class="content-card mb-4">
-          <h4 class="card-clean-title mb-3">Tarification & Stock</h4>
+          <!-- Tarification & Stock -->
+          <div class="content-card mb-4">
+            <h4 class="card-clean-title mb-3">Tarification & Stock</h4>
 
-          <div class="mb-3">
-            <label class="form-label fw-medium">Prix Standard (FCFA) <span class="text-danger">*</span></label>
-            <div class="input-group">
+            <div class="mb-3">
+              <label class="form-label fw-medium">Prix Standard (FCFA) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input
+                  v-model.number="form.price"
+                  type="number"
+                  min="0"
+                  step="500"
+                  class="form-control admin-input"
+                  placeholder="45000"
+                  required
+                />
+                <span class="input-group-text">FCFA</span>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <label class="form-label fw-medium mb-0">Prix Promotionnel (Optionnel)</label>
+                <button
+                  v-if="form.discount_price"
+                  type="button"
+                  class="btn btn-link text-danger p-0 text-decoration-none small"
+                  style="font-size: 0.75rem;"
+                  @click="form.discount_price = undefined"
+                >
+                  <i class="bi bi-x-circle me-1"></i>Supprimer la promo
+                </button>
+              </div>
+              <div class="input-group">
+                <input
+                  v-model.number="form.discount_price"
+                  type="number"
+                  min="0"
+                  step="500"
+                  class="form-control admin-input"
+                  placeholder="Laisser vide si pas de promo"
+                />
+                <span class="input-group-text">FCFA</span>
+              </div>
+              <small class="text-muted d-block mt-1">
+                <span v-if="form.discount_price && Number(form.discount_price) > 0" class="text-success fw-medium">
+                  <i class="bi bi-info-circle me-1"></i>Prix affiché en boutique : {{ formatFormPrice(form.discount_price) }} FCFA (barré : {{ formatFormPrice(form.price) }} FCFA)
+                </span>
+                <span v-else>
+                  Le prix standard ({{ formatFormPrice(form.price) }} FCFA) sera le prix affiché en boutique.
+                </span>
+              </small>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-medium">Stock Global <span class="text-danger">*</span></label>
               <input
-                v-model.number="form.price"
+                v-model.number="form.stock"
                 type="number"
                 min="0"
-                step="500"
                 class="form-control admin-input"
-                placeholder="45000"
                 required
               />
-              <span class="input-group-text">FCFA</span>
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-medium">Prix Promotionnel (Optionnel)</label>
-            <div class="input-group">
-              <input
-                v-model.number="form.discount_price"
-                type="number"
-                min="0"
-                step="500"
-                class="form-control admin-input"
-                placeholder="39000"
-              />
-              <span class="input-group-text">FCFA</span>
-            </div>
-            <small class="text-muted">Si renseigné, le prix standard sera affiché barré.</small>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-medium">Stock Global <span class="text-danger">*</span></label>
-            <input
-              v-model.number="form.stock"
-              type="number"
-              min="0"
-              class="form-control admin-input"
-              required
-            />
-          </div>
-        </div>
 
         <!-- Options & Visibilité -->
         <div class="content-card mb-4">
@@ -255,6 +274,7 @@ import { useRouter } from 'vue-router'
 import { doc, setDoc, deleteDoc } from 'firebase/firestore'
 import { useFirebase } from '../../../composables/useFirebase'
 import { useNotification } from '../../../composables/useNotification'
+import { useProductsStore } from '../../../stores/products'
 import { FirestoreProductsService } from '../../../services/firestoreProducts'
 import ImageUploader from './ImageUploader.vue'
 import type { Product, Category } from '../../../types/product'
@@ -267,6 +287,13 @@ const props = defineProps<{
 const router = useRouter()
 const { db } = useFirebase()
 const notify = useNotification()
+const productsStore = useProductsStore()
+
+const formatFormPrice = (val: number | string | undefined | null) => {
+  if (!val) return '0'
+  const n = typeof val === 'string' ? parseFloat(val) : val
+  return isNaN(n) ? '0' : new Intl.NumberFormat('fr-FR').format(n)
+}
 
 const categories = ref<Category[]>([])
 const selectedCategorySlug = ref('')
@@ -337,12 +364,17 @@ const handleSubmit = async () => {
   submitting.value = true
   const cat = currentCategory.value
 
+  const discountVal = (form.value.discount_price && Number(form.value.discount_price) > 0)
+    ? Number(form.value.discount_price)
+    : null
+
   const payload: any = {
     id: form.value.id || Date.now(),
     name: form.value.name.trim(),
     slug: (form.value.slug || slugify(form.value.name)).trim(),
     description: form.value.description.trim(),
     price: Number(form.value.price) || 0,
+    discount_price: discountVal,
     stock: Number(form.value.stock) || 0,
     is_new: Boolean(form.value.is_new),
     is_featured: Boolean(form.value.is_featured),
@@ -367,11 +399,7 @@ const handleSubmit = async () => {
     updated_at: new Date().toISOString()
   }
 
-  if (form.value.discount_price && form.value.discount_price > 0) {
-    payload.discount_price = Number(form.value.discount_price)
-  }
-
-  // Nettoyage pour Firestore (zéro undefined)
+  // Nettoyage pour Firestore (zéro undefined, null préservé)
   const cleanData = JSON.parse(JSON.stringify(payload))
 
   if (db) {
@@ -381,27 +409,34 @@ const handleSubmit = async () => {
         try {
           await deleteDoc(doc(db, 'products', props.initialProduct.slug))
           FirestoreProductsService.removeLocalProduct(props.initialProduct.slug)
+          productsStore.removeProduct(props.initialProduct.slug)
         } catch (delErr) {
           console.warn('[ProductForm] Suppression ancien slug Firestore:', delErr)
         }
       }
 
       await setDoc(doc(db, 'products', cleanData.slug), cleanData)
-      // Mettre à jour immédiatement le cache local
+      // 1. Mise à jour instantanée du store Pinia pour réactivité Vue 3 immédiate
+      productsStore.updateProduct(cleanData)
+      // 2. Mise à jour du cache local et localStorage
       FirestoreProductsService.updateLocalProduct(cleanData)
-      FirestoreProductsService.clearCache()
     } catch (err: any) {
       console.error('[ProductForm] Erreur sauvegarde Firestore:', err)
       alert(`Erreur d'enregistrement : ${err.message}`)
       submitting.value = false
       return
     }
+  } else {
+    // Si pas de db connectée
+    productsStore.updateProduct(cleanData)
+    FirestoreProductsService.updateLocalProduct(cleanData)
   }
 
   notify.success(props.isEdit ? `« ${cleanData.name} » mis à jour avec succès !` : `« ${cleanData.name} » créé avec succès !`)
   submitting.value = false
   router.push('/admin/products')
 }
+
 
 const populateForm = (p: Product) => {
   form.value = {

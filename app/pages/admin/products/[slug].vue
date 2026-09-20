@@ -44,7 +44,7 @@ const loading = ref(true)
 onMounted(async () => {
   try {
     loading.value = true
-    product.value = await FirestoreProductsService.getProductBySlug(slug)
+    product.value = await FirestoreProductsService.getProductBySlug(slug, true)
   } catch (err) {
     console.error('[Admin Edit Product] Erreur chargement:', err)
   } finally {
