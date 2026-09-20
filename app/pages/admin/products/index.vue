@@ -391,6 +391,9 @@ const confirmDelete = async (product: Product) => {
 
 
 onMounted(() => {
+  // Garantir que la synchronisation temps réel Firestore est active
+  productsStore.initRealtimeSync()
+
   // Rafraîchir les catégories en arrière-plan sans bloquer
   FirestoreProductsService.getCategories()
     .then(cats => {
@@ -400,6 +403,7 @@ onMounted(() => {
     })
     .catch(() => {})
 })
+
 
 
 

@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import type { Product, Category, Collection, ProductFilter } from '../types/product'
 import { FirestoreProductsService } from '../services/firestoreProducts'
-import { INITIAL_CATEGORIES, INITIAL_COLLECTIONS } from '../data/productsData'
+import { INITIAL_CATEGORIES, INITIAL_COLLECTIONS, INITIAL_PRODUCTS } from '../data/productsData'
+
 
 interface PaginatedResponse {
   count: number
@@ -12,9 +13,9 @@ interface PaginatedResponse {
 
 export const useProductsStore = defineStore('products', {
   state: () => ({
-    // Ne pas initialiser avec INITIAL_PRODUCTS — Firestore est la source unique de vérité.
-    // loading = true jusqu'à la réception du premier snapshot Firestore
-    products: [] as Product[],
+    // Initialisation immédiate avec INITIAL_PRODUCTS : affichage instantané en 0 ms sans spinner
+    // Les données Firestore mettront à jour ce catalogue en temps réel dès réception
+    products: [...INITIAL_PRODUCTS] as Product[],
     categories: [...INITIAL_CATEGORIES] as Category[],
     collections: [...INITIAL_COLLECTIONS] as Collection[],
     filters: {
@@ -24,10 +25,11 @@ export const useProductsStore = defineStore('products', {
       is_new: undefined,
       search: undefined,
     } as ProductFilter,
-    loading: true,  // true jusqu'au premier snapshot Firestore
-    totalCount: 0,
+    loading: false,  // Pas de spinner bloquant
+    totalCount: INITIAL_PRODUCTS.length,
     realtimeActive: false,
   }),
+
 
   getters: {
     filteredProducts: (state) => {

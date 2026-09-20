@@ -42,11 +42,12 @@ export const useFirebase = () => {
       if (!auth) auth = getAuth(app)
       if (!db) {
         try {
-          db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true })
+          db = initializeFirestore(app, { experimentalForceLongPolling: true })
         } catch {
           db = getFirestore(app)
         }
       }
+
 
     }
   }
