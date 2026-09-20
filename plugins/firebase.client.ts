@@ -25,11 +25,12 @@ export default defineNuxtPlugin(() => {
   let db: Firestore
   try {
     db = initializeFirestore(app, {
-      experimentalForceLongPolling: true
+      experimentalAutoDetectLongPolling: true
     })
   } catch {
     db = getFirestore(app)
   }
+
 
   return {
     provide: {

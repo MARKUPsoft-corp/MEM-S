@@ -92,8 +92,17 @@
               <!-- Visuel -->
               <td>
                 <div class="product-avatar-box">
-                  <img :src="getProductImage(product)" :alt="product.name" class="product-table-thumb" />
+                  <img
+                    :src="getProductImage(product)"
+                    :alt="product.name"
+                    class="product-table-thumb"
+                    loading="lazy"
+                    decoding="async"
+                    width="48"
+                    height="48"
+                  />
                 </div>
+
               </td>
 
               <!-- Nom & Catégorie -->
@@ -224,6 +233,7 @@ import { doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { useFirebase } from '../../../../composables/useFirebase'
 import { FirestoreProductsService } from '../../../../services/firestoreProducts'
 import { useProductsStore } from '../../../../stores/products'
+import { INITIAL_CATEGORIES } from '../../../../data/productsData'
 import type { Product, Category } from '../../../../types/product'
 
 definePageMeta({
@@ -240,7 +250,8 @@ const productsStore = useProductsStore()
 const products = computed(() => productsStore.products)
 const loading = computed(() => productsStore.loading && productsStore.products.length === 0)
 
-const categories = ref<Category[]>([])
+// Initialisation immédiate des catégories en 0 ms sans bloquer le rendu
+const categories = ref<Category[]>([...INITIAL_CATEGORIES])
 
 // Initialisation depuis l'URL (pour revenir exactement où on était)
 const searchQuery = ref((route.query.search as string) || '')
@@ -260,18 +271,31 @@ watch([searchQuery, selectedCollection, selectedCategory, currentPage], () => {
   router.replace({ query })
 })
 
-
 const formatPrice = (price: number) => {
   return (price || 0).toLocaleString('fr-FR')
 }
 
+// Génère une vignette optimisée et légère pour accélérer l'affichage
 const getProductImage = (product: Product) => {
   if (product.images && product.images.length > 0) {
     const img: any = product.images[0]
-    return typeof img === 'object' ? (img.image || img.url) : img
+    const rawUrl = typeof img === 'object' ? (img.image || img.url) : img
+    if (typeof rawUrl === 'string') {
+      // Pour Cloudinary : injecter transformation w_100,h_100,c_fill
+      if (rawUrl.includes('cloudinary.com') && rawUrl.includes('/upload/') && !rawUrl.includes('w_')) {
+        return rawUrl.replace('/upload/', '/upload/w_100,h_100,c_fill,q_auto,f_auto/')
+      }
+      // Pour Unsplash : injecter w=100&h=100
+      if (rawUrl.includes('images.unsplash.com')) {
+        const baseUrl = rawUrl.split('?')[0]
+        return `${baseUrl}?w=100&h=100&fit=crop&q=70`
+      }
+      return rawUrl
+    }
   }
-  return 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=120&h=120&fit=crop'
+  return 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=100&h=100&fit=crop'
 }
+
 
 const getStockBadgeClass = (stock: number) => {
   if (stock <= 0) return 'badge bg-danger'
@@ -366,21 +390,17 @@ const confirmDelete = async (product: Product) => {
 }
 
 
-onMounted(async () => {
-  try {
-    categories.value = await FirestoreProductsService.getCategories()
-  } catch (err) {
-    console.warn('[Admin Products] Erreur chargement catégories:', err)
-  }
-
-  // Fallback de sécurité : si le store est toujours vide après 3s, forcer un chargement
-  setTimeout(async () => {
-    if (productsStore.products.length === 0) {
-      console.warn('[Admin] Store vide après 3s, forçage du chargement...')
-      await productsStore.fetchProducts()
-    }
-  }, 3000)
+onMounted(() => {
+  // Rafraîchir les catégories en arrière-plan sans bloquer
+  FirestoreProductsService.getCategories()
+    .then(cats => {
+      if (cats && cats.length > 0) {
+        categories.value = cats
+      }
+    })
+    .catch(() => {})
 })
+
 
 
 </script>
