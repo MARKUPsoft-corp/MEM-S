@@ -166,7 +166,7 @@
                   v-model.number="form.price"
                   type="number"
                   min="0"
-                  step="500"
+                  step="any"
                   class="form-control admin-input"
                   placeholder="45000"
                   required
@@ -193,12 +193,13 @@
                   v-model.number="form.discount_price"
                   type="number"
                   min="0"
-                  step="500"
+                  step="any"
                   class="form-control admin-input"
                   placeholder="Laisser vide si pas de promo"
                 />
                 <span class="input-group-text">FCFA</span>
               </div>
+
               <small class="text-muted d-block mt-1">
                 <span v-if="form.discount_price && Number(form.discount_price) > 0" class="text-success fw-medium">
                   <i class="bi bi-info-circle me-1"></i>Prix affiché en boutique : {{ formatFormPrice(form.discount_price) }} FCFA (barré : {{ formatFormPrice(form.price) }} FCFA)
