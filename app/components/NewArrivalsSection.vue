@@ -18,9 +18,11 @@
             </div>
 
             <!-- Products Grid -->
-            <div class="products-grid">
-                <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product" />
-            </div>
+            <ClientOnly>
+                <div class="products-grid">
+                    <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product" />
+                </div>
+            </ClientOnly>
 
             <!-- View All Button -->
             <div class="view-all-container">

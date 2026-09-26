@@ -16,13 +16,14 @@
                 </button>
             </div>
 
-            <div v-if="loading" class="loading-container">
-                <p>Chargement des produits...</p>
-            </div>
-
-            <div v-else class="products-grid">
-                <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product" />
-            </div>
+            <ClientOnly>
+                <div v-if="loading" class="loading-container">
+                    <p>Chargement des produits...</p>
+                </div>
+                <div v-else class="products-grid">
+                    <ProductCard v-for="product in displayedProducts" :key="product.id" :product="product" />
+                </div>
+            </ClientOnly>
 
             <div class="view-all-container">
                 <NuxtLink to="/lins" class="btn-view-all">
