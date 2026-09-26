@@ -173,12 +173,19 @@ const getCategorySlug = (p: any) => {
   return (p.category?.slug || '').toLowerCase().trim()
 }
 
+const getCollectionSlug = (p: any) => {
+  if (!p) return ''
+  const col = (p.category as any)?.collectionSlug || p.category?.collection?.slug || p.collectionSlug || ''
+  return String(col).toLowerCase().trim()
+}
+
 // Produits de la collection hommes, réactifs en temps réel
 const allProducts = computed(() => {
   return productsStore.products
     .filter(p => {
       const catSlug = getCategorySlug(p)
-      return ['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(catSlug)
+      const colSlug = getCollectionSlug(p)
+      return ['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(catSlug) || colSlug === 'men'
     })
     .map((product: any) => ({
       id: product.id,

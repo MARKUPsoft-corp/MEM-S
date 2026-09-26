@@ -98,25 +98,48 @@ export const useProductsStore = defineStore('products', {
 
 
     /**
-     * Récupération ultra-rapide des produits (compatible avec l'ancien code)
-     * En mode temps réel, le store est déjà à jour — ce fetch est un fallback.
+     * Récupération des produits avec support des filtres.
+     * GARANTIE : Ne détruit JAMAIS la liste complète master `this.products` du store Pinia.
      */
     async fetchProducts(params?: Record<string, any>) {
       try {
+        const hasFilters = Boolean(
+          params && Object.keys(params).some(k => params[k] !== undefined && params[k] !== null && params[k] !== '')
+        )
+
         if (this.products.length === 0) {
           this.loading = true
+          // Charger la liste complète master depuis Firestore si le store est vide
+          const fullResponse = await FirestoreProductsService.getProducts()
+          if (fullResponse && fullResponse.results.length > 0) {
+            this.products = fullResponse.results
+            this.totalCount = fullResponse.count
+          }
         }
 
-        const response = await FirestoreProductsService.getProducts(params)
+        // Si des filtres sont demandés, renvoyer les données filtrées à l'appelant SANS corrompre this.products
+        if (hasFilters) {
+          const response = await FirestoreProductsService.getProducts(params)
+          return {
+            count: response.count,
+            next: null,
+            previous: null,
+            results: response.results
+          } as PaginatedResponse
+        }
 
-        this.products = response.results
-        this.totalCount = response.count
+        // Si aucun filtre spécifique, rafraîchir this.products avec tous les produits
+        const response = await FirestoreProductsService.getProducts()
+        if (response && response.results.length > 0) {
+          this.products = response.results
+          this.totalCount = response.count
+        }
 
         return {
-          count: response.count,
+          count: this.totalCount || this.products.length,
           next: null,
           previous: null,
-          results: response.results
+          results: this.products
         } as PaginatedResponse
       } catch (error) {
         console.error('[Products Store] Erreur chargement produits:', error)
@@ -144,12 +167,11 @@ export const useProductsStore = defineStore('products', {
      */
     async fetchFeaturedProducts() {
       try {
-        // Si le store temps réel est actif, filtrer directement
-        if (this.realtimeActive && this.products.length > 0) {
+        if (this.products.length > 0) {
           return this.products.filter(p => p.is_featured)
         }
-        const response = await FirestoreProductsService.getProducts({ is_featured: true })
-        return response.results
+        await this.fetchProducts()
+        return this.products.filter(p => p.is_featured)
       } catch (error) {
         console.error('[Products Store] Erreur chargement produits en vedette:', error)
         throw error
@@ -161,12 +183,11 @@ export const useProductsStore = defineStore('products', {
      */
     async fetchNewArrivals() {
       try {
-        // Si le store temps réel est actif, filtrer directement
-        if (this.realtimeActive && this.products.length > 0) {
+        if (this.products.length > 0) {
           return this.products.filter(p => p.is_new)
         }
-        const response = await FirestoreProductsService.getProducts({ is_new: true })
-        return response.results
+        await this.fetchProducts()
+        return this.products.filter(p => p.is_new)
       } catch (error) {
         console.error('[Products Store] Erreur chargement nouveaux produits:', error)
         throw error

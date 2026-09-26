@@ -120,9 +120,13 @@ const heroBannerStyle = computed(() => ({
     backgroundImage: `url(${bannerUrl.value})`
 }))
 
-// Produits en vedette
-const featuredProducts = ref<any[]>([])
-const loading = ref(false)
+const productsStore = useProductsStore()
+
+// Produits en vedette — réactifs directement via le store Pinia
+const featuredProducts = computed(() => {
+    return productsStore.products.filter(p => p.is_featured)
+})
+const loading = computed(() => productsStore.loading && featuredProducts.value.length === 0)
 
 // Catégorie active
 const activeCategory = ref('all')
@@ -140,17 +144,20 @@ const filterCategories = [
 ]
 
 // Mapper les catégories du composable aux catégories de filtrage
-const getCategoryGroup = (categorySlug: string) => {
-    if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(categorySlug)) {
+const getCategoryGroup = (p: any) => {
+    const categorySlug = (typeof p?.category === 'string' ? p.category : p?.category?.slug || '').toLowerCase()
+    const colSlug = ((p?.category as any)?.collectionSlug || p?.category?.collection?.slug || p?.collectionSlug || '').toLowerCase()
+
+    if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(categorySlug) || colSlug === 'men') {
         return 'men'
     }
-    if (['robes', 'ensembles', 'sacs'].includes(categorySlug)) {
+    if (['robes', 'ensembles', 'sacs'].includes(categorySlug) || colSlug === 'women') {
         return 'women'
     }
-    if (['babouches-cuir', 'babouches-brodees'].includes(categorySlug)) {
+    if (['babouches-cuir', 'babouches-brodees'].includes(categorySlug) || colSlug === 'babouches') {
         return 'babouches'
     }
-    if (['chemises-lin', 'pantalons-lin'].includes(categorySlug)) {
+    if (['chemises-lin', 'pantalons-lin'].includes(categorySlug) || colSlug === 'lins') {
         return 'lins'
     }
     return 'all'
@@ -158,20 +165,16 @@ const getCategoryGroup = (categorySlug: string) => {
 
 // Charger les produits en vedette et la bannière au montage
 onMounted(async () => {
+    productsStore.initRealtimeSync()
+    if (productsStore.products.length === 0) {
+        await productsStore.fetchProducts()
+    }
+
     try {
         const banners = await ContentService.getPageBanners()
         if (banners?.vedettes) bannerUrl.value = banners.vedettes
     } catch (e) {
         console.warn('[VedettesPage] Banner error:', e)
-    }
-
-    try {
-        loading.value = true
-        featuredProducts.value = await fetchFeaturedProducts()
-    } catch (error) {
-        console.error('Erreur lors du chargement des produits vedettes:', error)
-    } finally {
-        loading.value = false
     }
 })
 
@@ -180,7 +183,7 @@ const filteredProducts = computed(() => {
     if (activeCategory.value === 'all') {
         return featuredProducts.value
     }
-    return featuredProducts.value.filter(product => getCategoryGroup(product.category.slug) === activeCategory.value)
+    return featuredProducts.value.filter(product => getCategoryGroup(product) === activeCategory.value)
 })
 
 // Sélectionner une catégorie

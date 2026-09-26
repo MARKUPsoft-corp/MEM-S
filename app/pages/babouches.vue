@@ -98,10 +98,16 @@ const getCategorySlug = (p: any) => {
   return (p.category?.slug || '').toLowerCase().trim()
 }
 
+const getCollectionSlug = (p: any) => {
+  if (!p) return ''
+  const col = (p.category as any)?.collectionSlug || p.category?.collection?.slug || p.collectionSlug || ''
+  return String(col).toLowerCase().trim()
+}
+
 // Produits de la collection babouches, réactifs en temps réel
 const allProducts = computed(() => {
   return productsStore.products
-    .filter(p => ['babouches-cuir', 'babouches-brodees'].includes(getCategorySlug(p)))
+    .filter(p => ['babouches-cuir', 'babouches-brodees'].includes(getCategorySlug(p)) || getCollectionSlug(p) === 'babouches')
     .map((product: any) => ({
       id: product.id,
       name: product.name,

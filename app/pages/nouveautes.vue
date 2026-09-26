@@ -119,9 +119,13 @@ const heroBannerStyle = computed(() => ({
     backgroundImage: `url(${bannerUrl.value})`
 }))
 
-// Nouveaux produits
-const newProducts = ref<any[]>([])
-const loading = ref(false)
+const productsStore = useProductsStore()
+
+// Nouveaux produits — réactifs directement via le store Pinia
+const newProducts = computed(() => {
+    return productsStore.products.filter(p => p.is_new)
+})
+const loading = computed(() => productsStore.loading && newProducts.value.length === 0)
 
 // Catégorie active
 const activeCategory = ref('all')
@@ -139,17 +143,20 @@ const filterCategories = [
 ]
 
 // Mapper les catégories du composable aux catégories de filtrage
-const getCategoryGroup = (categorySlug: string) => {
-    if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(categorySlug)) {
+const getCategoryGroup = (p: any) => {
+    const categorySlug = (typeof p?.category === 'string' ? p.category : p?.category?.slug || '').toLowerCase()
+    const colSlug = ((p?.category as any)?.collectionSlug || p?.category?.collection?.slug || p?.collectionSlug || '').toLowerCase()
+
+    if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(categorySlug) || colSlug === 'men') {
         return 'men'
     }
-    if (['robes', 'ensembles', 'sacs'].includes(categorySlug)) {
+    if (['robes', 'ensembles', 'sacs'].includes(categorySlug) || colSlug === 'women') {
         return 'women'
     }
-    if (['babouches-cuir', 'babouches-brodees'].includes(categorySlug)) {
+    if (['babouches-cuir', 'babouches-brodees'].includes(categorySlug) || colSlug === 'babouches') {
         return 'babouches'
     }
-    if (['chemises-lin', 'pantalons-lin'].includes(categorySlug)) {
+    if (['chemises-lin', 'pantalons-lin'].includes(categorySlug) || colSlug === 'lins') {
         return 'lins'
     }
     return 'all'
@@ -157,20 +164,16 @@ const getCategoryGroup = (categorySlug: string) => {
 
 // Charger les nouveaux produits et la bannière au montage
 onMounted(async () => {
+    productsStore.initRealtimeSync()
+    if (productsStore.products.length === 0) {
+        await productsStore.fetchProducts()
+    }
+
     try {
         const banners = await ContentService.getPageBanners()
         if (banners?.nouveautes) bannerUrl.value = banners.nouveautes
     } catch (e) {
         console.warn('[NouveautesPage] Banner error:', e)
-    }
-
-    try {
-        loading.value = true
-        newProducts.value = await fetchNewArrivals()
-    } catch (error) {
-        console.error('Erreur lors du chargement des nouveaux produits:', error)
-    } finally {
-        loading.value = false
     }
 })
 
@@ -179,7 +182,7 @@ const filteredProducts = computed(() => {
     if (activeCategory.value === 'all') {
         return newProducts.value
     }
-    return newProducts.value.filter(product => getCategoryGroup(product.category.slug) === activeCategory.value)
+    return newProducts.value.filter(product => getCategoryGroup(product) === activeCategory.value)
 })
 
 // Sélectionner une catégorie

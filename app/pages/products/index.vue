@@ -140,8 +140,8 @@ const route = useRoute()
 const { fetchProducts } = useProducts()
 
 const productsStore = useProductsStore()
-const allProducts = ref<Product[]>([...productsStore.products])
-const loading = ref(productsStore.products.length === 0)
+const allProducts = computed(() => productsStore.products)
+const loading = computed(() => productsStore.loading && allProducts.value.length === 0)
 const activeCollection = ref('all')
 const sortBy = ref('default')
 const filterPopupOpen = ref(false)
@@ -154,43 +154,42 @@ const filterCategories = [
     { id: 'lins', label: 'Lins' }
 ]
 
-// Identifier le groupe de collection à partir du slug de catégorie
-const getCategoryGroup = (categorySlug: string): string => {
-    if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(categorySlug)) {
+// Identifier le groupe de collection à partir du produit (catégorie ou collection)
+const getCategoryGroup = (p: any): string => {
+    const catSlug = (typeof p?.category === 'string' ? p.category : p?.category?.slug || '').toLowerCase()
+    const colSlug = ((p?.category as any)?.collectionSlug || p?.category?.collection?.slug || p?.collectionSlug || '').toLowerCase()
+
+    if (['boubous', 'gandouras', 'costumes', 'chemises', 'pantalons'].includes(catSlug) || colSlug === 'men') {
         return 'men'
     }
-    if (['robes', 'ensembles', 'sacs'].includes(categorySlug)) {
+    if (['robes', 'ensembles', 'sacs'].includes(catSlug) || colSlug === 'women') {
         return 'women'
     }
-    if (['babouches-cuir', 'babouches-brodees'].includes(categorySlug)) {
+    if (['babouches-cuir', 'babouches-brodees'].includes(catSlug) || colSlug === 'babouches') {
         return 'babouches'
     }
-    if (['chemises-lin', 'pantalons-lin'].includes(categorySlug)) {
+    if (['chemises-lin', 'pantalons-lin'].includes(catSlug) || colSlug === 'lins') {
         return 'lins'
     }
     return 'all'
 }
 
 onMounted(async () => {
-    // Lire la collection depuis les query params si présente (ex: ?collection=men)
     if (route.query.collection && typeof route.query.collection === 'string') {
         activeCollection.value = route.query.collection
     }
 
-    try {
-        if (allProducts.value.length === 0) {
-            loading.value = true
-        }
-        const response: any = await fetchProducts()
-        if (response && response.results) {
-            allProducts.value = response.results
-        } else if (Array.isArray(response)) {
-            allProducts.value = response
-        }
-    } catch (error) {
-        console.error('Erreur lors du chargement des produits:', error)
-    } finally {
-        loading.value = false
+    productsStore.initRealtimeSync()
+    if (productsStore.products.length === 0) {
+        await productsStore.fetchProducts()
+    }
+})
+
+watch(() => route.query.collection, (newCol) => {
+    if (newCol && typeof newCol === 'string') {
+        activeCollection.value = newCol
+    } else {
+        activeCollection.value = 'all'
     }
 })
 
@@ -243,8 +242,7 @@ const sortedAndFilteredProducts = computed(() => {
     // Filtrage par collection
     if (activeCollection.value !== 'all') {
         list = list.filter(p => {
-            const catSlug = p.category?.slug || ''
-            return getCategoryGroup(catSlug) === activeCollection.value
+            return getCategoryGroup(p) === activeCollection.value
         })
     }
 

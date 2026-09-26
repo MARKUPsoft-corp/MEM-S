@@ -212,6 +212,17 @@ const initialProduct = productsStore.products.find(p => p.slug === currentSlug.v
 const product = ref<Product | null>(initialProduct)
 const loading = ref(!initialProduct)
 
+// Réactivité immédiate quand le store ou le slug est mis à jour
+watch([currentSlug, () => productsStore.products], ([newSlug, prods]) => {
+    if (newSlug && prods && prods.length > 0) {
+        const found = prods.find(p => p.slug === newSlug)
+        if (found) {
+            product.value = found
+            loading.value = false
+        }
+    }
+}, { immediate: true })
+
 // Formatage des prix
 const formatPrice = (price: number | string | undefined | null) => {
     if (price === undefined || price === null) return ''
@@ -274,6 +285,10 @@ const categoryMapping: Record<string, { name: string; parentPath: string }> = {
 
 // Charger le produit au montage
 onMounted(async () => {
+    productsStore.initRealtimeSync()
+    if (productsStore.products.length === 0) {
+        productsStore.fetchProducts().catch(() => {})
+    }
     const slug = route.params.slug as string
     try {
         if (!product.value) {

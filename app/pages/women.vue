@@ -108,10 +108,16 @@ const getCategorySlug = (p: any) => {
   return (p.category?.slug || '').toLowerCase().trim()
 }
 
+const getCollectionSlug = (p: any) => {
+  if (!p) return ''
+  const col = (p.category as any)?.collectionSlug || p.category?.collection?.slug || p.collectionSlug || ''
+  return String(col).toLowerCase().trim()
+}
+
 // Produits de la collection femmes, réactifs en temps réel
 const allProducts = computed(() => {
   return productsStore.products
-    .filter(p => ['robes', 'ensembles', 'sacs'].includes(getCategorySlug(p)))
+    .filter(p => ['robes', 'ensembles', 'sacs'].includes(getCategorySlug(p)) || getCollectionSlug(p) === 'women')
     .map((product: any) => ({
       id: product.id,
       name: product.name,
