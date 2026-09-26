@@ -7,10 +7,7 @@
                 <div class="title-underline"></div>
                 <p class="section-subtitle">Découvrez nos collections d'inspiration africaine</p>
             </div>
-            <div v-if="loading" class="loading-container">
-                <p>Chargement des collections...</p>
-            </div>
-            <div v-else class="categories-grid">
+            <div class="categories-grid">
                 <NuxtLink v-for="collection in collections" :key="collection.id" :to="`/${collection.slug}`" class="category-card">
                     <div class="category-image">
                         <img :src="collection.image || getDefaultImage(collection.slug)" :alt="collection.name" />
@@ -24,22 +21,26 @@
 </template>
 
 <script setup lang="ts">
-import { useProducts } from '../../composables/useProducts'
+import { computed, onMounted } from 'vue'
+import { useProductsStore } from '../../stores/products'
+import { INITIAL_COLLECTIONS } from '../../data/productsData'
 import type { Collection } from '../../types/product'
 
-const { fetchCollections, collections: collectionsData, loading } = useProducts()
+const productsStore = useProductsStore()
 
-// Charger les collections au montage du composant
-const collections = ref<Collection[]>([])
+// Toujours avoir les 4 collections prêtes immédiatement (SSR + CSR)
+const collections = computed<Collection[]>(() => {
+    if (productsStore.collections && productsStore.collections.length > 0) {
+        return productsStore.collections
+    }
+    return INITIAL_COLLECTIONS
+})
 
 onMounted(async () => {
     try {
-        const data = await fetchCollections()
-        collections.value = data
+        await productsStore.fetchCollections()
     } catch (error) {
         console.error('Error loading collections:', error)
-        // Fallback sur des collections par défaut en cas d'erreur
-        collections.value = []
     }
 })
 
@@ -91,7 +92,7 @@ const getDefaultImage = (slug: string) => {
 
 .section-header {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 3rem;
 }
 
 .section-title {
@@ -120,10 +121,12 @@ const getDefaultImage = (slug: string) => {
     opacity: 0.8;
 }
 
+/* Grille alignée sur UNE SEULE LIGNE de 4 collections */
 .categories-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    width: 100%;
 }
 
 .category-card {
@@ -179,7 +182,7 @@ const getDefaultImage = (slug: string) => {
     right: 2rem;
     color: #F5F2EC;
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -195,17 +198,18 @@ const getDefaultImage = (slug: string) => {
 /* Tablet */
 @media (min-width: 768px) and (max-width: 1023px) {
     .categories-section {
-        padding: 4rem 0;
+        padding: 3rem 0;
     }
 
     .categories-grid {
-        gap: 1.5rem;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
     }
 
     .category-title {
-        font-size: 1.5rem;
-        bottom: 1.5rem;
-        left: 1.5rem;
+        font-size: 1.25rem;
+        bottom: 1.25rem;
+        left: 1.25rem;
     }
 }
 
@@ -213,7 +217,7 @@ const getDefaultImage = (slug: string) => {
 @media (min-width: 1024px) {
     .categories-grid {
         grid-template-columns: repeat(4, 1fr);
-        gap: 2rem;
+        gap: 1.75rem;
     }
 
     .category-title {
@@ -232,26 +236,47 @@ const getDefaultImage = (slug: string) => {
     }
 
     .section-header {
-        margin-bottom: 2.5rem;
+        margin-bottom: 2rem;
     }
 
     .section-title {
-        font-size: 2rem;
+        font-size: 1.75rem;
     }
 
     .section-subtitle {
-        font-size: 0.9375rem;
+        font-size: 0.875rem;
     }
 
+    /* Sur mobile : défilement fluide horizontal sur une seule ligne (pas d'empilement vertical) */
     .categories-grid {
-        gap: 1.5rem;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 1rem;
+        padding-bottom: 0.75rem;
+        scrollbar-width: none;
+    }
+
+    .categories-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .category-card {
+        flex: 0 0 72%;
+        max-width: 270px;
+        min-width: 190px;
+        scroll-snap-align: start;
+        aspect-ratio: 1;
     }
 
     .category-title {
-        font-size: 1.25rem;
-        bottom: 1.5rem;
-        left: 1.5rem;
-        letter-spacing: 1.5px;
+        font-size: 1.15rem;
+        bottom: 1.25rem;
+        left: 1.25rem;
+        letter-spacing: 1.2px;
     }
 }
 </style>

@@ -111,6 +111,7 @@ import AfricanPatternBackground from '../components/AfricanPatternBackground.vue
 import FilterButton from '../components/FilterButton.vue'
 import FilterPopup from '../components/FilterPopup.vue'
 import { ContentService, DEFAULT_PAGE_BANNERS } from '~~/services/contentService'
+import { useProductsStore } from '~~/stores/products'
 
 const { fetchNewArrivals } = useProducts()
 
