@@ -56,7 +56,9 @@ Fichiers corriges:
 - ChemisePreview.vue  
 - PantalonPreview.vue
 
-## Resultat Final?
+## Resultat Final
+
+bonjour
 
 Page Hommes complete avec:
 - 5 categories de produits
